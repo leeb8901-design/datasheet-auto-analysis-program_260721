@@ -19,6 +19,11 @@ LOG_DIR = APP_DIR / "logs"  # 로그 파일을 저장할 폴더
 # 파일("- 복사본")을 마스터로 사용해요.
 MAPPING_TEMPLATE_PATH = APP_DIR / "Windchill_217F_Mapping_Template - 복사본.xlsx"
 
+# "Import 양식" 버튼이 그대로 복사해서 내보내는 마스터 파일이에요. VBA 다운로드 도우미 매크로
+# (vba/datasheet_helper.bas)가 이미 내장되어 있고, 부품리스트 시트 헤더도 output_builder.py가
+# 만드는 구조와 똑같이 맞춰뒀어요. 프로그램은 이 파일을 읽기만 하고 절대 수정하지 않아요.
+IMPORT_TEMPLATE_PATH = APP_DIR / "vba" / "Import_양식.xlsm"
+
 # .env 파일에 적어둔 값(예: MOUSER_API_KEY)을 읽어와요.
 load_dotenv(dotenv_path=APP_DIR / ".env")
 
@@ -34,10 +39,20 @@ MANUFACTURER_KEYWORDS = ["제조사", "manufacturer", "mfr", "mfg"]
 # 프로그램이 엑셀에 자동으로 채워 넣는 결과 컬럼들의 이름이에요.
 COL_DOWNLOAD_STATUS = "다운로드 상태"
 COL_ANALYSIS_STATUS = "분석 상태"
-COL_DATASHEET_LINK = "데이터시트 링크"  # 클릭하면 다운로드된 PDF가 열리는 링크로 채워져요.
+# 클릭하면 열리는 링크로 채워져요 - 다운로드 성공이면 받아둔 PDF 파일, 실패했으면 웹검색으로
+# 찾아낸 참고 URL(VBA 도우미가 이 칸을 읽어서 대신 받아와요). 한 칸에서 둘 다 처리해요.
+COL_DATASHEET_LINK = "데이터시트 링크"
 COL_ERROR_MESSAGE = "오류내용"
 COL_UNRESOLVED_FIELDS = "미확인 항목"  # 확신도가 낮거나 값을 못 찾은 필드 이름들을 적어두는 칸이에요.
-RESULT_COLUMNS = [COL_DOWNLOAD_STATUS, COL_ANALYSIS_STATUS, COL_DATASHEET_LINK, COL_ERROR_MESSAGE, COL_UNRESOLVED_FIELDS]
+COL_SAVE_PATH = "저장 경로"  # 이 부품의 PDF가 저장되어야 할 정확한 경로 (VBA 도우미가 이 칸에 저장해요).
+RESULT_COLUMNS = [
+    COL_DOWNLOAD_STATUS,
+    COL_ANALYSIS_STATUS,
+    COL_DATASHEET_LINK,
+    COL_ERROR_MESSAGE,
+    COL_UNRESOLVED_FIELDS,
+    COL_SAVE_PATH,
+]
 
 # 다운로드 상태로 쓰는 값들이에요. 여러 곳에서 같은 글자를 쓰도록 여기 모아뒀어요.
 STATUS_PENDING = "대기"
@@ -45,6 +60,7 @@ STATUS_SKIPPED_EXISTING = "이미 있음"
 STATUS_DOWNLOADING = "다운로드 중"
 STATUS_SUCCESS_MOUSER = "성공 (Mouser)"
 STATUS_SUCCESS_WEB = "성공 (웹)"
+STATUS_SUCCESS_VBA = "성공 (VBA)"  # 엑셀의 VBA 도우미 매크로가 직접 받아온 경우 (datasheet_helper.bas 참고).
 STATUS_FAILED = "실패"
 
 # 분석 상태로 쓰는 값들이에요.

@@ -10,6 +10,7 @@ from copy import copy
 from pathlib import Path
 
 import openpyxl
+from openpyxl.styles import Font
 
 from ai.analysis_state import PartAnalysis
 from excel.mapping_template_builder import build_blank_mapping_sheet
@@ -19,11 +20,15 @@ from utils.config import (
     COL_DATASHEET_LINK,
     COL_DOWNLOAD_STATUS,
     COL_ERROR_MESSAGE,
+    COL_SAVE_PATH,
     COL_UNRESOLVED_FIELDS,
 )
 
 GUIDE_SHEET_NAME = "사용가이드라인"
 PART_LIST_SHEET_NAME = "부품리스트"
+
+# 엑셀에서 링크처럼 보이도록 파란색 밑줄 글씨체를 만들어둬요 (excel_writer.py와 같은 스타일).
+_HYPERLINK_FONT = Font(color="0563C1", underline="single")
 
 
 def _copy_guide_sheet(master_path: Path, target_wb) -> None:
@@ -52,13 +57,23 @@ def _copy_guide_sheet(master_path: Path, target_wb) -> None:
         master_wb.close()
 
 
+_PART_LIST_HEADERS = [
+    "No.", "품번", "제조사", COL_DOWNLOAD_STATUS, COL_ANALYSIS_STATUS, COL_DATASHEET_LINK,
+    COL_ERROR_MESSAGE, COL_UNRESOLVED_FIELDS, COL_SAVE_PATH,
+]
+
+
 def _build_part_list_sheet(target_wb, rows: list[dict], table_rows: list[dict]) -> None:
     ws = target_wb.create_sheet(PART_LIST_SHEET_NAME)
-    ws.append(
-        ["No.", "품번", "제조사", COL_DOWNLOAD_STATUS, COL_ANALYSIS_STATUS, COL_DATASHEET_LINK, COL_ERROR_MESSAGE, COL_UNRESOLVED_FIELDS]
-    )
+    ws.append(_PART_LIST_HEADERS)
+    link_col = _PART_LIST_HEADERS.index(COL_DATASHEET_LINK) + 1
+
     for i, row in enumerate(rows):
         t = table_rows[i]
+        filename = t.get("filename", "")
+        reference_url = t.get("reference_url", "")
+        save_path = t.get("save_path", "")
+
         ws.append(
             [
                 i + 1,
@@ -66,11 +81,24 @@ def _build_part_list_sheet(target_wb, rows: list[dict], table_rows: list[dict]) 
                 t.get("manufacturer", ""),
                 t.get("download_status", ""),
                 t.get("analysis_status", ""),
-                t.get("filename", ""),
+                filename or reference_url,
                 t.get("error", ""),
                 t.get("unresolved", ""),
+                save_path,
             ]
         )
+
+        # "데이터시트 링크" 칸을 클릭 가능한 실제 하이퍼링크로 만들어요 - 성공했으면 받아둔 로컬
+        # 파일을, 실패했지만 참고 링크가 있으면 그 웹 페이지를 열게 해요 (VBA 도우미가 실패한
+        # 부품의 링크를 이 칸에서 읽어서 대신 받아올 수도 있어요 — datasheet_helper.bas 참고).
+        if filename and save_path:
+            cell = ws.cell(row=ws.max_row, column=link_col)
+            cell.hyperlink = save_path
+            cell.font = _HYPERLINK_FONT
+        elif reference_url:
+            cell = ws.cell(row=ws.max_row, column=link_col)
+            cell.hyperlink = reference_url
+            cell.font = _HYPERLINK_FONT
 
 
 def build_output_workbook(

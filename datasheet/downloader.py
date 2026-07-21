@@ -19,6 +19,7 @@ from utils.config import (
     STATUS_SUCCESS_MOUSER,
     STATUS_SUCCESS_WEB,
 )
+from utils.logger import logger
 
 # 저장 폴더는 GUI에서 바꿀 수 있어서, 고정 상수가 아니라 바꿀 수 있는 변수로 둬요.
 _download_dir = _DEFAULT_DOWNLOAD_DIR
@@ -94,8 +95,18 @@ DOWNLOAD_HEADERS = {
 }
 
 
-def _download_once(url: str, dest_path: Path) -> str | None:
-    # 다운로드 한 번 시도. 성공하면 None, 실패하면 실패 사유 문자열을 돌려줘요.
+# 401/403(권한거부)은 서버가 "이 요청은 아예 허용 안 함"이라고 답한 거라, 완전히 똑같은 요청을
+# 다시 보내도 결과가 똑같아요. 실제로 analog.com에서 헤더를 완전히 다르게(심지어 아예 없이) 줘봐도
+# Akamai가 바이트 단위로 동일한 차단 페이지(errors.edgesuite.net)를 돌려주는 걸 확인했어요 — 이건
+# 헤더가 아니라 요청 IP 자체를 막는 경우라, 재시도는 시간 낭비고 곧바로 포기하는 게 맞아요.
+# 반대로 타임아웃/연결 오류/5xx/429 같은 건 일시적인 문제일 수 있으니 재시도해볼 만해요.
+NON_RETRYABLE_STATUS = {401, 403}
+
+MAX_RETRY_DELAY = 30.0  # 지수 백오프의 상한(초) - 계속 배로 늘어나다가 여기서 멈춰요.
+
+
+def _download_once(url: str, dest_path: Path) -> tuple[str | None, bool]:
+    # 다운로드 한 번 시도. (실패 사유 또는 None, 재시도해볼 만한지)를 돌려줘요.
     origin = urlparse(url)
     headers = dict(DOWNLOAD_HEADERS)
     headers["Referer"] = f"{origin.scheme}://{origin.netloc}/"
@@ -103,32 +114,46 @@ def _download_once(url: str, dest_path: Path) -> str | None:
     try:
         resp = curl_requests.get(url, timeout=30, headers=headers, allow_redirects=True, impersonate="chrome")
     except Exception as e:
-        return f"요청 실패: {e}"
+        return f"요청 실패: {e}", True  # 연결이 끊기거나 타임아웃 나는 건 일시적일 수 있어요.
 
     if resp.status_code != 200:
-        return f"HTTP {resp.status_code}"
+        retryable = resp.status_code not in NON_RETRYABLE_STATUS
+        return f"HTTP {resp.status_code}", retryable
 
     content = resp.content
     content_type = resp.headers.get("Content-Type", "").lower()
     # 진짜 PDF가 맞는지 확인해요 (PDF는 항상 "%PDF"로 시작해요). 아니면 차단 페이지일 가능성이 커요.
     if not (content.startswith(b"%PDF") or "pdf" in content_type):
-        return "PDF가 아닌 응답 (접근 차단/오류 페이지로 추정)"
+        # 차단 페이지로 추정되는 응답은 재시도해도 똑같이 나올 가능성이 높아서 곧바로 포기해요.
+        return "PDF가 아닌 응답 (접근 차단/오류 페이지로 추정)", False
 
     dest_path.parent.mkdir(parents=True, exist_ok=True)
     dest_path.write_bytes(content)
-    return None
+    return None, True
 
 
-def download_pdf(url: str, dest_path: Path, max_retries: int = 1) -> str | None:
-    # 실패하면 잠깐 기다렸다가 한 번 더 시도해요 (일시적인 네트워크 문제일 수 있으니).
+def download_pdf(url: str, dest_path: Path, max_retries: int = 3) -> str | None:
+    """실패 원인에 따라 다르게 대응해요.
+
+    - 401/403(권한거부), PDF가 아닌 응답(차단 페이지 추정): 재시도해도 결과가 똑같을 가능성이
+      높아서 곧바로 포기해요.
+    - 타임아웃/연결 오류/5xx/429 등: 일시적인 문제일 수 있으니, 대기시간을 2배씩 늘려가며(지수
+      백오프, 최대 MAX_RETRY_DELAY초) 최대 max_retries번 더 시도해요.
+    """
     last_error = None
+    delay = DOWNLOAD_RETRY_DELAY
     for attempt in range(max_retries + 1):
         if attempt > 0:
-            time.sleep(DOWNLOAD_RETRY_DELAY)
-        error = _download_once(url, dest_path)
+            logger.log(f"  [재시도 {attempt}/{max_retries}] {delay:.0f}초 대기 후 다시 시도...")
+            time.sleep(delay)
+            delay = min(delay * 2, MAX_RETRY_DELAY)
+
+        error, retryable = _download_once(url, dest_path)
         if error is None:
             return None
         last_error = error
+        if not retryable:
+            break
     return last_error
 
 

@@ -1,6 +1,7 @@
 # 프로그램의 메인 화면(창)이에요. 상단 도구모음 + 표 + 진행상황 + 로그창으로 이뤄져 있어요.
 
 import os
+import shutil
 import subprocess
 from pathlib import Path
 
@@ -48,7 +49,9 @@ from utils.config import (
     COL_DATASHEET_LINK,
     COL_DOWNLOAD_STATUS,
     COL_ERROR_MESSAGE,
+    COL_SAVE_PATH,
     COL_UNRESOLVED_FIELDS,
+    IMPORT_TEMPLATE_PATH,
     MAPPING_TEMPLATE_PATH,
     STATUS_FAILED,
     STATUS_PENDING,
@@ -106,19 +109,25 @@ class DatasheetWorker(QObject):
             analysis, analysis_status = self._analyze_if_downloaded(part, manufacturer_hint, result)
             unresolved_text = ", ".join(analysis.unresolved_field_names()) if analysis else ""
 
-            # 파일이 실제로 저장됐으면, 엑셀에서 클릭해 열 수 있도록 그 경로를 같이 넘겨줘요.
-            link_path = build_dest_path(part, result.manufacturer or manufacturer_hint) if result.filename else None
+            # 이 부품의 PDF가 있어야(또는 있을 예정인) 정확한 경로를 항상 계산해둬요. 성공했으면
+            # 실제로 그 자리에 파일이 있고, 실패했으면 VBA 도우미가 나중에 저장할 자리를 미리 알려주는
+            # 역할을 해요 (엑셀의 "저장 경로" 칸 -> datasheet_helper.bas 참고).
+            dest_path = build_dest_path(part, result.manufacturer or manufacturer_hint)
+            link_path = dest_path if result.filename else None
 
             writer.write_row(
                 row["row"],
                 {
                     COL_DOWNLOAD_STATUS: result.status,
                     COL_ANALYSIS_STATUS: analysis_status,
-                    COL_DATASHEET_LINK: result.filename or "",
+                    # 성공하면 파일명, 실패했는데 참고 링크가 있으면 그 URL을 같은 칸에 보여줘요.
+                    COL_DATASHEET_LINK: result.filename or result.reference_url or "",
                     COL_ERROR_MESSAGE: result.error or "",
                     COL_UNRESOLVED_FIELDS: unresolved_text,
+                    COL_SAVE_PATH: str(dest_path),
                 },
                 link_path=link_path,
+                reference_url=result.reference_url,
             )
             writer.save()  # 한 행 끝날 때마다 바로바로 엑셀에 저장해요 (중간에 꺼져도 안전하게).
 
@@ -137,6 +146,8 @@ class DatasheetWorker(QObject):
                     "download_status": result.status,
                     "analysis_status": analysis_status,
                     "filename": result.filename or "",
+                    "reference_url": result.reference_url or "",
+                    "save_path": str(dest_path),
                     "error": result.error or "",
                     "unresolved": unresolved_text,
                     "analysis": analysis,
@@ -187,6 +198,8 @@ class MainWindow(QMainWindow):
         self.excel_path: str | None = None
         self.rows: list[dict] = []  # excel_reader가 준 원본 [{"row":.., "part_number":.., "manufacturer":..}]
         self.analysis: list[PartAnalysis | None] = []  # self.rows와 같은 순서로, 행마다의 분석 결과를 담아둬요.
+        self.reference_urls: list[str] = []  # 자동 다운로드는 실패했지만 찾아낸 웹 링크 (VBA 도우미용).
+        self.save_paths: list[str] = []  # 이 부품의 PDF가 있어야(또는 있을 예정인) 정확한 경로.
         self.thread: QThread | None = None
         self.worker: DatasheetWorker | None = None
         self._success_count = 0
@@ -226,6 +239,9 @@ class MainWindow(QMainWindow):
         export_btn = QPushButton("출력")
         export_btn.clicked.connect(self._export_to_excel)
 
+        import_template_btn = QPushButton("Import 양식")
+        import_template_btn.clicked.connect(self._export_import_template)
+
         self.start_btn = QPushButton("처리 시작")
         self.start_btn.clicked.connect(self._start_processing)
         self.start_btn.setEnabled(False)
@@ -237,6 +253,7 @@ class MainWindow(QMainWindow):
         bar.addWidget(pick_folder_btn)
         bar.addWidget(self.folder_label, 1)
         bar.addWidget(export_btn)
+        bar.addWidget(import_template_btn)
         bar.addWidget(self.start_btn)
         return bar
 
@@ -314,6 +331,8 @@ class MainWindow(QMainWindow):
     def _apply_rows(self, rows: list[dict]):
         self.rows = rows
         self.analysis = [None] * len(rows)
+        self.reference_urls = [""] * len(rows)
+        self.save_paths = [""] * len(rows)
         self.table.setRowCount(len(rows))
         for i, row in enumerate(rows):
             self._fill_row(
@@ -355,6 +374,8 @@ class MainWindow(QMainWindow):
         self._fail_count = 0
         self.count_label.setText("성공 0 / 실패 0")
         self.analysis = [None] * len(self.rows)
+        self.reference_urls = [""] * len(self.rows)
+        self.save_paths = [""] * len(self.rows)
 
         sheet_name = self.sheet_combo.currentText()
         self.thread = QThread()
@@ -372,6 +393,8 @@ class MainWindow(QMainWindow):
 
     def _on_row_updated(self, i: int, values: dict):
         self.analysis[i] = values["analysis"]
+        self.reference_urls[i] = values["reference_url"]
+        self.save_paths[i] = values["save_path"]
 
         self.table.setItem(i, 2, QTableWidgetItem(values["manufacturer"]))
         self.table.setItem(i, 3, QTableWidgetItem(values["download_status"]))
@@ -416,6 +439,31 @@ class MainWindow(QMainWindow):
             self, "완료", f"처리가 끝났습니다.\n성공 {self._success_count}건 / 실패 {self._fail_count}건"
         )
 
+    def _export_import_template(self):
+        # "Import 양식" 버튼: VBA 다운로드 도우미 매크로가 이미 내장된 마스터 파일(vba/Import_양식.xlsm)을
+        # 그대로 복사해서 내보내요. 프로그램이 이 양식을 "기억"하고 있다가 그때그때 꺼내주는 거라,
+        # 매번 새로 만들 필요 없이 항상 같은 매크로가 든 파일을 받을 수 있어요.
+        if not IMPORT_TEMPLATE_PATH.exists():
+            QMessageBox.critical(
+                self, "오류", f"Import 양식 파일을 찾을 수 없습니다:\n{IMPORT_TEMPLATE_PATH}"
+            )
+            return
+
+        save_path, _ = QFileDialog.getSaveFileName(
+            self, "Import 양식 저장", "Import_양식.xlsm", "Excel 매크로 사용 통합 문서 (*.xlsm)"
+        )
+        if not save_path:
+            return
+
+        try:
+            shutil.copy(IMPORT_TEMPLATE_PATH, save_path)
+        except Exception as e:
+            QMessageBox.critical(self, "오류", f"Import 양식을 복사하는 중 오류가 발생했습니다:\n{e}")
+            return
+
+        self._log(f"Import 양식을 만들었습니다: {save_path}")
+        QMessageBox.information(self, "완료", f"Import 양식을 만들었습니다.\n{save_path}")
+
     def _export_to_excel(self):
         # "출력" 버튼: 원본 입력 엑셀은 건드리지 않고, 이번 배치 결과(부품리스트+매핑맵)를 담은
         # 새 출력지 엑셀을 만들어요. 실행할 때마다 새 파일이라, 마스터 템플릿도 절대 수정되지 않아요.
@@ -438,6 +486,8 @@ class MainWindow(QMainWindow):
                     "filename": self.table.item(i, 5).text() if self.table.item(i, 5) else "",
                     "error": self.table.item(i, 6).text() if self.table.item(i, 6) else "",
                     "unresolved": self.table.item(i, 7).text() if self.table.item(i, 7) else "",
+                    "reference_url": self.reference_urls[i] if i < len(self.reference_urls) else "",
+                    "save_path": self.save_paths[i] if i < len(self.save_paths) else "",
                 }
             )
 
