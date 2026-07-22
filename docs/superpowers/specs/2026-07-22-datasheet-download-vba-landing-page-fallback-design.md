@@ -93,7 +93,8 @@ Windows 기본 제공이라 추가 설치가 필요 없다.
 - 요청 헤더: Python [downloader.py](../../../datasheet/downloader.py)의 `DOWNLOAD_HEADERS`와 동일하게
   User-Agent(Chrome 124 문자열), Accept, Accept-Language, Referer(`scheme://host/`)를 설정한다.
 - 응답을 `ADODB.Stream`(바이너리 모드)으로 받아 앞 4바이트가 `%PDF`인지 확인 후 파일로 저장한다
-  (기존 `IsRealPdf` 로컬 파일 검사 로직은 그대로 재사용).
+  (파일로 저장하기 전에 바이트 배열을 직접 검사 - 기존의 저장 후 파일을 다시 읽어 검사하던
+  `IsRealPdf(filePath)`는 더 이상 필요 없어 제거함).
 - 재시도 정책 (Python의 `download_pdf`와 톤을 맞춤):
   - HTTP 401/403, 또는 200이지만 `%PDF`가 아닌 응답 → 즉시 포기 (재시도 안 함)
   - 타임아웃/연결 오류/5xx/429 → 최대 2회, 2초 → 4초 대기 후 재시도 (`Application.Wait`)
