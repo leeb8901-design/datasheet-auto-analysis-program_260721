@@ -67,7 +67,6 @@ class DownloadResult:
     error: str | None  # 실패 사유 (실패했을 때)
     manufacturer: str | None  # 확인된 제조사 이름
     reference_url: str | None = None  # 자동 다운로드는 실패했지만 참고할 만한 링크
-    landing_url: str | None = None  # 실패했을 때, 막힌 직링크 대신 열어볼 만한 제조사 제품/문서 페이지
 
 
 def sanitize_filename(name: str) -> str:
@@ -234,21 +233,15 @@ def find_datasheet(part_number, manufacturer=None, max_results=10):
 
     tokens = _manufacturer_tokens(manufacturer)
     pdf_urls = [u for u in urls if u.lower().endswith(".pdf")]
-    page_urls = [u for u in urls if not u.lower().endswith(".pdf")]
 
     official_pdf = next((u for u in pdf_urls if _looks_official(u, tokens)), None)
-    datasheet_url = official_pdf or (pdf_urls[0] if pdf_urls else None)
+    if official_pdf:
+        return {"datasheet_url": official_pdf, "source_page": official_pdf, "official": True}
 
-    # 막힌 PDF 직링크 대신 열어볼 "제품/문서 페이지" - 같은 제조사 도메인을 우선하고,
-    # 없으면 검색 결과 중 PDF가 아닌 첫 링크로 대체해요.
-    official_page = next((u for u in page_urls if _looks_official(u, tokens)), None)
-    landing_page = official_page or (page_urls[0] if page_urls else None)
+    if pdf_urls:
+        return {"datasheet_url": pdf_urls[0], "source_page": pdf_urls[0], "official": False}
 
-    return {
-        "datasheet_url": datasheet_url,
-        "landing_page": landing_page,
-        "official": official_pdf is not None,
-    }
+    return {"datasheet_url": None, "source_page": urls[0], "official": False}
 
 
 # ---- 전체 흐름을 하나로 묶는 함수 (main.py/워커가 이 함수 하나만 부르면 돼요) ----
@@ -293,24 +286,17 @@ def download_datasheet_for_part(
     except Exception as e:
         return DownloadResult(STATUS_FAILED, None, f"웹 검색 오류: {e}", manufacturer)
 
-    landing_url = web_result.get("landing_page") if web_result else None
-
     if web_result and web_result.get("datasheet_url"):
         fail_reason = download_pdf(web_result["datasheet_url"], dest)
         if fail_reason is None:
             return DownloadResult(STATUS_SUCCESS_WEB, dest.name, None, manufacturer)
         return DownloadResult(
-            STATUS_FAILED,
-            None,
-            f"웹 다운로드 실패: {fail_reason}",
-            manufacturer,
-            web_result["datasheet_url"],
-            landing_url,
+            STATUS_FAILED, None, f"웹 다운로드 실패: {fail_reason}", manufacturer, web_result["datasheet_url"]
         )
 
-    if landing_url:
+    if web_result and web_result.get("source_page"):
         return DownloadResult(
-            STATUS_FAILED, None, "PDF 직링크를 찾지 못함", manufacturer, landing_url, landing_url
+            STATUS_FAILED, None, "PDF 직링크를 찾지 못함", manufacturer, web_result["source_page"]
         )
 
     reason = mouser_error or "Mouser/웹 모두에서 찾지 못함"

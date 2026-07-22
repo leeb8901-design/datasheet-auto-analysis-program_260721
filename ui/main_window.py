@@ -49,7 +49,6 @@ from utils.config import (
     COL_DATASHEET_LINK,
     COL_DOWNLOAD_STATUS,
     COL_ERROR_MESSAGE,
-    COL_LANDING_PAGE,
     COL_SAVE_PATH,
     COL_UNRESOLVED_FIELDS,
     IMPORT_TEMPLATE_PATH,
@@ -126,11 +125,9 @@ class DatasheetWorker(QObject):
                     COL_ERROR_MESSAGE: result.error or "",
                     COL_UNRESOLVED_FIELDS: unresolved_text,
                     COL_SAVE_PATH: str(dest_path),
-                    COL_LANDING_PAGE: result.landing_url or "",
                 },
                 link_path=link_path,
                 reference_url=result.reference_url,
-                landing_url=result.landing_url,
             )
             writer.save()  # 한 행 끝날 때마다 바로바로 엑셀에 저장해요 (중간에 꺼져도 안전하게).
 

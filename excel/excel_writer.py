@@ -5,7 +5,7 @@ from pathlib import Path
 import openpyxl
 from openpyxl.styles import Font
 
-from utils.config import COL_DATASHEET_LINK, COL_LANDING_PAGE, RESULT_COLUMNS
+from utils.config import COL_DATASHEET_LINK, RESULT_COLUMNS
 
 # 엑셀에서 링크처럼 보이도록 파란색 밑줄 글씨체를 만들어둬요.
 _HYPERLINK_FONT = Font(color="0563C1", underline="single")
@@ -54,31 +54,27 @@ class ExcelResultWriter:
         values: dict[str, str],
         link_path: Path | None = None,
         reference_url: str | None = None,
-        landing_url: str | None = None,
     ):
         # values 예: {"다운로드 상태": "성공 (Mouser)", "데이터시트 링크": "AD8030ARZ.pdf"}
         # link_path를 같이 주면, "데이터시트 링크" 칸이 그 로컬 파일을 여는 클릭 가능한 링크가 돼요.
         # (다운로드 성공 시) link_path가 없고 reference_url이 있으면, 같은 "데이터시트 링크" 칸이
-        # 대신 그 웹 페이지를 여는 링크가 돼요. landing_url이 있으면 "제품 페이지 링크" 칸이 그
-        # 제조사 제품/문서 페이지를 여는 링크가 돼요 (VBA 도우미가 직링크 재시도 실패 시 이 칸을
-        # 읽어서 대신 열어요 — datasheet_helper.bas 참고).
+        # 대신 그 웹 페이지를 여는 링크가 돼요 (다운로드 실패 시 - 사람이 직접 열어보거나 VBA
+        # 도우미가 이 칸을 읽어서 대신 받아올 수 있어요 — datasheet_helper.bas 참고).
         for key, value in values.items():
             col = self.column_map.get(key)
             if not col:
                 continue
             cell = self.ws.cell(row=row_index, column=col, value=value)
-            if key == COL_DATASHEET_LINK:
-                if link_path is not None:
-                    # 일반 윈도우 경로(C:\...) 형태로 넣어야 엑셀에서 클릭했을 때 바로 열려요.
-                    # file:/// 형태(URI)로 넣으면 경로에 한글이 있을 때 인코딩이 깨져서 "파일을 열 수
-                    # 없다"는 오류가 나는 경우가 있어서, 그냥 실제 경로 문자열을 그대로 써요.
-                    cell.hyperlink = str(link_path.resolve())
-                    cell.font = _HYPERLINK_FONT
-                elif reference_url:
-                    cell.hyperlink = reference_url
-                    cell.font = _HYPERLINK_FONT
-            elif key == COL_LANDING_PAGE and landing_url:
-                cell.hyperlink = landing_url
+            if key != COL_DATASHEET_LINK:
+                continue
+            if link_path is not None:
+                # 일반 윈도우 경로(C:\...) 형태로 넣어야 엑셀에서 클릭했을 때 바로 열려요.
+                # file:/// 형태(URI)로 넣으면 경로에 한글이 있을 때 인코딩이 깨져서 "파일을 열 수 없다"는
+                # 오류가 나는 경우가 있어서, 그냥 실제 경로 문자열을 그대로 써요.
+                cell.hyperlink = str(link_path.resolve())
+                cell.font = _HYPERLINK_FONT
+            elif reference_url:
+                cell.hyperlink = reference_url
                 cell.font = _HYPERLINK_FONT
 
     def save(self):
