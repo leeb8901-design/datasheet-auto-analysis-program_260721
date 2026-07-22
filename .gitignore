@@ -8,6 +8,7 @@ __pycache__/
 
 # 에디터 설정
 .vscode/
+.pytest_cache/
 
 # 다운로드된 데이터시트/로그 (사용자 로컬 산출물, 코드 아님)
 datasheets/
