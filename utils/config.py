@@ -45,6 +45,9 @@ COL_DATASHEET_LINK = "데이터시트 링크"
 COL_ERROR_MESSAGE = "오류내용"
 COL_UNRESOLVED_FIELDS = "미확인 항목"  # 확신도가 낮거나 값을 못 찾은 필드 이름들을 적어두는 칸이에요.
 COL_SAVE_PATH = "저장 경로"  # 이 부품의 PDF가 저장되어야 할 정확한 경로 (VBA 도우미가 이 칸에 저장해요).
+# 실패 시, 막힌 PDF 직링크 대신 열어볼 만한 제조사 제품/문서 페이지. VBA 도우미가 직링크 재시도에
+# 실패하면 이 칸을 읽어서 브라우저로 열어요 (직링크를 반복하는 것보다 통과할 가능성이 더 커요).
+COL_LANDING_PAGE = "제품 페이지 링크"
 RESULT_COLUMNS = [
     COL_DOWNLOAD_STATUS,
     COL_ANALYSIS_STATUS,
@@ -52,6 +55,7 @@ RESULT_COLUMNS = [
     COL_ERROR_MESSAGE,
     COL_UNRESOLVED_FIELDS,
     COL_SAVE_PATH,
+    COL_LANDING_PAGE,
 ]
 
 # 다운로드 상태로 쓰는 값들이에요. 여러 곳에서 같은 글자를 쓰도록 여기 모아뒀어요.
