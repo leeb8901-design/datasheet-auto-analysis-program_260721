@@ -67,6 +67,7 @@ class DownloadResult:
     error: str | None  # 실패 사유 (실패했을 때)
     manufacturer: str | None  # 확인된 제조사 이름
     reference_url: str | None = None  # 자동 다운로드는 실패했지만 참고할 만한 링크
+    landing_url: str | None = None  # 실패했을 때, 막힌 직링크 대신 열어볼 만한 제조사 제품/문서 페이지
 
 
 def sanitize_filename(name: str) -> str:
@@ -292,17 +293,24 @@ def download_datasheet_for_part(
     except Exception as e:
         return DownloadResult(STATUS_FAILED, None, f"웹 검색 오류: {e}", manufacturer)
 
+    landing_url = web_result.get("landing_page") if web_result else None
+
     if web_result and web_result.get("datasheet_url"):
         fail_reason = download_pdf(web_result["datasheet_url"], dest)
         if fail_reason is None:
             return DownloadResult(STATUS_SUCCESS_WEB, dest.name, None, manufacturer)
         return DownloadResult(
-            STATUS_FAILED, None, f"웹 다운로드 실패: {fail_reason}", manufacturer, web_result["datasheet_url"]
+            STATUS_FAILED,
+            None,
+            f"웹 다운로드 실패: {fail_reason}",
+            manufacturer,
+            web_result["datasheet_url"],
+            landing_url,
         )
 
-    if web_result and web_result.get("landing_page"):
+    if landing_url:
         return DownloadResult(
-            STATUS_FAILED, None, "PDF 직링크를 찾지 못함", manufacturer, web_result["landing_page"]
+            STATUS_FAILED, None, "PDF 직링크를 찾지 못함", manufacturer, landing_url, landing_url
         )
 
     reason = mouser_error or "Mouser/웹 모두에서 찾지 못함"
