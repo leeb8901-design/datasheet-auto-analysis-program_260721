@@ -14,5 +14,10 @@ __pycache__/
 datasheets/
 logs/
 
+# 루트의 Import 양식은 사용자의 개인 테스트/작업용 사본 (사용자 로컬 산출물, 코드 아님).
+# vba/Import_양식.xlsm(마스터 템플릿)은 계속 추적함 - 이건 루트 사본만 제외.
+/Import_양식.xlsm
+/Import_양식_출력.xlsx
+
 # 원본 첨부파일 (내용은 이미 프로젝트 루트로 복사됨)
 첨부파일/
