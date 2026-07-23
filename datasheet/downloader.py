@@ -95,22 +95,51 @@ MAX_RETRY_DELAY = 30.0  # 지수 백오프의 상한(초) - 계속 배로 늘어
 FETCH_TIMEOUT_MS = 30_000  # StealthyFetcher의 타임아웃은 밀리초 단위예요.
 
 
+def _capture_document_response(captured: dict):
+    # Chrome은 PDF 링크로 이동하면 자체 내장 PDF 뷰어로 열어버려서, 페이지 렌더링 결과(DOM)는
+    # 실제 PDF 바이트가 아니라 뷰어가 만든 가짜 HTML 래퍼예요. 그래서 렌더링 결과에 기대지 않고,
+    # 이 페이지의 메인 문서 네트워크 응답을 직접 가로채서 진짜 바이트를 뽑아내요.
+    def page_setup(page):
+        def on_response(response):
+            if "body" in captured:
+                return  # 이미 첫 문서 응답을 잡았으면 그 이후 응답(리다이렉트 등)은 무시해요.
+            request = response.request
+            if request.resource_type != "document":
+                return
+            try:
+                captured["status"] = response.status
+                captured["headers"] = response.headers
+                captured["body"] = response.body()
+            except Exception:
+                pass  # 못 읽으면 그냥 넘어가요 - 아래에서 "body" 없음으로 처리돼요.
+
+        page.on("response", on_response)
+
+    return page_setup
+
+
 def _download_once(url: str, dest_path: Path) -> tuple[str | None, bool]:
     # 다운로드 한 번 시도. (실패 사유 또는 None, 재시도해볼 만한지)를 돌려줘요.
+    captured: dict = {}
     try:
-        resp = StealthyFetcher.fetch(url, headless=True, timeout=FETCH_TIMEOUT_MS)
+        StealthyFetcher.fetch(
+            url, headless=True, timeout=FETCH_TIMEOUT_MS, page_setup=_capture_document_response(captured)
+        )
     except Exception as e:
         return f"요청 실패: {e}", True  # 브라우저 실행/연결이 실패하는 건 일시적일 수 있어요.
 
-    if resp.status != 200:
-        retryable = resp.status not in NON_RETRYABLE_STATUS
-        return f"HTTP {resp.status}", retryable
+    if "body" not in captured:
+        return "응답을 가로채지 못함 (차단/오류 페이지로 추정)", True
 
-    content = resp.body
-    # Playwright(브라우저 엔진)가 돌려주는 헤더 키는 소문자예요("content-type") - 혹시 몰라 둘 다 확인해요.
-    content_type = (resp.headers.get("content-type") or resp.headers.get("Content-Type") or "").lower()
-    # 진짜 PDF가 맞는지 확인해요 (PDF는 항상 "%PDF"로 시작해요). 아니면 차단 페이지일 가능성이 커요.
-    if not (content.startswith(b"%PDF") or "pdf" in content_type):
+    status = captured.get("status", 0)
+    if status != 200:
+        retryable = status not in NON_RETRYABLE_STATUS
+        return f"HTTP {status}", retryable
+
+    content = captured["body"]
+    # 진짜 PDF가 맞는지 확인해요 (PDF는 항상 "%PDF"로 시작해요). 헤더가 뭐라고 하든, 실제 바이트
+    # 자체로만 판단해요 - 헤더는 pdf라고 해도 실제 내용은 차단 페이지/뷰어 래퍼인 경우가 있었어요.
+    if not content.startswith(b"%PDF"):
         # 차단 페이지로 추정되는 응답은 재시도해도 똑같이 나올 가능성이 높아서 곧바로 포기해요.
         return "PDF가 아닌 응답 (접근 차단/오류 페이지로 추정)", False
 
