@@ -6,10 +6,10 @@ import re
 import time
 from dataclasses import dataclass
 from pathlib import Path
-from urllib.parse import parse_qs, unquote, urlparse
+from urllib.parse import parse_qs, unquote, urlencode, urlparse
 
 from bs4 import BeautifulSoup
-from curl_cffi import requests as curl_requests
+from scrapling import StealthyFetcher
 
 from datasheet.search import MouserClient
 from utils.config import DOWNLOAD_DIR as _DEFAULT_DOWNLOAD_DIR
@@ -40,9 +40,6 @@ MIN_DELAY_SECONDS = 1.5  # 검색 사이 최소 대기시간 (너무 빠르면 �
 MAX_DELAY_SECONDS = 3.5
 RETRY_DELAY_SECONDS = (6.0, 10.0)  # 캡차에 걸렸을 때 재시도 전 대기시간
 DOWNLOAD_RETRY_DELAY = 2.0  # 다운로드 실패 시 재시도 전 대기시간
-
-# 같은 세션(브라우저 창 하나)을 계속 재사용해서 더 자연스러운 방문자처럼 보이게 해요.
-_session = curl_requests.Session(impersonate="chrome")
 
 # 유통사(부품 파는 가게) 사이트 — 데이터시트 출처로는 원하지 않아요.
 DISTRIBUTOR_DOMAINS = [
@@ -81,47 +78,37 @@ def build_dest_path(part_number: str, manufacturer: str | None) -> Path:
     return folder / (sanitize_filename(part_number) + ".pdf")
 
 
-# ---- 다운로드 (curl_cffi로 브라우저인 척 흉내 내며 받아요) ----
-
-DOWNLOAD_HEADERS = {
-    "User-Agent": (
-        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
-        "(KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
-    ),
-    "Accept": "application/pdf,*/*;q=0.8",
-    "Accept-Language": "ko-KR,ko;q=0.9,en;q=0.8",
-    "Accept-Encoding": "gzip, deflate, br",
-    "Connection": "keep-alive",
-}
-
+# ---- 다운로드 (Scrapling의 StealthyFetcher로 진짜 브라우저를 띄워서 받아요) ----
+#
+# 예전엔 curl_cffi(가짜 브라우저 흉내)로 받았는데, analog.com처럼 Akamai가 강하게 막는 사이트는
+# 흉내만으로는 못 뚫었어요(HTTP 403). StealthyFetcher는 실제로 브라우저를 띄워서 그 안에서
+# 페이지를 열기 때문에, 진짜 사람이 여는 것과 더 비슷하게 보여요. 대신 매 요청마다 브라우저를
+# 띄우고 닫으므로 curl_cffi보다 훨씬 느려요(요청 1건에 몇 초씩 걸릴 수 있어요).
 
 # 401/403(권한거부)은 서버가 "이 요청은 아예 허용 안 함"이라고 답한 거라, 완전히 똑같은 요청을
-# 다시 보내도 결과가 똑같아요. 실제로 analog.com에서 헤더를 완전히 다르게(심지어 아예 없이) 줘봐도
-# Akamai가 바이트 단위로 동일한 차단 페이지(errors.edgesuite.net)를 돌려주는 걸 확인했어요 — 이건
-# 헤더가 아니라 요청 IP 자체를 막는 경우라, 재시도는 시간 낭비고 곧바로 포기하는 게 맞아요.
-# 반대로 타임아웃/연결 오류/5xx/429 같은 건 일시적인 문제일 수 있으니 재시도해볼 만해요.
+# 다시 보내도 결과가 똑같을 가능성이 높아요. 반대로 타임아웃/연결 오류/5xx/429 같은 건 일시적인
+# 문제일 수 있으니 재시도해볼 만해요.
 NON_RETRYABLE_STATUS = {401, 403}
 
 MAX_RETRY_DELAY = 30.0  # 지수 백오프의 상한(초) - 계속 배로 늘어나다가 여기서 멈춰요.
 
+FETCH_TIMEOUT_MS = 30_000  # StealthyFetcher의 타임아웃은 밀리초 단위예요.
+
 
 def _download_once(url: str, dest_path: Path) -> tuple[str | None, bool]:
     # 다운로드 한 번 시도. (실패 사유 또는 None, 재시도해볼 만한지)를 돌려줘요.
-    origin = urlparse(url)
-    headers = dict(DOWNLOAD_HEADERS)
-    headers["Referer"] = f"{origin.scheme}://{origin.netloc}/"
-
     try:
-        resp = curl_requests.get(url, timeout=30, headers=headers, allow_redirects=True, impersonate="chrome")
+        resp = StealthyFetcher.fetch(url, headless=True, timeout=FETCH_TIMEOUT_MS)
     except Exception as e:
-        return f"요청 실패: {e}", True  # 연결이 끊기거나 타임아웃 나는 건 일시적일 수 있어요.
+        return f"요청 실패: {e}", True  # 브라우저 실행/연결이 실패하는 건 일시적일 수 있어요.
 
-    if resp.status_code != 200:
-        retryable = resp.status_code not in NON_RETRYABLE_STATUS
-        return f"HTTP {resp.status_code}", retryable
+    if resp.status != 200:
+        retryable = resp.status not in NON_RETRYABLE_STATUS
+        return f"HTTP {resp.status}", retryable
 
-    content = resp.content
-    content_type = resp.headers.get("Content-Type", "").lower()
+    content = resp.body
+    # Playwright(브라우저 엔진)가 돌려주는 헤더 키는 소문자예요("content-type") - 혹시 몰라 둘 다 확인해요.
+    content_type = (resp.headers.get("content-type") or resp.headers.get("Content-Type") or "").lower()
     # 진짜 PDF가 맞는지 확인해요 (PDF는 항상 "%PDF"로 시작해요). 아니면 차단 페이지일 가능성이 커요.
     if not (content.startswith(b"%PDF") or "pdf" in content_type):
         # 차단 페이지로 추정되는 응답은 재시도해도 똑같이 나올 가능성이 높아서 곧바로 포기해요.
@@ -193,11 +180,11 @@ def _is_captcha_page(html_text):
 
 
 def _fetch_ddg_html(query):
-    resp = _session.get(
-        "https://html.duckduckgo.com/html/", params={"q": query}, headers=HEADERS, impersonate="chrome", timeout=20
-    )
-    resp.raise_for_status()
-    return resp.text
+    url = "https://html.duckduckgo.com/html/?" + urlencode({"q": query})
+    resp = StealthyFetcher.fetch(url, headless=True, timeout=20_000, extra_headers=HEADERS)
+    if resp.status != 200:
+        raise RuntimeError(f"DuckDuckGo 검색 실패: HTTP {resp.status}")
+    return resp.body.decode("utf-8", errors="replace")
 
 
 def search_datasheet_urls(part_number, manufacturer=None, max_results=10):

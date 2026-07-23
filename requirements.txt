@@ -2,7 +2,7 @@ requests
 python-dotenv
 openpyxl
 beautifulsoup4
-curl_cffi
 PySide6
 pdfplumber
 pymupdf
+scrapling[fetchers]
