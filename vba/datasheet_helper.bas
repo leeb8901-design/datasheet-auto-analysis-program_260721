@@ -2,34 +2,34 @@ Attribute VB_Name = "datasheet_helper"
 Option Explicit
 
 ' ============================================================
-' ë°ì´í„°ì‹œíŠ¸ ë‹¤ìš´ë¡œë“œ ë„ìš°ë¯¸ (datasheet_helper.bas)
+' µ¥ÀÌÅÍ½ÃÆ® ´Ù¿î·Îµå µµ¿ì¹Ì (datasheet_helper.bas)
 '
-' íŒŒì´ì¬ í”„ë¡œê·¸ë¨ì´ ìë™ìœ¼ë¡œ ëª» ë°›ì€ ë¶€í’ˆ(ë¶€í’ˆë¦¬ìŠ¤íŠ¸ ì‹œíŠ¸ì˜ "ë‹¤ìš´ë¡œë“œ ìƒíƒœ" = "ì‹¤íŒ¨")ì„
-' ëŒ€ìƒìœ¼ë¡œ, "ë°ì´í„°ì‹œíŠ¸ ë§í¬" ì¹¸ì˜ URLì„ "ì €ì¥ ê²½ë¡œ" ì¹¸ì´ ê°€ë¦¬í‚¤ëŠ” ìë¦¬ì— ì§ì ‘ ë°›ì•„ì˜µë‹ˆë‹¤.
+' ÆÄÀÌ½ã ÇÁ·Î±×·¥ÀÌ ÀÚµ¿À¸·Î ¸ø ¹ŞÀº ºÎÇ°(ºÎÇ°¸®½ºÆ® ½ÃÆ®ÀÇ "´Ù¿î·Îµå »óÅÂ" = "½ÇÆĞ")À»
+' ´ë»óÀ¸·Î, "µ¥ÀÌÅÍ½ÃÆ® ¸µÅ©" Ä­ÀÇ URLÀ» "ÀúÀå °æ·Î" Ä­ÀÌ °¡¸®Å°´Â ÀÚ¸®¿¡ Á÷Á¢ ¹Ş¾Æ¿É´Ï´Ù.
 '
-' ë™ì‘ ìˆœì„œ:
-'   1) WinHttpë¡œ Python ë‹¤ìš´ë¡œë”(datasheet/downloader.py)ì™€ ê°™ì€ í—¤ë”(User-Agent/Referer/Accept)ë¥¼
-'      ë¶™ì—¬ì„œ ì§ì ‘ ë°›ì•„ë´ìš”. 401/403ì´ê±°ë‚˜ ë°›ì€ ë‚´ìš©ì´ ì§„ì§œ PDFê°€ ì•„ë‹ˆë©´(ë§¨ ì• 4ë°”ì´íŠ¸ê°€ "%PDF"ê°€
-'      ì•„ë‹ˆë©´) ê³§ë°”ë¡œ í¬ê¸°í•˜ê³ , íƒ€ì„ì•„ì›ƒ/5xx/429ì²˜ëŸ¼ ì¼ì‹œì ìœ¼ë¡œ ë³´ì´ëŠ” ì˜¤ë¥˜ëŠ” ì ê¹ ê¸°ë‹¤ë ¸ë‹¤ê°€
-'      ìµœëŒ€ 2ë²ˆ ë” ì‹œë„í•´ìš” (íŒŒì´ì¬ ë‹¤ìš´ë¡œë”ì˜ ì¬ì‹œë„ ì •ì±…ê³¼ ê°™ì€ í†¤).
-'   2) ê·¸ë˜ë„ ì‹¤íŒ¨í•˜ë©´, ê·¸ ë§í¬ë¥¼ ê¸°ë³¸ ë¸Œë¼ìš°ì €ë¡œ ì—´ì–´ì„œ ì‚¬ëŒì´ ì§ì ‘ "ë‹¤ë¥¸ ì´ë¦„ìœ¼ë¡œ ì €ì¥"í•  ìˆ˜
-'      ìˆê²Œ í•´ì¤˜ìš”. (ìë™ ìš”ì²­ì€ ë§‰í˜€ë„, ì‚¬ëŒì´ ì§ì ‘ ì—´ë©´ ì •ìƒì ìœ¼ë¡œ ë³´ì´ëŠ” ì‚¬ì´íŠ¸ê°€ ë§ì•„ì„œì˜ˆìš”.)
+' µ¿ÀÛ ¼ø¼­:
+'   1) WinHttp·Î Python ´Ù¿î·Î´õ(datasheet/downloader.py)¿Í °°Àº Çì´õ(User-Agent/Referer/Accept)¸¦
+'      ºÙ¿©¼­ Á÷Á¢ ¹Ş¾ÆºÁ¿ä. 401/403ÀÌ°Å³ª ¹ŞÀº ³»¿ëÀÌ ÁøÂ¥ PDF°¡ ¾Æ´Ï¸é(¸Ç ¾Õ 4¹ÙÀÌÆ®°¡ "%PDF"°¡
+'      ¾Æ´Ï¸é) °ğ¹Ù·Î Æ÷±âÇÏ°í, Å¸ÀÓ¾Æ¿ô/5xx/429Ã³·³ ÀÏ½ÃÀûÀ¸·Î º¸ÀÌ´Â ¿À·ù´Â Àá±ñ ±â´Ù·È´Ù°¡
+'      ÃÖ´ë 2¹ø ´õ ½ÃµµÇØ¿ä (ÆÄÀÌ½ã ´Ù¿î·Î´õÀÇ Àç½Ãµµ Á¤Ã¥°ú °°Àº Åæ).
+'   2) ±×·¡µµ ½ÇÆĞÇÏ¸é, ±× ¸µÅ©¸¦ ±âº» ºê¶ó¿ìÀú·Î ¿­¾î¼­ »ç¶÷ÀÌ Á÷Á¢ "´Ù¸¥ ÀÌ¸§À¸·Î ÀúÀå"ÇÒ ¼ö
+'      ÀÖ°Ô ÇØÁà¿ä. (ÀÚµ¿ ¿äÃ»Àº ¸·Çôµµ, »ç¶÷ÀÌ Á÷Á¢ ¿­¸é Á¤»óÀûÀ¸·Î º¸ÀÌ´Â »çÀÌÆ®°¡ ¸¹¾Æ¼­¿¹¿ä.)
 '
-' ì‚¬ìš©ë²•:
-'   1) ì¶œë ¥ì§€ ì—‘ì…€ íŒŒì¼ì„ ì—½ë‹ˆë‹¤.
-'   2) Alt+F11 -> ë©”ë‰´ ì‚½ì…(Insert) -> ëª¨ë“ˆ(Module) -> ì´ íŒŒì¼ ë‚´ìš©ì„ í†µì§¸ë¡œ ë¶™ì—¬ë„£ìŠµë‹ˆë‹¤.
-'      (ë˜ëŠ” ì‚½ì… -> íŒŒì¼ ê°€ì ¸ì˜¤ê¸°ë¡œ ì´ .bas íŒŒì¼ì„ ë°”ë¡œ import í•´ë„ ë©ë‹ˆë‹¤. ê¸°ì¡´ datasheet_helper
-'      ëª¨ë“ˆì´ ì´ë¯¸ ìˆë‹¤ë©´ ë¨¼ì € ì§€ìš°ê³  ìƒˆë¡œ import í•˜ì„¸ìš”.)
-'   3) ì»¤ì„œë¥¼ DownloadFailedDatasheets í”„ë¡œì‹œì € ì•ˆì— ë‘ê³  F5ë¥¼ ëˆ„ë¦…ë‹ˆë‹¤.
-'   4) ë§¤í¬ë¡œ ë³´ì•ˆ ê²½ê³ ê°€ ëœ¨ë©´ "ì½˜í…ì¸  ì‚¬ìš©/ë§¤í¬ë¡œ ì‚¬ìš©"ì„ ëˆŒëŸ¬ì£¼ì„¸ìš”.
+' »ç¿ë¹ı:
+'   1) Ãâ·ÂÁö ¿¢¼¿ ÆÄÀÏÀ» ¿±´Ï´Ù.
+'   2) Alt+F11 -> ¸Ş´º »ğÀÔ(Insert) -> ¸ğµâ(Module) -> ÀÌ ÆÄÀÏ ³»¿ëÀ» ÅëÂ°·Î ºÙ¿©³Ö½À´Ï´Ù.
+'      (¶Ç´Â »ğÀÔ -> ÆÄÀÏ °¡Á®¿À±â·Î ÀÌ .bas ÆÄÀÏÀ» ¹Ù·Î import ÇØµµ µË´Ï´Ù. ±âÁ¸ datasheet_helper
+'      ¸ğµâÀÌ ÀÌ¹Ì ÀÖ´Ù¸é ¸ÕÀú Áö¿ì°í »õ·Î import ÇÏ¼¼¿ä.)
+'   3) Ä¿¼­¸¦ DownloadFailedDatasheets ÇÁ·Î½ÃÀú ¾È¿¡ µÎ°í F5¸¦ ´©¸¨´Ï´Ù.
+'   4) ¸ÅÅ©·Î º¸¾È °æ°í°¡ ¶ß¸é "ÄÜÅÙÃ÷ »ç¿ë/¸ÅÅ©·Î »ç¿ë"À» ´­·¯ÁÖ¼¼¿ä.
 '
-' ì´ íŒŒì¼ì€ WinHttp/ADODB(Windows ê¸°ë³¸ ì œê³µ COM ì»´í¬ë„ŒíŠ¸)ë§Œ ì‚¬ìš©í•´ìš” - ë³„ë„ ì„¤ì¹˜ í•„ìš” ì—†ì–´ìš”.
+' ÀÌ ÆÄÀÏÀº WinHttp/ADODB(Windows ±âº» Á¦°ø COM ÄÄÆ÷³ÍÆ®)¸¸ »ç¿ëÇØ¿ä - º°µµ ¼³Ä¡ ÇÊ¿ä ¾ø¾î¿ä.
 ' ============================================================
 
-Private Const SHEET_NAME As String = "ë¶€í’ˆë¦¬ìŠ¤íŠ¸"
-Private Const STATUS_FAILED As String = "ì‹¤íŒ¨"
-Private Const STATUS_SUCCESS_VBA As String = "ì„±ê³µ (VBA)"
-Private Const STATUS_NEEDS_MANUAL As String = "ì‹¤íŒ¨ (ë¸Œë¼ìš°ì €ë¡œ í™•ì¸ í•„ìš”)"
+Private Const SHEET_NAME As String = "ºÎÇ°¸®½ºÆ®"
+Private Const STATUS_FAILED As String = "½ÇÆĞ"
+Private Const STATUS_SUCCESS_VBA As String = "¼º°ø (VBA)"
+Private Const STATUS_NEEDS_MANUAL As String = "½ÇÆĞ (ºê¶ó¿ìÀú·Î È®ÀÎ ÇÊ¿ä)"
 
 Private Const MAX_RETRY As Long = 2
 Private Const RETRY_DELAY_SECONDS As Long = 2
@@ -41,19 +41,19 @@ Sub DownloadFailedDatasheets()
     Set ws = ThisWorkbook.Sheets(SHEET_NAME)
     On Error GoTo 0
     If ws Is Nothing Then
-        MsgBox "'" & SHEET_NAME & "' ì‹œíŠ¸ë¥¼ ì°¾ì„ ìˆ˜ ì—†ìŠµë‹ˆë‹¤.", vbExclamation
+        MsgBox "'" & SHEET_NAME & "' ½ÃÆ®¸¦ Ã£À» ¼ö ¾ø½À´Ï´Ù.", vbExclamation
         Exit Sub
     End If
 
     Dim colPart As Long, colStatus As Long, colLink As Long, colSavePath As Long
-    colPart = FindColumn(ws, "í’ˆë²ˆ")
-    colStatus = FindColumn(ws, "ë‹¤ìš´ë¡œë“œ ìƒíƒœ")
-    colLink = FindColumn(ws, "ë°ì´í„°ì‹œíŠ¸ ë§í¬")
-    colSavePath = FindColumn(ws, "ì €ì¥ ê²½ë¡œ")
+    colPart = FindColumn(ws, "Ç°¹ø")
+    colStatus = FindColumn(ws, "´Ù¿î·Îµå »óÅÂ")
+    colLink = FindColumn(ws, "µ¥ÀÌÅÍ½ÃÆ® ¸µÅ©")
+    colSavePath = FindColumn(ws, "ÀúÀå °æ·Î")
 
     If colPart = 0 Or colStatus = 0 Or colLink = 0 Or colSavePath = 0 Then
-        MsgBox "'" & SHEET_NAME & "' ì‹œíŠ¸ì—ì„œ í•„ìš”í•œ ì»¬ëŸ¼(í’ˆë²ˆ/ë‹¤ìš´ë¡œë“œ ìƒíƒœ/ë°ì´í„°ì‹œíŠ¸ ë§í¬/ì €ì¥ ê²½ë¡œ)ì„ " & _
-               "ì°¾ì§€ ëª»í–ˆìŠµë‹ˆë‹¤. ì´ í”„ë¡œê·¸ë¨ì´ ë§Œë“  ì¶œë ¥ì§€ ì—‘ì…€ì´ ë§ëŠ”ì§€ í™•ì¸í•´ì£¼ì„¸ìš”.", vbExclamation
+        MsgBox "'" & SHEET_NAME & "' ½ÃÆ®¿¡¼­ ÇÊ¿äÇÑ ÄÃ·³(Ç°¹ø/´Ù¿î·Îµå »óÅÂ/µ¥ÀÌÅÍ½ÃÆ® ¸µÅ©/ÀúÀå °æ·Î)À» " & _
+               "Ã£Áö ¸øÇß½À´Ï´Ù. ÀÌ ÇÁ·Î±×·¥ÀÌ ¸¸µç Ãâ·ÂÁö ¿¢¼¿ÀÌ ¸Â´ÂÁö È®ÀÎÇØÁÖ¼¼¿ä.", vbExclamation
         Exit Sub
     End If
 
@@ -80,8 +80,8 @@ Sub DownloadFailedDatasheets()
             ws.Cells(r, colStatus).Value = STATUS_SUCCESS_VBA
             successCount = successCount + 1
         Else
-            ' ì§„ì§œ PDFê°€ ì•„ë‹ˆë©´(ì°¨ë‹¨ í˜ì´ì§€ ë“±ìœ¼ë¡œ ì¶”ì •) ì§€ì›Œë²„ë¦¬ê³ , ë¸Œë¼ìš°ì €ë¡œ ì§ì ‘ ì—´ì–´ì„œ
-            ' ì‚¬ëŒì´ ëˆˆìœ¼ë¡œ í™•ì¸ í›„ ì €ì¥í•  ìˆ˜ ìˆê²Œ í•´ì¤˜ìš”.
+            ' ÁøÂ¥ PDF°¡ ¾Æ´Ï¸é(Â÷´Ü ÆäÀÌÁö µîÀ¸·Î ÃßÁ¤) Áö¿ö¹ö¸®°í, ºê¶ó¿ìÀú·Î Á÷Á¢ ¿­¾î¼­
+            ' »ç¶÷ÀÌ ´«À¸·Î È®ÀÎ ÈÄ ÀúÀåÇÒ ¼ö ÀÖ°Ô ÇØÁà¿ä.
             If Dir(savePath) <> "" Then Kill savePath
             ws.Cells(r, colStatus).Value = STATUS_NEEDS_MANUAL
             Application.FollowHyperlink refUrl, NewWindow:=True
@@ -92,13 +92,13 @@ NextRow:
     Next r
 
     ThisWorkbook.Save
-    MsgBox "ì™„ë£Œ." & vbCrLf & _
-           "ì§ì ‘ ë‹¤ìš´ë¡œë“œ ì„±ê³µ: " & successCount & "ê±´" & vbCrLf & _
-           "ë¸Œë¼ìš°ì €ë¡œ ì—´ì–´ì„œ í™•ì¸ í•„ìš”: " & manualCount & "ê±´" & vbCrLf & _
-           "ëŒ€ìƒ ì•„ë‹˜(ê±´ë„ˆëœ€): " & skipCount & "ê±´", vbInformation
+    MsgBox "¿Ï·á." & vbCrLf & _
+           "Á÷Á¢ ´Ù¿î·Îµå ¼º°ø: " & successCount & "°Ç" & vbCrLf & _
+           "ºê¶ó¿ìÀú·Î ¿­¾î¼­ È®ÀÎ ÇÊ¿ä: " & manualCount & "°Ç" & vbCrLf & _
+           "´ë»ó ¾Æ´Ô(°Ç³Ê¶Ü): " & skipCount & "°Ç", vbInformation
 End Sub
 
-' urlì„ ìµœëŒ€ MAX_RETRY+1ë²ˆê¹Œì§€ ì‹œë„í•´ì„œ savePathì— ë°›ì•„ìš”. ì„±ê³µí•˜ë©´ True.
+' urlÀ» ÃÖ´ë MAX_RETRY+1¹ø±îÁö ½ÃµµÇØ¼­ savePath¿¡ ¹Ş¾Æ¿ä. ¼º°øÇÏ¸é True.
 Private Function TryDownload(url As String, savePath As String) As Boolean
     Dim attempt As Long, delaySec As Long, outcome As String
     delaySec = RETRY_DELAY_SECONDS
@@ -117,13 +117,13 @@ Private Function TryDownload(url As String, savePath As String) As Boolean
             TryDownload = False
             Exit Function
         End If
-        ' outcome = "RETRY" -> ë‹¤ìŒ ì‹œë„ë¡œ ë„˜ì–´ê°€ìš”.
+        ' outcome = "RETRY" -> ´ÙÀ½ ½Ãµµ·Î ³Ñ¾î°¡¿ä.
     Next attempt
 
     TryDownload = False
 End Function
 
-' í•œ ë²ˆ ìš”ì²­í•´ë´ìš”. "OK"(ì„±ê³µ) / "STOP"(ë‹¤ì‹œ í•´ë´ì•¼ ì†Œìš©ì—†ìŒ) / "RETRY"(ì¼ì‹œì  ì˜¤ë¥˜ë¡œ ë³´ì„) ì¤‘ í•˜ë‚˜ë¥¼ ëŒë ¤ì¤˜ìš”.
+' ÇÑ ¹ø ¿äÃ»ÇØºÁ¿ä. "OK"(¼º°ø) / "STOP"(´Ù½Ã ÇØºÁ¾ß ¼Ò¿ë¾øÀ½) / "RETRY"(ÀÏ½ÃÀû ¿À·ù·Î º¸ÀÓ) Áß ÇÏ³ª¸¦ µ¹·ÁÁà¿ä.
 Private Function DownloadOnce(url As String, savePath As String) As String
     On Error GoTo Fail
 
@@ -165,11 +165,11 @@ Private Function DownloadOnce(url As String, savePath As String) As String
     Exit Function
 
 Fail:
-    ' ì—°ê²° ì‹¤íŒ¨/íƒ€ì„ì•„ì›ƒ ë“±ì€ ì¼ì‹œì ì¼ ìˆ˜ ìˆìœ¼ë‹ˆ ì¬ì‹œë„í•´ë´ìš”.
+    ' ¿¬°á ½ÇÆĞ/Å¸ÀÓ¾Æ¿ô µîÀº ÀÏ½ÃÀûÀÏ ¼ö ÀÖÀ¸´Ï Àç½ÃµµÇØºÁ¿ä.
     DownloadOnce = "RETRY"
 End Function
 
-' "https://host/path/file.pdf" -> "https://host/" (Python downloader.pyì˜ Referer ê·œì¹™ê³¼ ë™ì¼í•´ìš”)
+' "https://host/path/file.pdf" -> "https://host/" (Python downloader.pyÀÇ Referer ±ÔÄ¢°ú µ¿ÀÏÇØ¿ä)
 Private Function RefererOf(url As String) As String
     Dim posProtocol As Long, posSlash As Long, host As String
     posProtocol = InStr(url, "://")
@@ -232,7 +232,7 @@ Private Sub EnsureFolderExists(folderPath As String)
     If Right(folderPath, 1) = "\" Then folderPath = Left(folderPath, Len(folderPath) - 1)
 
     parts = Split(folderPath, "\")
-    built = parts(0) & "\"  ' ë“œë¼ì´ë¸Œ ë¬¸ì(ì˜ˆ: C:)ë¶€í„° ì‹œì‘í•´ìš”.
+    built = parts(0) & "\"  ' µå¶óÀÌºê ¹®ÀÚ(¿¹: C:)ºÎÅÍ ½ÃÀÛÇØ¿ä.
     For i = 1 To UBound(parts)
         built = built & parts(i) & "\"
         If Dir(built, vbDirectory) = "" Then
