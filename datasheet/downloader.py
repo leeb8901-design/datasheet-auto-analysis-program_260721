@@ -232,8 +232,9 @@ def search_datasheet_urls(part_number, manufacturer=None, max_results=10):
             return []  # 계속 캡차면 억지로 뚫으려 하지 않고 포기해요.
 
     soup = BeautifulSoup(html_text, "html.parser")
+    result_links = soup.select("a.result__a")
     urls = []
-    for a in soup.select("a.result__a"):
+    for a in result_links:
         href = a.get("href")
         if not href:
             continue
@@ -242,6 +243,9 @@ def search_datasheet_urls(part_number, manufacturer=None, max_results=10):
             urls.append(real_url)
         if len(urls) >= max_results:
             break
+
+    # 디버그용: DuckDuckGo가 검색 결과를 몇 개 줬고, 그중 유통사를 뺀 링크가 뭐였는지 남겨요.
+    logger.log(f"  [디버그] DDG 검색 '{query}' -> 결과 {len(result_links)}개, 유통사 제외 후 {urls}")
     return urls
 
 
