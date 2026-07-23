@@ -95,27 +95,40 @@ MAX_RETRY_DELAY = 30.0  # 지수 백오프의 상한(초) - 계속 배로 늘어
 FETCH_TIMEOUT_MS = 30_000  # StealthyFetcher의 타임아웃은 밀리초 단위예요.
 
 
-def _capture_document_response(captured: dict):
+def _register_document_response_capture(captured: dict):
     # Chrome은 PDF 링크로 이동하면 자체 내장 PDF 뷰어로 열어버려서, 페이지 렌더링 결과(DOM)는
     # 실제 PDF 바이트가 아니라 뷰어가 만든 가짜 HTML 래퍼예요. 그래서 렌더링 결과에 기대지 않고,
     # 이 페이지의 메인 문서 네트워크 응답을 직접 가로채서 진짜 바이트를 뽑아내요.
+    #
+    # 주의: response.body()처럼 대기(block)하는 Playwright 호출을 이 이벤트 콜백(on_response) 안에서
+    # 바로 부르면 내부적으로 멈출 수 있어요(Playwright 동기 API의 알려진 문제). 그래서 여기서는
+    # response 객체 참조만 저장해두고, 실제 body() 호출은 아래 page_action(콜백이 아니라 일반
+    # 흐름이라 안전해요)에서 해요.
     def page_setup(page):
         def on_response(response):
-            if "body" in captured:
+            if "response" in captured:
                 return  # 이미 첫 문서 응답을 잡았으면 그 이후 응답(리다이렉트 등)은 무시해요.
-            request = response.request
-            if request.resource_type != "document":
+            if response.request.resource_type != "document":
                 return
-            try:
-                captured["status"] = response.status
-                captured["headers"] = response.headers
-                captured["body"] = response.body()
-            except Exception:
-                pass  # 못 읽으면 그냥 넘어가요 - 아래에서 "body" 없음으로 처리돼요.
+            captured["response"] = response
+            captured["status"] = response.status
 
         page.on("response", on_response)
 
     return page_setup
+
+
+def _read_captured_body(captured: dict):
+    def page_action(page):
+        response = captured.get("response")
+        if response is not None:
+            try:
+                captured["body"] = response.body()
+            except Exception:
+                pass  # 못 읽으면 그냥 넘어가요 - 아래에서 "body" 없음으로 처리돼요.
+        return page
+
+    return page_action
 
 
 def _download_once(url: str, dest_path: Path) -> tuple[str | None, bool]:
@@ -123,7 +136,11 @@ def _download_once(url: str, dest_path: Path) -> tuple[str | None, bool]:
     captured: dict = {}
     try:
         StealthyFetcher.fetch(
-            url, headless=True, timeout=FETCH_TIMEOUT_MS, page_setup=_capture_document_response(captured)
+            url,
+            headless=True,
+            timeout=FETCH_TIMEOUT_MS,
+            page_setup=_register_document_response_capture(captured),
+            page_action=_read_captured_body(captured),
         )
     except Exception as e:
         return f"요청 실패: {e}", True  # 브라우저 실행/연결이 실패하는 건 일시적일 수 있어요.
