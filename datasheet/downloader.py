@@ -220,19 +220,34 @@ def download_pdf(url: str, dest_path: Path, max_retries: int = 3) -> str | None:
 MAX_CANDIDATES_TO_TRY = 7
 
 
-def _try_candidates(urls: list[str], dest_path: Path) -> tuple[bool, str | None]:
+def _try_candidates(urls: list[str], dest_path: Path) -> tuple[bool, list[str]]:
     """우선순위 순서로 후보 URL을 앞에서부터 최대 MAX_CANDIDATES_TO_TRY개까지 한 번씩 열어봐요.
-    성공하면 (True, None), 다 실패하면 (False, 마지막으로 시도한 URL)을 돌려줘요."""
+    성공하면 (True, 그때까지 시도한 URL들), 다 실패하면 (False, 시도한 URL 전부)를 돌려줘요."""
     to_try = urls[:MAX_CANDIDATES_TO_TRY]
-    last_url = None
+    tried = []
     for i, url in enumerate(to_try, start=1):
         logger.log(f"  [웹 후보 {i}/{len(to_try)}] {url}")
-        last_url = url
+        tried.append(url)
         error, _ = _download_once(url, dest_path)
         if error is None:
-            return True, None
+            return True, tried
         logger.log(f"    -> 실패: {error}")
-    return False, last_url
+    return False, tried
+
+
+# 자동 다운로드는 다 실패해도, 사람이 직접 열어볼 참고 링크는 하나 남겨야 해요. 제조사 제품 소개
+# 페이지나 부품 판매 사이트보다, "클릭하면 바로 다운로드" UI를 갖춘 데이터시트 전문 사이트가
+# 사람에게 훨씬 쓸모 있어서 이런 곳을 우선으로 골라요.
+KNOWN_DATASHEET_AGGREGATORS = ["alldatasheet.com", "datasheets.com"]
+
+
+def _pick_reference_url(tried_urls: list[str]) -> str | None:
+    if not tried_urls:
+        return None
+    for url in tried_urls:
+        if any(domain in url.lower() for domain in KNOWN_DATASHEET_AGGREGATORS):
+            return url
+    return tried_urls[-1]  # 아는 사이트가 없으면 그냥 마지막으로 시도한 링크를 남겨요.
 
 
 # ---- DuckDuckGo 웹 검색 (Mouser에 없을 때 제조사 공식 사이트를 찾아봐요) ----
@@ -388,11 +403,15 @@ def download_datasheet_for_part(
         return DownloadResult(STATUS_FAILED, None, f"웹 검색 오류: {e}", manufacturer)
 
     if web_result and web_result.get("candidates"):
-        succeeded, last_tried_url = _try_candidates(web_result["candidates"], dest)
+        succeeded, tried_urls = _try_candidates(web_result["candidates"], dest)
         if succeeded:
             return DownloadResult(STATUS_SUCCESS_WEB, dest.name, None, manufacturer)
         return DownloadResult(
-            STATUS_FAILED, None, "웹에서 찾은 후보 링크가 모두 실패함", manufacturer, last_tried_url
+            STATUS_FAILED,
+            None,
+            "웹에서 찾은 후보 링크가 모두 실패함",
+            manufacturer,
+            _pick_reference_url(tried_urls),
         )
 
     reason = mouser_error or "Mouser/웹 모두에서 찾지 못함"
