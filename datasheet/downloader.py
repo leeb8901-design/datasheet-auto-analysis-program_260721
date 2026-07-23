@@ -176,6 +176,28 @@ def download_pdf(url: str, dest_path: Path, max_retries: int = 3) -> str | None:
     return last_error
 
 
+# 웹 검색 후보는 여러 개를 브라우저로 열어봐야 할 수 있어서(URL이 .pdf로 안 끝나도 실제로는 PDF인
+# 경우가 있음), 브라우저 실행 자체가 느린 걸 감안해 후보 하나당 재시도 없이 딱 한 번만 열어보고,
+# 최대 이 개수까지만 시도해요. 같은 URL을 반복 재시도하는 것보다 다른 후보로 넘어가는 게 시간
+# 대비 성공 가능성이 더 높아요.
+MAX_CANDIDATES_TO_TRY = 3
+
+
+def _try_candidates(urls: list[str], dest_path: Path) -> tuple[bool, str | None]:
+    """우선순위 순서로 후보 URL을 앞에서부터 최대 MAX_CANDIDATES_TO_TRY개까지 한 번씩 열어봐요.
+    성공하면 (True, None), 다 실패하면 (False, 마지막으로 시도한 URL)을 돌려줘요."""
+    to_try = urls[:MAX_CANDIDATES_TO_TRY]
+    last_url = None
+    for i, url in enumerate(to_try, start=1):
+        logger.log(f"  [웹 후보 {i}/{len(to_try)}] {url}")
+        last_url = url
+        error, _ = _download_once(url, dest_path)
+        if error is None:
+            return True, None
+        logger.log(f"    -> 실패: {error}")
+    return False, last_url
+
+
 # ---- DuckDuckGo 웹 검색 (Mouser에 없을 때 제조사 공식 사이트를 찾아봐요) ----
 
 
@@ -197,7 +219,18 @@ def _manufacturer_tokens(manufacturer):
     if not manufacturer:
         return []
     words = re.findall(r"[a-zA-Z]+", manufacturer.lower())
-    return [w for w in words if len(w) >= 3 and w not in GENERIC_MFR_WORDS]
+    tokens = [w for w in words if len(w) >= 3 and w not in GENERIC_MFR_WORDS]
+
+    # "Texas Instruments" -> ti.com, "ON Semiconductor" -> onsemi.com 처럼, 회사 이름 단어들이
+    # 흔한 단어라 다 걸러지거나 도메인이 약어인 경우가 있어요. 단어 앞글자를 모은 약어도 후보에
+    # 넣어서 이런 도메인도 "공식"으로 인식하게 해요 (우선순위 정렬에만 쓰여서, 틀려도 최종 결과가
+    # 잘못되진 않아요 - 실제 PDF인지는 어차피 응답 바이트로 따로 확인하니까요).
+    if len(words) >= 2:
+        acronym = "".join(w[0] for w in words)
+        if len(acronym) >= 2:
+            tokens.append(acronym)
+
+    return tokens
 
 
 def _looks_official(url, tokens):
@@ -255,16 +288,24 @@ def find_datasheet(part_number, manufacturer=None, max_results=10):
         return None
 
     tokens = _manufacturer_tokens(manufacturer)
-    pdf_urls = [u for u in urls if u.lower().endswith(".pdf")]
 
-    official_pdf = next((u for u in pdf_urls if _looks_official(u, tokens)), None)
-    if official_pdf:
-        return {"datasheet_url": official_pdf, "source_page": official_pdf, "official": True}
+    def priority(u):
+        # 낮을수록 먼저 시도해요: 공식 도메인+.pdf 확장자 > 공식 도메인 > .pdf 확장자 > 나머지.
+        # URL이 .pdf로 안 끝나도(예: ti.com/lit/gpn/... 같은 제조사 공식 리다이렉트) 실제로 열어보면
+        # PDF인 경우가 많아서, 문자열만 보고 걸러내지 않고 우선순위만 뒤로 미뤄요 - 실제 판단은
+        # _download_once가 응답 바이트를 보고 해요.
+        official = _looks_official(u, tokens)
+        is_pdf = u.lower().endswith(".pdf")
+        if official and is_pdf:
+            return 0
+        if official:
+            return 1
+        if is_pdf:
+            return 2
+        return 3
 
-    if pdf_urls:
-        return {"datasheet_url": pdf_urls[0], "source_page": pdf_urls[0], "official": False}
-
-    return {"datasheet_url": None, "source_page": urls[0], "official": False}
+    candidates = sorted(urls, key=priority)
+    return {"candidates": candidates}
 
 
 # ---- 전체 흐름을 하나로 묶는 함수 (main.py/워커가 이 함수 하나만 부르면 돼요) ----
@@ -309,17 +350,12 @@ def download_datasheet_for_part(
     except Exception as e:
         return DownloadResult(STATUS_FAILED, None, f"웹 검색 오류: {e}", manufacturer)
 
-    if web_result and web_result.get("datasheet_url"):
-        fail_reason = download_pdf(web_result["datasheet_url"], dest)
-        if fail_reason is None:
+    if web_result and web_result.get("candidates"):
+        succeeded, last_tried_url = _try_candidates(web_result["candidates"], dest)
+        if succeeded:
             return DownloadResult(STATUS_SUCCESS_WEB, dest.name, None, manufacturer)
         return DownloadResult(
-            STATUS_FAILED, None, f"웹 다운로드 실패: {fail_reason}", manufacturer, web_result["datasheet_url"]
-        )
-
-    if web_result and web_result.get("source_page"):
-        return DownloadResult(
-            STATUS_FAILED, None, "PDF 직링크를 찾지 못함", manufacturer, web_result["source_page"]
+            STATUS_FAILED, None, "웹에서 찾은 후보 링크가 모두 실패함", manufacturer, last_tried_url
         )
 
     reason = mouser_error or "Mouser/웹 모두에서 찾지 못함"
