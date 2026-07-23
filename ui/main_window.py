@@ -190,6 +190,12 @@ class DatasheetWorker(QObject):
 
 
 class MainWindow(QMainWindow):
+    # logger.log(...)는 백그라운드 스레드(DatasheetWorker)에서도 직접 호출돼요. Qt 위젯 메서드를
+    # 스레드에서 바로 부르면(appendPlainText를 콜백으로 직접 등록) 앱이 예고 없이 죽을 수 있어서
+    # (Qt는 GUI를 메인 스레드에서만 건드려야 해요), Signal을 하나 거쳐서 항상 메인 스레드 큐를
+    # 통해 안전하게 전달되게 해요.
+    log_received = Signal(str)
+
     def __init__(self):
         super().__init__()
         self.setWindowTitle("전자부품 데이터시트 수집 프로그램")
@@ -206,7 +212,8 @@ class MainWindow(QMainWindow):
         self._fail_count = 0
 
         self._build_ui()
-        logger.add_callback(self.log_box.appendPlainText)
+        self.log_received.connect(self.log_box.appendPlainText)
+        logger.add_callback(self.log_received.emit)
         self.setAcceptDrops(True)  # 엑셀 파일을 창 위로 끌어다 놓을 수 있게 해줘요.
 
     # ---------------- 화면 만들기 ----------------
