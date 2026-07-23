@@ -140,6 +140,9 @@ def _download_once(url: str, dest_path: Path) -> tuple[str | None, bool]:
     # 진짜 PDF가 맞는지 확인해요 (PDF는 항상 "%PDF"로 시작해요). 헤더가 뭐라고 하든, 실제 바이트
     # 자체로만 판단해요 - 헤더는 pdf라고 해도 실제 내용은 차단 페이지/뷰어 래퍼인 경우가 있었어요.
     if not content.startswith(b"%PDF"):
+        # 실제로 뭘 받았는지 로그로 남겨요 (차단 페이지인지, 캡처 로직 자체가 잘못됐는지 구분하려고).
+        preview = content[:300].decode("utf-8", errors="replace")
+        logger.log(f"  [디버그] {url} 응답이 PDF가 아님 (status={status}): {preview!r}")
         # 차단 페이지로 추정되는 응답은 재시도해도 똑같이 나올 가능성이 높아서 곧바로 포기해요.
         return "PDF가 아닌 응답 (접근 차단/오류 페이지로 추정)", False
 
