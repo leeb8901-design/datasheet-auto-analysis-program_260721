@@ -196,8 +196,9 @@ def download_pdf(url: str, dest_path: Path, max_retries: int = 3) -> str | None:
 # 웹 검색 후보는 여러 개를 브라우저로 열어봐야 할 수 있어서(URL이 .pdf로 안 끝나도 실제로는 PDF인
 # 경우가 있음), 브라우저 실행 자체가 느린 걸 감안해 후보 하나당 재시도 없이 딱 한 번만 열어보고,
 # 최대 이 개수까지만 시도해요. 같은 URL을 반복 재시도하는 것보다 다른 후보로 넘어가는 게 시간
-# 대비 성공 가능성이 더 높아요.
-MAX_CANDIDATES_TO_TRY = 3
+# 대비 성공 가능성이 더 높아요. (실측 결과 후보 하나 확인하는 데 3~4초 정도라, search_datasheet_urls가
+# 찾아주는 만큼(최대 max_results=10, 유통사 제외하면 보통 7개 안팎) 다 시도해도 30초 안팎이에요.)
+MAX_CANDIDATES_TO_TRY = 7
 
 
 def _try_candidates(urls: list[str], dest_path: Path) -> tuple[bool, str | None]:
