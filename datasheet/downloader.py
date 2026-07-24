@@ -96,31 +96,50 @@ FETCH_TIMEOUT_MS = 30_000  # StealthyFetcher의 타임아웃은 밀리초 단위
 
 
 def _register_document_response_capture(captured: dict):
-    # Chrome은 PDF 링크로 이동하면 자체 내장 PDF 뷰어로 열어버려서, 페이지 렌더링 결과(DOM)는
-    # 실제 PDF 바이트가 아니라 뷰어가 만든 가짜 HTML 래퍼예요. 그래서 렌더링 결과에 기대지 않고,
-    # 이 페이지의 메인 문서 네트워크 응답을 직접 가로채서 진짜 바이트를 뽑아내요.
+    # Chrome은 PDF 링크로 이동하면 자체 내장 PDF 뷰어로 열어버리는데, 이때 Playwright의
+    # page.on("response")로 잡히는 "메인 문서 응답"조차 이미 뷰어가 만든 가짜 HTML 래퍼로
+    # 바뀌어 있는 경우가 있었다(실제로 관찰됨 - 특히 Mouser가 주는 순수 PDF 직링크에서). 그래서
+    # 응답이 온 "뒤"에 가로채는 대신, page.route()로 요청 자체를 가로채서 우리가 직접
+    # route.fetch()로 요청하고 그 결과(APIResponse)를 읽어요 - 브라우저가 그 응답을 PDF 뷰어로
+    # 열든 다운로드로 처리하든 상관없이, 항상 서버가 실제로 보낸 바이트 그대로를 받아요.
     #
-    # 어떤 링크(예: ti.com/lit/gpn/... 같은 "문헌 받기" 리다이렉트)는 페이지를 보여주는 게 아니라
-    # 브라우저의 파일 다운로드 자체를 트리거해요 - 이 경우 보통의 "문서 응답"이 아예 안 잡히니,
-    # 다운로드 이벤트도 따로 잡아둬요.
+    # 어떤 링크(예: ti.com/lit/gpn/... 같은 "문헌 받기" 리다이렉트)는 그래도 브라우저의 파일
+    # 다운로드 자체를 트리거할 수 있어서, 다운로드 이벤트도 보조 수단으로 같이 잡아둬요.
     #
-    # 주의: response.body()/download.path()처럼 대기(block)하는 Playwright 호출을 이 이벤트
-    # 콜백들 안에서 바로 부르면 내부적으로 멈출 수 있어요(Playwright 동기 API의 알려진 문제).
-    # 그래서 여기서는 객체 참조만 저장해두고, 실제로 기다리는 호출은 아래 page_action(콜백이
-    # 아니라 일반 흐름이라 안전해요)에서 해요.
+    # 주의: download.path()처럼 대기(block)하는 Playwright 호출을 on_download 이벤트 콜백 안에서
+    # 바로 부르면 내부적으로 멈출 수 있어요(Playwright 동기 API의 알려진 문제) - 그래서 download는
+    # 객체 참조만 저장해두고, 실제로 기다리는 호출은 아래 page_action(콜백이 아니라 일반 흐름이라
+    # 안전해요)에서 해요. route.fetch()는 라우트 핸들러 안에서 바로 불러도 안전해요(Playwright의
+    # 공식 문서/예제에서도 이 패턴을 그대로 씀 - 응답을 가로채기 위해 설계된 API라 이벤트 리스너와는
+    # 다르게 취급됨).
     def page_setup(page):
-        def on_response(response):
-            if "response" in captured or "download" in captured:
-                return  # 이미 뭔가 잡았으면 그 이후 응답(리다이렉트 등)은 무시해요.
-            if response.request.resource_type != "document":
+        def handle_route(route):
+            request = route.request
+            if request.resource_type != "document" or "handled" in captured:
+                route.continue_()
                 return
-            captured["response"] = response
-            captured["status"] = response.status
+            captured["handled"] = True
+            response = None
+            try:
+                response = route.fetch()
+                captured["status"] = response.status
+                captured["body"] = response.body()
+            except Exception:
+                pass  # 못 받으면 그냥 넘어가요 - 아래에서 "body" 없음으로 처리돼요.
+            finally:
+                try:
+                    if response is not None:
+                        route.fulfill(response=response)
+                    else:
+                        route.continue_()
+                except Exception:
+                    pass
 
         def on_download(download):
-            captured["download"] = download
+            if "body" not in captured:
+                captured["download"] = download
 
-        page.on("response", on_response)
+        page.route("**/*", handle_route)
         page.on("download", on_download)
 
     return page_setup
@@ -128,6 +147,9 @@ def _register_document_response_capture(captured: dict):
 
 def _read_captured_body(captured: dict):
     def page_action(page):
+        if "body" in captured:
+            return page  # route.fetch()로 이미 직접 받았어요.
+
         download = captured.get("download")
         if download is not None:
             try:
@@ -135,14 +157,6 @@ def _read_captured_body(captured: dict):
                 if path:
                     captured["body"] = Path(path).read_bytes()
                     captured["status"] = 200  # 다운로드가 시작됐다는 건 서버가 정상 응답했다는 뜻이에요.
-            except Exception:
-                pass  # 못 읽으면 그냥 넘어가요 - 아래에서 "body" 없음으로 처리돼요.
-            return page
-
-        response = captured.get("response")
-        if response is not None:
-            try:
-                captured["body"] = response.body()
             except Exception:
                 pass  # 못 읽으면 그냥 넘어가요 - 아래에서 "body" 없음으로 처리돼요.
         return page
