@@ -390,9 +390,11 @@ def find_datasheet(part_number, manufacturer=None, max_results=10):
         #   0) 공식 제조사 도메인 + .pdf 확장자
         #   1) 공식 제조사 도메인 (확장자 무관 - 예: ti.com/lit/gpn/... 같은 리다이렉트도 실제로
         #      열어보면 PDF인 경우가 많아서, 문자열만 보고 걸러내지 않고 우선순위만 매겨요)
-        #   2) Mouser 웹페이지, 3) DigiKey 웹페이지 - Akamai류 차단이 거의 없고 제조사 PDF를
-        #      그대로 미러링해두는 경우가 많아 빠르고 성공률도 높아요.
-        #   4) 그 외 .pdf 확장자, 5) 나머지(애그리게이터 등)
+        #   2) Mouser 직링크(.pdf), 3) DigiKey 직링크(.pdf) - 실제로 겪어보니 DDG가 이 두 사이트에서
+        #      찾아주는 링크는 거의 항상 ProductDetail류 "상품 소개 페이지"였고, 그건 봇 차단(403)이
+        #      analog.com만큼이나 확실했어요. 그래서 진짜 .pdf 직링크일 때만 우선순위를 올리고,
+        #      상품 페이지는 그냥 5)로 취급해요 - 앞자리를 괜히 낭비하지 않게.
+        #   4) 그 외 .pdf 확장자, 5) 나머지(상품 소개 페이지, 애그리게이터 등)
         #   6) 이미 차단이 확인된 도메인(KNOWN_BLOCKED_DOMAINS) - 맨 마지막. 완전히 빼지는 않되,
         #      _try_candidates가 이 등급은 20초로 시간을 짧게 잘라요.
         # 실제 PDF인지 최종 판단은 언제나 _download_once가 응답 바이트를 보고 해요.
@@ -405,9 +407,9 @@ def find_datasheet(part_number, manufacturer=None, max_results=10):
             return 0
         if official:
             return 1
-        if "mouser.com" in u_lower:
+        if "mouser.com" in u_lower and is_pdf:
             return 2
-        if "digikey.com" in u_lower:
+        if "digikey.com" in u_lower and is_pdf:
             return 3
         if is_pdf:
             return 4
