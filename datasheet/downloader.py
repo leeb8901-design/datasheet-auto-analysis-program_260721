@@ -41,12 +41,28 @@ MAX_DELAY_SECONDS = 3.5
 RETRY_DELAY_SECONDS = (6.0, 10.0)  # 캡차에 걸렸을 때 재시도 전 대기시간
 DOWNLOAD_RETRY_DELAY = 2.0  # 다운로드 실패 시 재시도 전 대기시간
 
-# 유통사(부품 파는 가게) 사이트 — 데이터시트 출처로는 원하지 않아요.
+# 유통사(부품 파는 가게) 사이트 — 대부분 데이터시트 출처로 원하지 않아서 아예 걸러요.
 DISTRIBUTOR_DOMAINS = [
-    "mouser.com", "digikey.com", "lcsc.com", "alibaba.com", "aliexpress.com",
+    "lcsc.com", "alibaba.com", "aliexpress.com",
     "octopart.com", "findchips.com", "arrow.com", "avnet.com", "rs-online.com",
     "element14.com", "amazon.com", "ebay.com", "tme.com", "newark.com",
 ]
+
+# Mouser/DigiKey는 예외예요 - 위 목록처럼 아예 걸러내지 않고, 후보로는 남겨두되 우선순위만
+# "공식 제조사 도메인" 다음으로 매겨요. 이 두 사이트는 대체로 Akamai류 봇 차단이 없어서 빠르고,
+# 제조사가 올린 PDF를 그대로 미러링해두는 경우가 많아 속도/성공률 면에서 유리해요. 목록 순서가
+# 그대로 우선순위 순서예요(mouser가 digikey보다 먼저).
+PREFERRED_DISTRIBUTOR_DOMAINS = ["mouser.com", "digikey.com"]
+
+# Akamai류 봇 차단으로 이미 여러 번 확인된 도메인들 - 완전히 빼진 않지만(나중에 풀릴 수도 있으니),
+# 우선순위를 가장 뒤로 미루고 시도 시간도 짧게 잘라요(BLOCKED_DOMAIN_TIMEOUT_MS).
+KNOWN_BLOCKED_DOMAINS = ["analog.com"]
+BLOCKED_DOMAIN_TIMEOUT_MS = 20_000
+
+
+def _is_known_blocked(url: str) -> bool:
+    u = url.lower()
+    return any(d in u for d in KNOWN_BLOCKED_DOMAINS)
 
 # 회사 이름에 흔히 붙는 단어들 — 도메인 매칭 힌트로는 안 써요.
 GENERIC_MFR_WORDS = {
@@ -164,14 +180,14 @@ def _read_captured_body(captured: dict):
     return page_action
 
 
-def _download_once(url: str, dest_path: Path) -> tuple[str | None, bool]:
+def _download_once(url: str, dest_path: Path, timeout_ms: int = FETCH_TIMEOUT_MS) -> tuple[str | None, bool]:
     # 다운로드 한 번 시도. (실패 사유 또는 None, 재시도해볼 만한지)를 돌려줘요.
     captured: dict = {}
     try:
         StealthyFetcher.fetch(
             url,
             headless=True,
-            timeout=FETCH_TIMEOUT_MS,
+            timeout=timeout_ms,
             page_setup=_register_document_response_capture(captured),
             page_action=_read_captured_body(captured),
         )
@@ -209,6 +225,7 @@ def download_pdf(url: str, dest_path: Path, max_retries: int = 3) -> str | None:
     - 타임아웃/연결 오류/5xx/429 등: 일시적인 문제일 수 있으니, 대기시간을 2배씩 늘려가며(지수
       백오프, 최대 MAX_RETRY_DELAY초) 최대 max_retries번 더 시도해요.
     """
+    timeout_ms = BLOCKED_DOMAIN_TIMEOUT_MS if _is_known_blocked(url) else FETCH_TIMEOUT_MS
     last_error = None
     delay = DOWNLOAD_RETRY_DELAY
     for attempt in range(max_retries + 1):
@@ -217,7 +234,7 @@ def download_pdf(url: str, dest_path: Path, max_retries: int = 3) -> str | None:
             time.sleep(delay)
             delay = min(delay * 2, MAX_RETRY_DELAY)
 
-        error, retryable = _download_once(url, dest_path)
+        error, retryable = _download_once(url, dest_path, timeout_ms=timeout_ms)
         if error is None:
             return None
         last_error = error
@@ -240,9 +257,10 @@ def _try_candidates(urls: list[str], dest_path: Path) -> tuple[bool, list[str]]:
     to_try = urls[:MAX_CANDIDATES_TO_TRY]
     tried = []
     for i, url in enumerate(to_try, start=1):
+        timeout_ms = BLOCKED_DOMAIN_TIMEOUT_MS if _is_known_blocked(url) else FETCH_TIMEOUT_MS
         logger.log(f"  [웹 후보 {i}/{len(to_try)}] {url}")
         tried.append(url)
-        error, _ = _download_once(url, dest_path)
+        error, _ = _download_once(url, dest_path, timeout_ms=timeout_ms)
         if error is None:
             return True, tried
         logger.log(f"    -> 실패: {error}")
@@ -283,27 +301,39 @@ def _is_distributor(url):
 
 def _manufacturer_tokens(manufacturer):
     if not manufacturer:
-        return []
+        return [], None
     words = re.findall(r"[a-zA-Z]+", manufacturer.lower())
     tokens = [w for w in words if len(w) >= 3 and w not in GENERIC_MFR_WORDS]
 
-    # "Texas Instruments" -> ti.com, "ON Semiconductor" -> onsemi.com 처럼, 회사 이름 단어들이
-    # 흔한 단어라 다 걸러지거나 도메인이 약어인 경우가 있어요. 단어 앞글자를 모은 약어도 후보에
-    # 넣어서 이런 도메인도 "공식"으로 인식하게 해요 (우선순위 정렬에만 쓰여서, 틀려도 최종 결과가
-    # 잘못되진 않아요 - 실제 PDF인지는 어차피 응답 바이트로 따로 확인하니까요).
+    # "Texas Instruments" -> ti.com처럼, 회사 이름 단어들이 흔한 단어라 다 걸러지거나 도메인이
+    # 약어인 경우가 있어요. 단어 앞글자를 모은 약어를 따로 돌려줘서(tokens와 섞지 않음) 이런
+    # 도메인도 "공식"으로 인식하게 해요 - 약어는 짧아서(2~3글자) 아무 도메인에나 우연히 들어있을
+    # 수 있으니(예: "ad"가 "adatasheet.com"에도 들어있음), _looks_official에서 tokens와는 다르게
+    # "도메인 첫 부분과 정확히 같을 때"만 인정해요.
+    acronym = None
     if len(words) >= 2:
-        acronym = "".join(w[0] for w in words)
-        if len(acronym) >= 2:
-            tokens.append(acronym)
+        candidate = "".join(w[0] for w in words)
+        if len(candidate) >= 2:
+            acronym = candidate
 
-    return tokens
+    return tokens, acronym
 
 
-def _looks_official(url, tokens):
-    if not tokens:
-        return False
+def _domain_main_label(url):
+    # "https://www.ti.com/lit/..." -> "ti" (www. 떼고 첫 번째 점 앞부분만)
     netloc = urlparse(url).netloc.lower()
-    return any(t in netloc for t in tokens)
+    if netloc.startswith("www."):
+        netloc = netloc[4:]
+    return netloc.split(".")[0] if netloc else ""
+
+
+def _looks_official(url, tokens, acronym=None):
+    netloc = urlparse(url).netloc.lower()
+    if tokens and any(t in netloc for t in tokens):
+        return True
+    if acronym and _domain_main_label(url) == acronym:
+        return True
+    return False
 
 
 def _is_captcha_page(html_text):
@@ -353,22 +383,35 @@ def find_datasheet(part_number, manufacturer=None, max_results=10):
     if not urls:
         return None
 
-    tokens = _manufacturer_tokens(manufacturer)
+    tokens, acronym = _manufacturer_tokens(manufacturer)
 
     def priority(u):
-        # 낮을수록 먼저 시도해요: 공식 도메인+.pdf 확장자 > 공식 도메인 > .pdf 확장자 > 나머지.
-        # URL이 .pdf로 안 끝나도(예: ti.com/lit/gpn/... 같은 제조사 공식 리다이렉트) 실제로 열어보면
-        # PDF인 경우가 많아서, 문자열만 보고 걸러내지 않고 우선순위만 뒤로 미뤄요 - 실제 판단은
-        # _download_once가 응답 바이트를 보고 해요.
-        official = _looks_official(u, tokens)
-        is_pdf = u.lower().endswith(".pdf")
+        # 낮을수록 먼저 시도해요:
+        #   0) 공식 제조사 도메인 + .pdf 확장자
+        #   1) 공식 제조사 도메인 (확장자 무관 - 예: ti.com/lit/gpn/... 같은 리다이렉트도 실제로
+        #      열어보면 PDF인 경우가 많아서, 문자열만 보고 걸러내지 않고 우선순위만 매겨요)
+        #   2) Mouser 웹페이지, 3) DigiKey 웹페이지 - Akamai류 차단이 거의 없고 제조사 PDF를
+        #      그대로 미러링해두는 경우가 많아 빠르고 성공률도 높아요.
+        #   4) 그 외 .pdf 확장자, 5) 나머지(애그리게이터 등)
+        #   6) 이미 차단이 확인된 도메인(KNOWN_BLOCKED_DOMAINS) - 맨 마지막. 완전히 빼지는 않되,
+        #      _try_candidates가 이 등급은 20초로 시간을 짧게 잘라요.
+        # 실제 PDF인지 최종 판단은 언제나 _download_once가 응답 바이트를 보고 해요.
+        u_lower = u.lower()
+        if _is_known_blocked(u_lower):
+            return 6
+        official = _looks_official(u, tokens, acronym)
+        is_pdf = u_lower.endswith(".pdf")
         if official and is_pdf:
             return 0
         if official:
             return 1
-        if is_pdf:
+        if "mouser.com" in u_lower:
             return 2
-        return 3
+        if "digikey.com" in u_lower:
+            return 3
+        if is_pdf:
+            return 4
+        return 5
 
     candidates = sorted(urls, key=priority)
     return {"candidates": candidates}
