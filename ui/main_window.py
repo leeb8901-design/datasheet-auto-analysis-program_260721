@@ -3,6 +3,8 @@
 import os
 import shutil
 import subprocess
+import threading
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 
 from PySide6.QtCore import QObject, QThread, Signal
@@ -68,9 +70,19 @@ TABLE_HEADERS = [
 COL_REVIEW_BUTTON = 8
 SUCCESS_STATUSES = (STATUS_SUCCESS_MOUSER, STATUS_SUCCESS_WEB, STATUS_SKIPPED_EXISTING)
 
+# 품번을 몇 개까지 동시에 처리할지. 하나 처리할 때마다 브라우저(Chromium)를 띄우기 때문에,
+# 너무 늘리면 메모리/CPU 부담이 커져요. 이 정도가 속도와 리소스 사이의 적당한 균형이에요.
+MAX_CONCURRENT_DOWNLOADS = 3
+
 
 class DatasheetWorker(QObject):
-    """진짜 심부름(검색+다운로드)을 도는 일꾼이에요. 화면이 얼어붙지 않도록 별도 스레드에서 돌아가요."""
+    """진짜 심부름(검색+다운로드)을 도는 일꾼이에요. 화면이 얼어붙지 않도록 별도 스레드에서 돌아가요.
+
+    품번 여러 개를 ThreadPoolExecutor로 동시에 처리해요(다운로드는 대부분 서버 응답을 "기다리는"
+    시간이라, 여러 개를 동시에 기다리면 전체 배치 시간이 크게 줄어요). 다운로드/분석 자체는 각
+    스레드에서 독립적으로 실행되고, 같은 엑셀 파일(workbook)에 쓰는 부분만 write_lock으로 순서를
+    지켜요 - openpyxl 객체 하나를 여러 스레드가 동시에 건드리면 안전하지 않아서예요.
+    """
 
     log_message = Signal(str)
     row_updated = Signal(int, dict)
@@ -92,29 +104,59 @@ class DatasheetWorker(QObject):
             return
 
         writer = ExcelResultWriter(self.excel_path, self.sheet_name)
+        write_lock = threading.Lock()
         total = len(self.rows)
         success = 0
         fail = 0
+        completed = 0
 
-        for i, row in enumerate(self.rows):
-            part = row["part_number"]
-            manufacturer_hint = row["manufacturer"]
-            self.log_message.emit(f"[{i + 1}/{total}] {part} 처리 중...")
+        with ThreadPoolExecutor(max_workers=MAX_CONCURRENT_DOWNLOADS) as executor:
+            futures = [
+                executor.submit(self._process_row, i, row, client, writer, write_lock)
+                for i, row in enumerate(self.rows)
+            ]
+            # as_completed는 끝나는 순서대로 돌려줘요 - 동시 처리라 행 순서(1,2,3...)와 다를 수 있지만,
+            # row_updated가 행 번호(i)를 같이 넘기니 화면 갱신은 문제없어요.
+            for future in as_completed(futures):
+                i, values = future.result()
+                completed += 1
 
-            try:
-                result = download_datasheet_for_part(part, manufacturer_hint, client)
-            except Exception as e:
-                result = DownloadResult(STATUS_FAILED, None, str(e), manufacturer_hint)
+                if values["download_status"] in SUCCESS_STATUSES:
+                    success += 1
+                else:
+                    fail += 1
 
-            analysis, analysis_status = self._analyze_if_downloaded(part, manufacturer_hint, result)
-            unresolved_text = ", ".join(analysis.unresolved_field_names()) if analysis else ""
+                self.row_updated.emit(i, values)
+                self.progress_updated.emit(completed, total)
 
-            # 이 부품의 PDF가 있어야(또는 있을 예정인) 정확한 경로를 항상 계산해둬요. 성공했으면
-            # 실제로 그 자리에 파일이 있고, 실패했으면 VBA 도우미가 나중에 저장할 자리를 미리 알려주는
-            # 역할을 해요 (엑셀의 "저장 경로" 칸 -> datasheet_helper.bas 참고).
-            dest_path = build_dest_path(part, result.manufacturer or manufacturer_hint)
-            link_path = dest_path if result.filename else None
+        writer.close()
+        self.log_message.emit(f"=== 완료: 성공 {success}건 / 실패 {fail}건 ===")
+        self.finished.emit()
 
+    def _process_row(
+        self, i: int, row: dict, client: MouserClient, writer: ExcelResultWriter, write_lock: threading.Lock
+    ) -> tuple[int, dict]:
+        # 품번 하나를 처리해요. ThreadPoolExecutor가 이 메서드를 여러 스레드에서 동시에 호출해요.
+        total = len(self.rows)
+        part = row["part_number"]
+        manufacturer_hint = row["manufacturer"]
+        self.log_message.emit(f"[{i + 1}/{total}] {part} 처리 중...")
+
+        try:
+            result = download_datasheet_for_part(part, manufacturer_hint, client)
+        except Exception as e:
+            result = DownloadResult(STATUS_FAILED, None, str(e), manufacturer_hint)
+
+        analysis, analysis_status = self._analyze_if_downloaded(part, manufacturer_hint, result)
+        unresolved_text = ", ".join(analysis.unresolved_field_names()) if analysis else ""
+
+        # 이 부품의 PDF가 있어야(또는 있을 예정인) 정확한 경로를 항상 계산해둬요. 성공했으면
+        # 실제로 그 자리에 파일이 있고, 실패했으면 VBA 도우미가 나중에 저장할 자리를 미리 알려주는
+        # 역할을 해요 (엑셀의 "저장 경로" 칸 -> datasheet_helper.bas 참고).
+        dest_path = build_dest_path(part, result.manufacturer or manufacturer_hint)
+        link_path = dest_path if result.filename else None
+
+        with write_lock:
             writer.write_row(
                 row["row"],
                 {
@@ -131,33 +173,24 @@ class DatasheetWorker(QObject):
             )
             writer.save()  # 한 행 끝날 때마다 바로바로 엑셀에 저장해요 (중간에 꺼져도 안전하게).
 
-            if result.status in SUCCESS_STATUSES:
-                success += 1
-                self.log_message.emit(f"  [OK] {result.status}: {result.filename}")
-            else:
-                fail += 1
-                detail = f" ({result.error})" if result.error else ""
-                self.log_message.emit(f"  [실패]{detail}")
+        if result.status in SUCCESS_STATUSES:
+            self.log_message.emit(f"  [OK] {result.status}: {result.filename}")
+        else:
+            detail = f" ({result.error})" if result.error else ""
+            self.log_message.emit(f"  [실패]{detail}")
 
-            self.row_updated.emit(
-                i,
-                {
-                    "manufacturer": result.manufacturer or manufacturer_hint or "",
-                    "download_status": result.status,
-                    "analysis_status": analysis_status,
-                    "filename": result.filename or "",
-                    "reference_url": result.reference_url or "",
-                    "save_path": str(dest_path),
-                    "error": result.error or "",
-                    "unresolved": unresolved_text,
-                    "analysis": analysis,
-                },
-            )
-            self.progress_updated.emit(i + 1, total)
-
-        writer.close()
-        self.log_message.emit(f"=== 완료: 성공 {success}건 / 실패 {fail}건 ===")
-        self.finished.emit()
+        values = {
+            "manufacturer": result.manufacturer or manufacturer_hint or "",
+            "download_status": result.status,
+            "analysis_status": analysis_status,
+            "filename": result.filename or "",
+            "reference_url": result.reference_url or "",
+            "save_path": str(dest_path),
+            "error": result.error or "",
+            "unresolved": unresolved_text,
+            "analysis": analysis,
+        }
+        return i, values
 
     def _analyze_if_downloaded(
         self, part: str, manufacturer_hint: str | None, result: DownloadResult
