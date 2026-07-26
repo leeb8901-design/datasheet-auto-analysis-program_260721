@@ -31,9 +31,10 @@ from ai.pdf_parser import analyze_pdf
 from datasheet.annotator import annotate_pdf
 from datasheet.downloader import (
     DownloadResult,
-    build_dest_path,
     download_datasheet_for_part,
     get_download_dir,
+    move_to_classified,
+    resolve_pdf_path,
     set_download_dir,
 )
 from datasheet.search import MouserClient
@@ -147,13 +148,13 @@ class DatasheetWorker(QObject):
         except Exception as e:
             result = DownloadResult(STATUS_FAILED, None, str(e), manufacturer_hint)
 
-        analysis, analysis_status = self._analyze_if_downloaded(part, manufacturer_hint, result)
+        # 분석까지 끝나면(대분류/소분류가 밝혀지면) 파일이 미분류 폴더에서 그 폴더로 옮겨져요 -
+        # dest_path는 항상 "지금 이 부품의 PDF가 있는(또는 있을 예정인) 자리"예요. 다운로드가
+        # 실패했으면 VBA 도우미가 나중에 저장할 자리(미분류)를 미리 알려주는 역할도 해요
+        # (엑셀의 "저장 경로" 칸 -> datasheet_helper.bas 참고).
+        analysis, analysis_status, dest_path = self._analyze_if_downloaded(part, result)
         unresolved_text = ", ".join(analysis.unresolved_field_names()) if analysis else ""
 
-        # 이 부품의 PDF가 있어야(또는 있을 예정인) 정확한 경로를 항상 계산해둬요. 성공했으면
-        # 실제로 그 자리에 파일이 있고, 실패했으면 VBA 도우미가 나중에 저장할 자리를 미리 알려주는
-        # 역할을 해요 (엑셀의 "저장 경로" 칸 -> datasheet_helper.bas 참고).
-        dest_path = build_dest_path(part, result.manufacturer or manufacturer_hint)
         link_path = dest_path if result.filename else None
 
         with write_lock:
@@ -193,24 +194,30 @@ class DatasheetWorker(QObject):
         return i, values
 
     def _analyze_if_downloaded(
-        self, part: str, manufacturer_hint: str | None, result: DownloadResult
-    ) -> tuple[PartAnalysis | None, str]:
+        self, part: str, result: DownloadResult
+    ) -> tuple[PartAnalysis | None, str, Path]:
         """다운로드가 성공했을 때만 규칙 기반 분석(ai/pdf_parser.analyze_pdf)을 돌려요.
-        대분류/소분류 자체를 못 판별하면 '분류불가'로 남기고, 판별됐으면 필드값이 다 채워졌어도
-        아직 사람이 확인하지 않았으니 항상 '검토필요'로 시작해요 (검토 다이얼로그에서 확인해야 '확인완료'가 돼요).
-        """
-        if result.status not in SUCCESS_STATUSES:
-            return None, ANALYSIS_PENDING
+        대분류/소분류 자체를 못 판별하면 '분류불가'로 남기고 파일은 미분류 폴더에 그대로 두고,
+        판별되면 파일을 <대분류>/<소분류> 폴더로 옮겨요. 필드값이 다 채워졌어도 아직 사람이
+        확인하지 않았으니 항상 '검토필요'로 시작해요 (검토 다이얼로그에서 확인해야 '확인완료'가 돼요).
 
-        dest = build_dest_path(part, result.manufacturer or manufacturer_hint)
+        돌려주는 경로(세 번째 값)는 항상 "지금 이 부품의 PDF가 있는(또는 있을 예정인) 자리"예요.
+        """
+        current_path = resolve_pdf_path(part)
+
+        if result.status not in SUCCESS_STATUSES:
+            return None, ANALYSIS_PENDING, current_path
+
         try:
-            raw = analyze_pdf(dest)
+            raw = analyze_pdf(current_path)
         except Exception as e:
             self.log_message.emit(f"  [분석 오류] {e}")
-            return None, ANALYSIS_FAILED
+            return None, ANALYSIS_FAILED, current_path
 
         if not raw["category"] or not raw["subcategory"]:
-            return None, ANALYSIS_FAILED
+            return None, ANALYSIS_FAILED, current_path
+
+        dest_path = move_to_classified(part, raw["category"], raw["subcategory"], current_path)
 
         analysis = PartAnalysis(
             category=raw["category"],
@@ -219,7 +226,7 @@ class DatasheetWorker(QObject):
             subcategory_confidence=raw["subcategory_confidence"],
             fields=raw["fields"],
         )
-        return analysis, ANALYSIS_NEEDS_REVIEW
+        return analysis, ANALYSIS_NEEDS_REVIEW, dest_path
 
 
 class MainWindow(QMainWindow):
@@ -555,8 +562,8 @@ class MainWindow(QMainWindow):
         annotated_paths: list[Path] = []
         for i, row in enumerate(self.rows):
             part = row["part_number"]
-            manufacturer = table_rows[i]["manufacturer"]
-            src_pdf = build_dest_path(part, manufacturer)
+            saved_path = table_rows[i]["save_path"]
+            src_pdf = Path(saved_path) if saved_path else resolve_pdf_path(part)
             if not src_pdf.exists():
                 continue  # 다운로드가 안 된 부품은 주석을 붙일 PDF 자체가 없어요.
 
@@ -579,14 +586,18 @@ class MainWindow(QMainWindow):
             return None
         return items[0].row()
 
+    def _pdf_path_for_row(self, i: int) -> Path:
+        saved = self.save_paths[i] if i < len(self.save_paths) else ""
+        if saved:
+            return Path(saved)
+        return resolve_pdf_path(self.rows[i]["part_number"])
+
     def _open_selected_pdf(self):
         i = self._selected_row()
         if i is None or i >= len(self.rows):
             QMessageBox.information(self, "알림", "먼저 표에서 행을 선택하세요.")
             return
-        part = self.rows[i]["part_number"]
-        manufacturer = self.table.item(i, 2).text() or None
-        dest = build_dest_path(part, manufacturer)
+        dest = self._pdf_path_for_row(i)
         if not dest.exists():
             QMessageBox.warning(self, "알림", "아직 다운로드된 파일이 없습니다.")
             return
@@ -599,9 +610,7 @@ class MainWindow(QMainWindow):
             folder.mkdir(exist_ok=True)
             os.startfile(folder)
             return
-        part = self.rows[i]["part_number"]
-        manufacturer = self.table.item(i, 2).text() or None
-        dest = build_dest_path(part, manufacturer)
+        dest = self._pdf_path_for_row(i)
         if dest.exists():
             subprocess.run(["explorer", f"/select,{dest}"])
         else:

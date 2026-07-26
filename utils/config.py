@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 
 # 이 파일(utils/config.py)의 부모의 부모 폴더가 곧 프로그램 폴더예요.
 APP_DIR = Path(__file__).resolve().parent.parent
-DOWNLOAD_DIR = APP_DIR / "datasheets"  # 다운받은 PDF를 저장할 폴더
+DOWNLOAD_DIR = APP_DIR / "Download_ datasheets"  # 다운받은 PDF를 저장할 폴더
 LOG_DIR = APP_DIR / "logs"  # 로그 파일을 저장할 폴더
 # 매핑맵의 '사용가이드라인' 시트를 그대로 복사해 올 마스터 파일이에요. 출력지를 만들 때 읽기만 하고,
 # 절대 저장(수정)하지 않아요 — 마스터의 데이터/서식을 항상 그대로 보존하기 위해서예요.

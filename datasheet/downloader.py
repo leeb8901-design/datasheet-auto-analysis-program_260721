@@ -88,10 +88,54 @@ def sanitize_filename(name: str) -> str:
     return cleaned or "unknown"
 
 
-def build_dest_path(part_number: str, manufacturer: str | None) -> Path:
-    # 제조사별 폴더 아래에 "품번.pdf"로 저장할 경로를 만들어요.
-    folder = _download_dir / sanitize_filename(manufacturer or "미상")
-    return folder / (sanitize_filename(part_number) + ".pdf")
+# 대분류/소분류는 다운로드 시점(제조사만 앎)이 아니라 PDF 분석 이후에야 알 수 있어요. 그래서
+# 폴더 정리는 2단계예요: ① 받을 땐 일단 "미분류" 폴더에 품번.pdf로 저장 -> ② 분석 후 대분류/소분류가
+# 밝혀지면 그 폴더로 옮겨요(move_to_classified). 분석이 실패하거나 아직 안 됐으면 계속 "미분류"에 남아요.
+UNCLASSIFIED_DIR_NAME = "미분류"
+
+
+def _pdf_filename(part_number: str) -> str:
+    return sanitize_filename(part_number) + ".pdf"
+
+
+def staging_dest_path(part_number: str) -> Path:
+    return _download_dir / UNCLASSIFIED_DIR_NAME / _pdf_filename(part_number)
+
+
+def classified_dest_path(part_number: str, category: str, subcategory: str) -> Path:
+    folder = _download_dir / sanitize_filename(category) / sanitize_filename(subcategory)
+    return folder / _pdf_filename(part_number)
+
+
+def find_existing_pdf(part_number: str) -> Path | None:
+    """이미 받아둔 파일이 있으면 그 경로를 돌려줘요 (미분류 폴더든, 이미 분류돼 옮겨진 폴더든)."""
+    staging = staging_dest_path(part_number)
+    if staging.exists():
+        return staging
+    if not _download_dir.exists():
+        return None
+    matches = list(_download_dir.glob(f"*/*/{_pdf_filename(part_number)}"))
+    return matches[0] if matches else None
+
+
+def resolve_pdf_path(part_number: str) -> Path:
+    """이 품번의 PDF가 지금 있는(또는 있을 예정인) 경로. 아직 없으면 저장될 자리(미분류)를 돌려줘요."""
+    return find_existing_pdf(part_number) or staging_dest_path(part_number)
+
+
+def move_to_classified(part_number: str, category: str, subcategory: str, current_path: Path) -> Path:
+    """분석으로 대분류/소분류가 밝혀진 뒤, 미분류 폴더에 있던 파일을 최종 폴더로 옮겨요."""
+    dest = classified_dest_path(part_number, category, subcategory)
+    if dest == current_path:
+        return dest
+    if not current_path.exists():
+        return dest
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    if dest.exists():
+        current_path.unlink(missing_ok=True)  # 이미 옮겨져 있으면(재실행 등) 미분류 쪽 사본만 정리해요.
+    else:
+        current_path.replace(dest)
+    return dest
 
 
 # ---- 다운로드 (Scrapling의 StealthyFetcher로 진짜 브라우저를 띄워서 받아요) ----
@@ -428,11 +472,10 @@ def download_datasheet_for_part(
     """부품 하나에 대해 ① 이미 있는지 확인 -> ② Mouser -> ③ 웹 검색 순서로 데이터시트를 받아온다."""
     manufacturer = manufacturer_hint
 
-    # ① 힌트 제조사 기준으로 이미 받아둔 파일이 있으면 그냥 스킵해요.
-    if manufacturer:
-        dest = build_dest_path(part_number, manufacturer)
-        if dest.exists():
-            return DownloadResult(STATUS_SKIPPED_EXISTING, dest.name, None, manufacturer)
+    # ① 이미 받아둔 파일이 있으면 그냥 스킵해요 (미분류 폴더든, 이미 분류돼 옮겨진 폴더든 상관없이).
+    existing = find_existing_pdf(part_number)
+    if existing is not None:
+        return DownloadResult(STATUS_SKIPPED_EXISTING, existing.name, None, manufacturer)
 
     # ② Mouser 검색
     try:
@@ -446,9 +489,8 @@ def download_datasheet_for_part(
     if result and result.get("manufacturer"):
         manufacturer = result["manufacturer"]  # Mouser가 확인해준 제조사가 더 정확해요.
 
-    dest = build_dest_path(part_number, manufacturer)
-    if dest.exists():
-        return DownloadResult(STATUS_SKIPPED_EXISTING, dest.name, None, manufacturer)
+    # 대분류/소분류는 아직 몰라요(PDF를 받아서 분석해야 알 수 있음) - 일단 미분류 폴더에 받아요.
+    dest = staging_dest_path(part_number)
 
     if result and result.get("datasheet_url"):
         fail_reason = download_pdf(result["datasheet_url"], dest)
