@@ -24,13 +24,14 @@ UNKNOWN_FROM_DATASHEET_FIELDS = {
 
 
 def load_headers() -> list[str]:
-    # 매핑맵의 127개 컬럼 헤더 (품번, Part Category, Part Subcategory + 파라미터 124개)를 그대로 불러와요.
+    # 매핑맵 컬럼 헤더(품번, Part Category, Part Subcategory + PSA 파라미터들)를 그대로 불러와요.
+    # headers.json은 build_reference.py가 새 입력지에서 subcat_params와 함께 생성해요(어휘 일치 보장).
     with open(DATA_DIR / "headers.json", encoding="utf-8") as f:
         return json.load(f)
 
 
 def load_subcat_params() -> list[dict]:
-    # 154개 서브카테고리마다 어떤 파라미터 컬럼이 적용되는지 정리된 목록이에요.
+    # 서브카테고리마다 어떤 파라미터 컬럼이 적용되는지 정리된 목록이에요(새 입력지 PSA 기준).
     # 각 항목: {"category": ..., "subcategory": ..., "params": [해당 서브카테고리에 적용되는 헤더 이름들]}
     with open(DATA_DIR / "subcat_params.json", encoding="utf-8") as f:
         return json.load(f)

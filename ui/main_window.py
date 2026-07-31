@@ -28,7 +28,6 @@ from PySide6.QtWidgets import (
 
 from ai.analysis_state import PartAnalysis
 from ai.pdf_parser import analyze_pdf
-from datasheet.annotator import annotate_pdf
 from datasheet.downloader import (
     DownloadResult,
     download_datasheet_for_part,
@@ -40,7 +39,6 @@ from datasheet.downloader import (
 from datasheet.search import MouserClient
 from excel.excel_reader import get_sheet_names, read_part_list_sheet
 from excel.excel_writer import ExcelResultWriter
-from excel.output_builder import build_output_workbook
 from ui.analysis_dialog import AnalysisReviewDialog
 from ui.dialogs import SheetColumnDialog
 from utils.config import (
@@ -55,7 +53,6 @@ from utils.config import (
     COL_SAVE_PATH,
     COL_UNRESOLVED_FIELDS,
     IMPORT_TEMPLATE_PATH,
-    MAPPING_TEMPLATE_PATH,
     STATUS_FAILED,
     STATUS_PENDING,
     STATUS_SKIPPED_EXISTING,
@@ -70,6 +67,10 @@ TABLE_HEADERS = [
 ]
 COL_REVIEW_BUTTON = 8
 SUCCESS_STATUSES = (STATUS_SUCCESS_MOUSER, STATUS_SUCCESS_WEB, STATUS_SKIPPED_EXISTING)
+
+# 열저항 기준 선택지 (표시이름, 내부값). θJC=Case(접합-케이스), θJA=Ambient(접합-주위).
+# Thermal Resistance 자동 폴백과 근거 노트에 반영돼요 (ai/pdf_parser.analyze_pdf 참고).
+THERMAL_MODE_OPTIONS = [("Case (θJC)", "case"), ("Ambient (θJA)", "ambient")]
 
 # 품번을 몇 개까지 동시에 처리할지. 하나 처리할 때마다 브라우저(Chromium)를 띄우기 때문에,
 # 너무 늘리면 메모리/CPU 부담이 커져요. 이 정도가 속도와 리소스 사이의 적당한 균형이에요.
@@ -90,11 +91,12 @@ class DatasheetWorker(QObject):
     progress_updated = Signal(int, int)
     finished = Signal()
 
-    def __init__(self, rows: list[dict], excel_path: str, sheet_name: str):
+    def __init__(self, rows: list[dict], excel_path: str, sheet_name: str, thermal_mode: str = "case"):
         super().__init__()
         self.rows = rows
         self.excel_path = excel_path
         self.sheet_name = sheet_name
+        self.thermal_mode = thermal_mode  # "case"=θJC / "ambient"=θJA (analyze_pdf에 전달)
 
     def run(self):
         try:
@@ -153,7 +155,7 @@ class DatasheetWorker(QObject):
         # 실패했으면 VBA 도우미가 나중에 저장할 자리(미분류)를 미리 알려주는 역할도 해요
         # (엑셀의 "저장 경로" 칸 -> datasheet_helper.bas 참고).
         analysis, analysis_status, dest_path = self._analyze_if_downloaded(part, result)
-        unresolved_text = ", ".join(analysis.unresolved_field_names()) if analysis else ""
+        unresolved_text = analysis.unresolved_summary() if analysis else ""
 
         link_path = dest_path if result.filename else None
 
@@ -172,6 +174,11 @@ class DatasheetWorker(QObject):
                 link_path=link_path,
                 reference_url=result.reference_url,
             )
+            # 분석이 되면(대분류/소분류가 밝혀지면) 파라미터도 'PSA 입력 파라미터' 시트에 써넣어요.
+            if analysis and analysis.category and analysis.subcategory:
+                writer.write_part_params(
+                    analysis.category, analysis.subcategory, part, row.get("part_name"), analysis.fields
+                )
             writer.save()  # 한 행 끝날 때마다 바로바로 엑셀에 저장해요 (중간에 꺼져도 안전하게).
 
         if result.status in SUCCESS_STATUSES:
@@ -209,7 +216,7 @@ class DatasheetWorker(QObject):
             return None, ANALYSIS_PENDING, current_path
 
         try:
-            raw = analyze_pdf(current_path)
+            raw = analyze_pdf(current_path, thermal_mode=self.thermal_mode)
         except Exception as e:
             self.log_message.emit(f"  [분석 오류] {e}")
             return None, ANALYSIS_FAILED, current_path
@@ -225,6 +232,7 @@ class DatasheetWorker(QObject):
             subcategory=raw["subcategory"],
             subcategory_confidence=raw["subcategory_confidence"],
             fields=raw["fields"],
+            reference_notes=raw["reference_notes"],
         )
         return analysis, ANALYSIS_NEEDS_REVIEW, dest_path
 
@@ -279,12 +287,19 @@ class MainWindow(QMainWindow):
         self.sheet_combo = QComboBox()
         self.sheet_combo.setMinimumWidth(140)
 
+        # 열저항 기준(Case=θJC / Ambient=θJA) 선택. 분석 시 Thermal Resistance 폴백에 적용돼요.
+        self.thermal_combo = QComboBox()
+        for label, value in THERMAL_MODE_OPTIONS:
+            self.thermal_combo.addItem(label, value)
+        self.thermal_combo.setToolTip(
+            "데이터시트에 열저항이 없을 때의 기준을 골라요.\n"
+            "Case(θJC): 접합-케이스, 패키지별 217F 기본값으로 폴백.\n"
+            "Ambient(θJA): 접합-주위, 데이터시트 값만 사용(폴백 없음)."
+        )
+
         self.folder_label = QLabel(str(get_download_dir()))
         pick_folder_btn = QPushButton("저장 폴더 선택")
         pick_folder_btn.clicked.connect(self._pick_folder)
-
-        export_btn = QPushButton("출력")
-        export_btn.clicked.connect(self._export_to_excel)
 
         import_template_btn = QPushButton("Import 양식")
         import_template_btn.clicked.connect(self._export_import_template)
@@ -297,9 +312,10 @@ class MainWindow(QMainWindow):
         bar.addWidget(self.excel_label, 1)
         bar.addWidget(QLabel("Sheet:"))
         bar.addWidget(self.sheet_combo)
+        bar.addWidget(QLabel("열저항:"))
+        bar.addWidget(self.thermal_combo)
         bar.addWidget(pick_folder_btn)
         bar.addWidget(self.folder_label, 1)
-        bar.addWidget(export_btn)
         bar.addWidget(import_template_btn)
         bar.addWidget(self.start_btn)
         return bar
@@ -425,8 +441,10 @@ class MainWindow(QMainWindow):
         self.save_paths = [""] * len(self.rows)
 
         sheet_name = self.sheet_combo.currentText()
+        thermal_mode = self.thermal_combo.currentData()
+        self._log(f"열저항 기준: {self.thermal_combo.currentText()}")
         self.thread = QThread()
-        self.worker = DatasheetWorker(self.rows, self.excel_path, sheet_name)
+        self.worker = DatasheetWorker(self.rows, self.excel_path, sheet_name, thermal_mode)
         self.worker.moveToThread(self.thread)
 
         self.thread.started.connect(self.worker.run)
@@ -469,7 +487,7 @@ class MainWindow(QMainWindow):
         if not dialog.exec():
             return
 
-        unresolved = ", ".join(analysis.unresolved_field_names())
+        unresolved = analysis.unresolved_summary()
         status = ANALYSIS_DONE if analysis.is_fully_confirmed() else ANALYSIS_NEEDS_REVIEW
         self.table.setItem(i, 4, QTableWidgetItem(status))
         self.table.setItem(i, 7, QTableWidgetItem(unresolved))
@@ -487,9 +505,8 @@ class MainWindow(QMainWindow):
         )
 
     def _export_import_template(self):
-        # "Import 양식" 버튼: VBA 다운로드 도우미 매크로가 이미 내장된 마스터 파일(vba/Import_양식.xlsm)을
-        # 그대로 복사해서 내보내요. 프로그램이 이 양식을 "기억"하고 있다가 그때그때 꺼내주는 거라,
-        # 매번 새로 만들 필요 없이 항상 같은 매크로가 든 파일을 받을 수 있어요.
+        # "Import 양식" 버튼: 입력지 마스터 파일(Data_list_217F.xlsx, config의 IMPORT_TEMPLATE_PATH)을
+        # 그대로 복사해서 내보내요. 사용자가 이 파일을 받아 품번을 채워 넣고 다시 입력지로 쓰면 돼요.
         if not IMPORT_TEMPLATE_PATH.exists():
             QMessageBox.critical(
                 self, "오류", f"Import 양식 파일을 찾을 수 없습니다:\n{IMPORT_TEMPLATE_PATH}"
@@ -497,7 +514,7 @@ class MainWindow(QMainWindow):
             return
 
         save_path, _ = QFileDialog.getSaveFileName(
-            self, "Import 양식 저장", "Import_양식.xlsm", "Excel 매크로 사용 통합 문서 (*.xlsm)"
+            self, "Import 양식 저장", IMPORT_TEMPLATE_PATH.name, "Excel 파일 (*.xlsx)"
         )
         if not save_path:
             return
@@ -510,74 +527,6 @@ class MainWindow(QMainWindow):
 
         self._log(f"Import 양식을 만들었습니다: {save_path}")
         QMessageBox.information(self, "완료", f"Import 양식을 만들었습니다.\n{save_path}")
-
-    def _export_to_excel(self):
-        # "출력" 버튼: 원본 입력 엑셀은 건드리지 않고, 이번 배치 결과(부품리스트+매핑맵)를 담은
-        # 새 출력지 엑셀을 만들어요. 실행할 때마다 새 파일이라, 마스터 템플릿도 절대 수정되지 않아요.
-        if not self.excel_path or not self.rows:
-            QMessageBox.information(self, "알림", "먼저 엑셀 파일을 불러오세요.")
-            return
-
-        default_name = f"{Path(self.excel_path).stem}_출력.xlsx"
-        save_path, _ = QFileDialog.getSaveFileName(self, "출력지 저장", default_name, "Excel 파일 (*.xlsx)")
-        if not save_path:
-            return
-
-        table_rows = []
-        for i in range(len(self.rows)):
-            table_rows.append(
-                {
-                    "manufacturer": self.table.item(i, 2).text() if self.table.item(i, 2) else "",
-                    "download_status": self.table.item(i, 3).text() if self.table.item(i, 3) else "",
-                    "analysis_status": self.table.item(i, 4).text() if self.table.item(i, 4) else "",
-                    "filename": self.table.item(i, 5).text() if self.table.item(i, 5) else "",
-                    "error": self.table.item(i, 6).text() if self.table.item(i, 6) else "",
-                    "unresolved": self.table.item(i, 7).text() if self.table.item(i, 7) else "",
-                    "reference_url": self.reference_urls[i] if i < len(self.reference_urls) else "",
-                    "save_path": self.save_paths[i] if i < len(self.save_paths) else "",
-                }
-            )
-
-        try:
-            build_output_workbook(self.rows, table_rows, self.analysis, MAPPING_TEMPLATE_PATH, Path(save_path))
-        except Exception as e:
-            QMessageBox.critical(self, "오류", f"출력지를 만드는 중 오류가 발생했습니다:\n{e}")
-            return
-
-        annotated_paths = self._annotate_datasheets(Path(save_path), table_rows)
-
-        self._log(f"출력지를 만들었습니다: {save_path}")
-        QMessageBox.information(
-            self,
-            "출력 완료",
-            f"출력지를 만들었습니다.\n{save_path}\n주석 삽입된 데이터시트 {len(annotated_paths)}건.",
-        )
-
-    def _annotate_datasheets(self, output_xlsx_path: Path, table_rows: list[dict]) -> list[Path]:
-        # 출력지 옆에 "<출력파일명>_datasheets" 폴더를 만들어, 다운로드된 부품의 데이터시트마다 스티키노트
-        # 주석을 넣은 사본을 저장해요. 원본 다운로드 파일은 건드리지 않아요.
-        # 분석(분류/추출)이 실패한 부품도 PDF 자체는 다운로드돼 있으면 그대로 사본을 만들고, 이 경우
-        # annotate_pdf가 "분석 결과 없음" 요약 주석을 남겨요 — 다운로드된 부품은 항상 산출물에 나오게 하기 위해서예요.
-        annotated_dir = output_xlsx_path.parent / f"{output_xlsx_path.stem}_datasheets"
-        annotated_paths: list[Path] = []
-        for i, row in enumerate(self.rows):
-            part = row["part_number"]
-            saved_path = table_rows[i]["save_path"]
-            src_pdf = Path(saved_path) if saved_path else resolve_pdf_path(part)
-            if not src_pdf.exists():
-                continue  # 다운로드가 안 된 부품은 주석을 붙일 PDF 자체가 없어요.
-
-            analysis = self.analysis[i]
-            fields = analysis.fields if analysis else {}
-            confirmed = analysis.confirmed_fields if analysis else set()
-
-            out_pdf = annotated_dir / src_pdf.name
-            try:
-                annotate_pdf(src_pdf, fields, confirmed, out_pdf)
-                annotated_paths.append(out_pdf)
-            except Exception as e:
-                self._log(f"  [PDF 주석 오류] {part}: {e}")
-        return annotated_paths
 
     # ---------------- PDF 열기 ----------------
     def _selected_row(self) -> int | None:

@@ -21,3 +21,9 @@ logs/
 
 # 원본 첨부파일 (내용은 이미 프로젝트 루트로 복사됨)
 첨부파일/
+
+# 전송/임시 산출물 (코드 아님)
+repo_patch.zip
+*_출력_datasheets/
+*_출력.xlsx
+*.backup_*.xlsx

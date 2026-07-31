@@ -1,6 +1,7 @@
 # 데이터시트를 실제로 찾아서 다운로드하는 파일이에요.
 # 순서: ① 이미 있으면 스킵 -> ② Mouser 검색+다운로드 -> ③ 실패하면 웹(DuckDuckGo) 검색+다운로드 -> ④ 그래도 실패하면 포기.
 
+import os
 import random
 import re
 import time
@@ -154,6 +155,12 @@ MAX_RETRY_DELAY = 30.0  # 지수 백오프의 상한(초) - 계속 배로 늘어
 
 FETCH_TIMEOUT_MS = 30_000  # StealthyFetcher의 타임아웃은 밀리초 단위예요.
 
+# scrapling이 내려받는 Chrome for Testing 브라우저(chrome.exe)가 일부 Windows에서 side-by-side
+# 오류로 아예 실행이 안 되는 문제가 있어요("side-by-side configuration is incorrect" /
+# "spawn UNKNOWN"). 그래서 기본적으로 시스템에 설치된 진짜 Google Chrome을 사용해요.
+# Chrome이 없는 환경이라면 환경변수 SCRAPLING_REAL_CHROME=0 으로 꺼서 번들 브라우저를 쓰게 할 수 있어요.
+USE_REAL_CHROME = os.environ.get("SCRAPLING_REAL_CHROME", "1") != "0"
+
 
 def _register_document_response_capture(captured: dict):
     # Chrome은 PDF 링크로 이동하면 자체 내장 PDF 뷰어로 열어버리는데, 이때 Playwright의
@@ -231,6 +238,7 @@ def _download_once(url: str, dest_path: Path, timeout_ms: int = FETCH_TIMEOUT_MS
         StealthyFetcher.fetch(
             url,
             headless=True,
+            real_chrome=USE_REAL_CHROME,
             timeout=timeout_ms,
             page_setup=_register_document_response_capture(captured),
             page_action=_read_captured_body(captured),
@@ -386,7 +394,7 @@ def _is_captcha_page(html_text):
 
 def _fetch_ddg_html(query):
     url = "https://html.duckduckgo.com/html/?" + urlencode({"q": query})
-    resp = StealthyFetcher.fetch(url, headless=True, timeout=20_000, extra_headers=HEADERS)
+    resp = StealthyFetcher.fetch(url, headless=True, real_chrome=USE_REAL_CHROME, timeout=20_000, extra_headers=HEADERS)
     if resp.status != 200:
         raise RuntimeError(f"DuckDuckGo 검색 실패: HTTP {resp.status}")
     return resp.body.decode("utf-8", errors="replace")

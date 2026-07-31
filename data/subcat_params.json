@@ -1,1 +1,1359 @@
-[{"category": "Integrated Circuit", "subcategory": "Bubble Memory", "params": ["Type", "Chips/Package", "Dissipative Elements", "Quality Level", "Pi Q Value", "# of Bits", "Units", "Pins", "Years in Production", "Reads/Write", "Average Data Rate", "Maximum Data Rate", "Duty Cycle", "Temperature Rise", "Case Temp Override"]}, {"category": "Integrated Circuit", "subcategory": "Custom", "params": ["Failure Rate"]}, {"category": "Integrated Circuit", "subcategory": "EEPROM", "params": ["Type", "Quality Level", "Pi Q Value", "# of Bits", "Units", "Pins", "Years in Production", "Temperature Rise", "Error Correction", "Programming Cycles", "System Lifetime (Hrs)", "Package Type", "Initial Temp Rise", "Operating Power", "Thermal Resistance", "Junction-", "Junction Temp Override"]}, {"category": "Integrated Circuit", "subcategory": "GaAs Digital", "params": ["Quality Level", "Pi Q Value", "Pins", "Years in Production", "Temperature Rise", "Package Type", "Initial Temp Rise", "Operating Power", "Thermal Resistance", "Junction-", "Junction Temp Override", "Complexity"]}, {"category": "Integrated Circuit", "subcategory": "GaAs MMIC", "params": ["Quality Level", "Pi Q Value", "Pins", "Years in Production", "Temperature Rise", "Package Type", "Initial Temp Rise", "Operating Power", "Thermal Resistance", "Junction-", "Junction Temp Override", "Complexity", "Application"]}, {"category": "Integrated Circuit", "subcategory": "Linear", "params": ["Quality Level", "Pi Q Value", "Pins", "Years in Production", "Temperature Rise", "Package Type", "Initial Temp Rise", "Operating Power", "Thermal Resistance", "Junction-", "Junction Temp Override", "# of Transistors"]}, {"category": "Integrated Circuit", "subcategory": "Logic, CGA or ASIC", "params": ["Quality Level", "Pi Q Value", "Pins", "Years in Production", "Temperature Rise", "Package Type", "Initial Temp Rise", "Operating Power", "Thermal Resistance", "Junction-", "Junction Temp Override", "Technology Type", "# of Gates"]}, {"category": "Integrated Circuit", "subcategory": "Memory", "params": ["Type", "Quality Level", "Pi Q Value", "# of Bits", "Units", "Pins", "Years in Production", "Temperature Rise", "Package Type", "Initial Temp Rise", "Operating Power", "Thermal Resistance", "Junction-", "Junction Temp Override", "Technology Type"]}, {"category": "Integrated Circuit", "subcategory": "Microprocessor", "params": ["Quality Level", "Pi Q Value", "Pins", "Years in Production", "Temperature Rise", "Package Type", "Initial Temp Rise", "Operating Power", "Thermal Resistance", "Junction-", "Junction Temp Override", "Technology Type", "Word Size"]}, {"category": "Integrated Circuit", "subcategory": "PAL, PLA", "params": ["Quality Level", "Pi Q Value", "Pins", "Years in Production", "Temperature Rise", "Package Type", "Initial Temp Rise", "Operating Power", "Thermal Resistance", "Junction-", "Junction Temp Override", "Technology Type", "# of Gates"]}, {"category": "Integrated Circuit", "subcategory": "SAW - Surface Acoustic Wave", "params": ["Quality Level"]}, {"category": "Integrated Circuit", "subcategory": "VHSIC/VLSI CMOS", "params": ["Type", "Quality Level", "Pi Q Value", "Pins", "Temperature Rise", "Package Type", "Initial Temp Rise", "Operating Power", "Thermal Resistance", "Junction-", "Junction Temp Override", "Manufacturing Process", "Feature Size", "Dissipation Surface", "ESD Susceptibility", "Seal"]}, {"category": "Semiconductor", "subcategory": "Alphanumeric Display", "params": ["Type", "Quality Level", "Temperature Rise", "Initial Temp Rise", "Operating Power", "Thermal Resistance", "Junction-", "Junction Temp Override", "Application", "# of Characters"]}, {"category": "Semiconductor", "subcategory": "Diode", "params": ["Quality Level", "Temperature Rise", "Initial Temp Rise", "Operating Power", "Thermal Resistance", "Junction-", "Junction Temp Override", "Diode Type", "Operating Voltage", "Rated Voltage", "Voltage Ratio", "# of Stacks", "Construction Type"]}, {"category": "Semiconductor", "subcategory": "GaAs FET", "params": ["Quality Level", "Temperature Rise", "Initial Temp Rise", "Operating Power", "Thermal Resistance", "Junction-", "Junction Temp Override", "Application", "Two Sided", "Internal Matching", "Average Output Power", "Frequency"]}, {"category": "Semiconductor", "subcategory": "Microwave Diode", "params": ["Quality Level", "Temperature Rise", "Initial Temp Rise", "Operating Power", "Thermal Resistance", "Junction-", "Junction Temp Override", "Diode Type", "Power Rating"]}, {"category": "Semiconductor", "subcategory": "Microwave Power Transistor", "params": ["Quality Level", "Duty Cycle", "Temperature Rise", "Initial Temp Rise", "Operating Power", "Thermal Resistance", "Junction-", "Junction Temp Override", "Application", "Operating Voltage", "Rated Voltage", "Voltage Ratio", "Internal Matching", "Average Output Power", "Frequency", "Metallization"]}, {"category": "Semiconductor", "subcategory": "Microwave Transistor", "params": ["Quality Level", "Temperature Rise", "Initial Temp Rise", "Operating Power", "Thermal Resistance", "Junction-", "Junction Temp Override", "Operating Voltage", "Rated Voltage", "Voltage Ratio", "Power Rating"]}, {"category": "Semiconductor", "subcategory": "Si FET", "params": ["Type", "Quality Level", "Temperature Rise", "Initial Temp Rise", "Operating Power", "Thermal Resistance", "Junction-", "Junction Temp Override", "Application", "Two Sided", "Power Rating"]}, {"category": "Semiconductor", "subcategory": "Thyristor", "params": ["Quality Level", "Temperature Rise", "Initial Temp Rise", "Operating Power", "Thermal Resistance", "Junction-", "Junction Temp Override", "Operating Voltage", "Rated Voltage", "Voltage Ratio", "Rated Forward Current"]}, {"category": "Semiconductor", "subcategory": "Transistor", "params": ["Quality Level", "Temperature Rise", "Initial Temp Rise", "Operating Power", "Thermal Resistance", "Junction-", "Junction Temp Override", "Application", "Operating Voltage", "Rated Voltage", "Voltage Ratio", "Two Sided", "Power Rating"]}, {"category": "Semiconductor", "subcategory": "Unijunction Transistor", "params": ["Quality Level", "Temperature Rise", "Initial Temp Rise", "Operating Power", "Thermal Resistance", "Junction-", "Junction Temp Override"]}, {"category": "Resistor", "subcategory": "Accurate, WW (RB, RBR)", "params": ["Quality Level", "Units", "Temperature Rise", "Case Temp Override", "Operating Power", "Power Rating", "Power Ratio", "Resistance"]}, {"category": "Resistor", "subcategory": "Carbon, Var NonWW (RV)", "params": ["Quality Level", "Units", "Temperature Rise", "Case Temp Override", "Operating Power", "Operating Voltage", "Rated Voltage", "Voltage Ratio", "Power Rating", "Power Ratio", "Resistance", "Rheostat", "Operating Current", "Rated Current", "Current Ratio", "Load Resistance", "Load Units", "Number of Sections", "Section Used", "Number of Taps"]}, {"category": "Resistor", "subcategory": "Chassis Mount, WW Power (RE, RER)", "params": ["Quality Level", "Units", "Temperature Rise", "Case Temp Override", "Operating Power", "Power Rating", "Power Ratio", "Resistance", "Style", "Winding"]}, {"category": "Resistor", "subcategory": "Composition (RC, RCR)", "params": ["Quality Level", "Units", "Temperature Rise", "Case Temp Override", "Operating Power", "Power Rating", "Power Ratio", "Resistance"]}, {"category": "Resistor", "subcategory": "Film (RL, RLR, RN, RNR, RM)", "params": ["Type", "Quality Level", "Units", "Temperature Rise", "Case Temp Override", "Operating Power", "Power Rating", "Power Ratio", "Resistance"]}, {"category": "Resistor", "subcategory": "Film, Power (RD)", "params": ["Quality Level", "Units", "Temperature Rise", "Case Temp Override", "Operating Power", "Power Rating", "Power Ratio", "Resistance"]}, {"category": "Resistor", "subcategory": "Film, Var NonWW (RVC)", "params": ["Quality Level", "Units", "Temperature Rise", "Case Temp Override", "Operating Power", "Operating Voltage", "Rated Voltage", "Voltage Ratio", "Power Rating", "Power Ratio", "Resistance", "Rheostat", "Operating Current", "Rated Current", "Current Ratio", "Load Resistance", "Load Units", "Number of Sections", "Section Used", "Number of Taps"]}, {"category": "Resistor", "subcategory": "General", "params": ["Failure Rate"]}, {"category": "Resistor", "subcategory": "Glass Glazed, Var", "params": ["Failure Rate"]}, {"category": "Resistor", "subcategory": "Lead Mount, WW Power (RW, RWR)", "params": ["Quality Level", "Units", "Temperature Rise", "Case Temp Override", "Operating Power", "Power Rating", "Power Ratio", "Resistance", "Style"]}, {"category": "Resistor", "subcategory": "Lead Screw, Var WW (RT, RTR)", "params": ["Quality Level", "Units", "Temperature Rise", "Case Temp Override", "Operating Power", "Operating Voltage", "Rated Voltage", "Voltage Ratio", "Power Rating", "Power Ratio", "Resistance", "Rheostat", "Operating Current", "Rated Current", "Current Ratio", "Load Resistance", "Load Units", "Number of Sections", "Section Used", "Number of Taps", "Style"]}, {"category": "Resistor", "subcategory": "Network Film (RZ)", "params": ["Quality Level", "Temperature Rise", "Case Temp Override", "Resistor Quantity"]}, {"category": "Resistor", "subcategory": "Organic Solid, Var", "params": ["Failure Rate"]}, {"category": "Resistor", "subcategory": "Power, Var WW (RP)", "params": ["Quality Level", "Units", "Temperature Rise", "Case Temp Override", "Operating Power", "Operating Voltage", "Rated Voltage", "Voltage Ratio", "Construction Type", "Power Rating", "Power Ratio", "Resistance", "Rheostat", "Operating Current", "Rated Current", "Current Ratio", "Load Resistance", "Load Units", "Number of Sections", "Section Used", "Number of Taps"]}, {"category": "Resistor", "subcategory": "Precision, Var NonWW (RQ)", "params": ["Quality Level", "Units", "Temperature Rise", "Case Temp Override", "Operating Power", "Operating Voltage", "Rated Voltage", "Voltage Ratio", "Power Rating", "Power Ratio", "Resistance", "Rheostat", "Operating Current", "Rated Current", "Current Ratio", "Load Resistance", "Load Units", "Number of Sections", "Section Used", "Number of Taps"]}, {"category": "Resistor", "subcategory": "Precision, Var WW (RR)", "params": ["Quality Level", "Units", "Temperature Rise", "Case Temp Override", "Operating Power", "Operating Voltage", "Rated Voltage", "Voltage Ratio", "Construction Type", "Power Rating", "Power Ratio", "Resistance", "Rheostat", "Operating Current", "Rated Current", "Current Ratio", "Load Resistance", "Load Units", "Number of Sections", "Section Used", "Number of Taps", "Style"]}, {"category": "Resistor", "subcategory": "Semiprec, Var WW (RA, RK)", "params": ["Type", "Quality Level", "Units", "Temperature Rise", "Case Temp Override", "Operating Power", "Operating Voltage", "Rated Voltage", "Voltage Ratio", "Power Rating", "Power Ratio", "Resistance", "Rheostat", "Operating Current", "Rated Current", "Current Ratio", "Load Resistance", "Load Units", "Number of Sections", "Section Used", "Number of Taps"]}, {"category": "Resistor", "subcategory": "Surface Mount", "params": ["Failure Rate"]}, {"category": "Resistor", "subcategory": "Thermistor (RTH)", "params": ["Type", "Quality Level"]}, {"category": "Resistor", "subcategory": "Trimmer, Var, NonWW (RJ, RJR)", "params": ["Quality Level", "Units", "Temperature Rise", "Case Temp Override", "Operating Power", "Operating Voltage", "Rated Voltage", "Voltage Ratio", "Power Rating", "Power Ratio", "Resistance", "Rheostat", "Operating Current", "Rated Current", "Current Ratio", "Load Resistance", "Load Units", "Number of Sections", "Section Used", "Number of Taps", "Style"]}, {"category": "Capacitor", "subcategory": "Air Trimmer, Variable (CT)", "params": ["Quality Level", "Temperature Rise", "Case Temp Override", "Rated Voltage", "Voltage Ratio", "Applied DC Voltage", "AC RMS Voltage"]}, {"category": "Capacitor", "subcategory": "Button Mica (CB)", "params": ["Quality Level", "Units", "Temperature Rise", "Case Temp Override", "Rated Voltage", "Voltage Ratio", "Applied DC Voltage", "AC RMS Voltage", "Capacitance", "Max Junction Temp"]}, {"category": "Capacitor", "subcategory": "Ceramic, Variable (CV)", "params": ["Quality Level", "Temperature Rise", "Case Temp Override", "Rated Voltage", "Voltage Ratio", "Applied DC Voltage", "AC RMS Voltage", "Max Junction Temp"]}, {"category": "Capacitor", "subcategory": "Chassis Mount, Elec, Alum (CU, CUR)", "params": ["Type", "Quality Level", "Units", "Temperature Rise", "Case Temp Override", "Rated Voltage", "Voltage Ratio", "Applied DC Voltage", "AC RMS Voltage", "Capacitance", "Max Junction Temp"]}, {"category": "Capacitor", "subcategory": "Chip, Ceramic (CDR)", "params": ["Quality Level", "Units", "Temperature Rise", "Case Temp Override", "Rated Voltage", "Voltage Ratio", "Applied DC Voltage", "AC RMS Voltage", "Capacitance"]}, {"category": "Capacitor", "subcategory": "Chip, Elec (CWR)", "params": ["Quality Level", "Units", "Temperature Rise", "Case Temp Override", "Rated Voltage", "Voltage Ratio", "Applied DC Voltage", "AC RMS Voltage", "Capacitance", "Series Resistance"]}, {"category": "Capacitor", "subcategory": "Chip, Silicon", "params": ["Failure Rate"]}, {"category": "Capacitor", "subcategory": "Feed Through, Paper (CZ, CZR)", "params": ["Quality Level", "Units", "Temperature Rise", "Case Temp Override", "Rated Voltage", "Voltage Ratio", "Applied DC Voltage", "AC RMS Voltage", "Capacitance", "Max Junction Temp"]}, {"category": "Capacitor", "subcategory": "General Ceramic (CK, CKR)", "params": ["Quality Level", "Units", "Temperature Rise", "Case Temp Override", "Rated Voltage", "Voltage Ratio", "Applied DC Voltage", "AC RMS Voltage", "Capacitance", "Max Junction Temp"]}, {"category": "Capacitor", "subcategory": "Glass (CY, CYR)", "params": ["Quality Level", "Units", "Temperature Rise", "Case Temp Override", "Rated Voltage", "Voltage Ratio", "Applied DC Voltage", "AC RMS Voltage", "Capacitance", "Max Junction Temp"]}, {"category": "Capacitor", "subcategory": "Lead Mount, Elec, Alum (CE)", "params": ["Quality Level", "Units", "Temperature Rise", "Case Temp Override", "Rated Voltage", "Voltage Ratio", "Applied DC Voltage", "AC RMS Voltage", "Capacitance"]}, {"category": "Capacitor", "subcategory": "Metallized Paper-Plastic (CH, CHR)", "params": ["Quality Level", "Units", "Temperature Rise", "Case Temp Override", "Rated Voltage", "Voltage Ratio", "Applied DC Voltage", "AC RMS Voltage", "Capacitance", "Max Junction Temp"]}, {"category": "Capacitor", "subcategory": "Mica (CM, CMR)", "params": ["Type", "Quality Level", "Units", "Temperature Rise", "Case Temp Override", "Rated Voltage", "Voltage Ratio", "Construction Type", "Applied DC Voltage", "AC RMS Voltage", "Capacitance", "Max Junction Temp"]}, {"category": "Capacitor", "subcategory": "MOS", "params": ["Failure Rate"]}, {"category": "Capacitor", "subcategory": "Nonsolid, Elec, Tant (CL, CLR, CRL)", "params": ["Type", "Quality Level", "Units", "Temperature Rise", "Case Temp Override", "Rated Voltage", "Voltage Ratio", "Construction Type", "Applied DC Voltage", "AC RMS Voltage", "Capacitance", "Max Junction Temp"]}, {"category": "Capacitor", "subcategory": "Other, Variable", "params": ["Failure Rate"]}, {"category": "Capacitor", "subcategory": "Paper (CA, CP)", "params": ["Type", "Quality Level", "Units", "Temperature Rise", "Case Temp Override", "Rated Voltage", "Voltage Ratio", "Applied DC Voltage", "AC RMS Voltage", "Capacitance", "Max Junction Temp"]}, {"category": "Capacitor", "subcategory": "Paper-Plastic (CQ, CQR, CPV)", "params": ["Type", "Quality Level", "Units", "Temperature Rise", "Case Temp Override", "Rated Voltage", "Voltage Ratio", "Applied DC Voltage", "AC RMS Voltage", "Capacitance", "Max Junction Temp"]}, {"category": "Capacitor", "subcategory": "Piston, Variable (PC)", "params": ["Type", "Quality Level", "Temperature Rise", "Case Temp Override", "Rated Voltage", "Voltage Ratio", "Applied DC Voltage", "AC RMS Voltage", "Max Junction Temp"]}, {"category": "Capacitor", "subcategory": "Plastic (CFR)", "params": ["Quality Level", "Units", "Temperature Rise", "Case Temp Override", "Rated Voltage", "Voltage Ratio", "Applied DC Voltage", "AC RMS Voltage", "Capacitance", "Max Junction Temp"]}, {"category": "Capacitor", "subcategory": "Solid, Elec, Tant (CSR)", "params": ["Quality Level", "Units", "Temperature Rise", "Case Temp Override", "Rated Voltage", "Voltage Ratio", "Applied DC Voltage", "AC RMS Voltage", "Capacitance", "Series Resistance"]}, {"category": "Capacitor", "subcategory": "Super Metallized Plastic (CRH)", "params": ["Quality Level", "Units", "Temperature Rise", "Case Temp Override", "Rated Voltage", "Voltage Ratio", "Applied DC Voltage", "AC RMS Voltage", "Capacitance"]}, {"category": "Capacitor", "subcategory": "Temp Compensat, Ceramic (CC, CCR)", "params": ["Quality Level", "Units", "Temperature Rise", "Case Temp Override", "Rated Voltage", "Voltage Ratio", "Applied DC Voltage", "AC RMS Voltage", "Capacitance", "Max Junction Temp"]}, {"category": "Capacitor", "subcategory": "Vacuum, Variable or Fixed (CG)", "params": ["Quality Level", "Temperature Rise", "Case Temp Override", "Rated Voltage", "Voltage Ratio", "Applied DC Voltage", "AC RMS Voltage", "Max Junction Temp", "Configuration"]}, {"category": "Inductor", "subcategory": "Chip", "params": ["Failure Rate"]}, {"category": "Inductor", "subcategory": "Coil", "params": ["Type", "Quality Level", "Max Rated Temp", "Temp Rise to Hot Spot", "Hot Spot Temperature"]}, {"category": "Inductor", "subcategory": "Transformer", "params": ["Type", "Quality Level", "Max Rated Temp", "Temp Rise to Hot Spot", "Hot Spot Temperature"]}, {"category": "Connection", "subcategory": "Board with Plated Thru Holes", "params": ["Type", "Quality Level", "# of Circuit Planes", "None", "# of Wave Soldered PTHs", "# of Hand Soldered PTHs", "Adjust Connector Count"]}, {"category": "Connection", "subcategory": "General", "params": ["Quality Level", "Temperature Rise", "Case Temp Override", "Pairing", "Insert Material", "# of Mating Cycles", "# of Active Contacts", "Contact Gauge", "Amps/Contact"]}, {"category": "Connection", "subcategory": "IC Socket", "params": ["# of Active Contacts"]}, {"category": "Connection", "subcategory": "Other Connection", "params": ["Quality Level", "None", "Adjust Connector Count", "# Hand Soldered", "# Crimped", "# Welded", "# Solderless Wrapped", "# Wrapped and Soldered", "# Clip Termination", "# Reflow Soldered"]}, {"category": "Connection", "subcategory": "PCB Edge", "params": ["Quality Level", "Temperature Rise", "Case Temp Override", "Pairing", "# of Mating Cycles", "# of Active Contacts", "Contact Gauge", "Amps/Contact"]}, {"category": "Connection", "subcategory": "SMT Interconnect Assy", "params": ["Failure Rate"]}, {"category": "Switching Device", "subcategory": "Basic Sensitive", "params": ["Quality Level", "Operating Current", "Rated Current", "Current Ratio", "# of Active Contacts", "Actuation Differential", "Load Type", "Cycling Rate (#/day)"]}, {"category": "Switching Device", "subcategory": "Circuit Breaker", "params": ["Type", "Quality Level", "Application", "Contact Form"]}, {"category": "Switching Device", "subcategory": "Keyboard", "params": ["Failure Rate"]}, {"category": "Switching Device", "subcategory": "Other", "params": ["Failure Rate"]}, {"category": "Switching Device", "subcategory": "Rocker or Slide", "params": ["Failure Rate"]}, {"category": "Switching Device", "subcategory": "Rotary", "params": ["Type", "Quality Level", "Operating Current", "Rated Current", "Current Ratio", "# of Active Contacts", "Load Type", "Cycling Rate (#/day)"]}, {"category": "Switching Device", "subcategory": "Thumbwheel", "params": ["Quality Level", "Operating Current", "Rated Current", "Current Ratio", "# of Active Contacts", "Load Type", "Cycling Rate (#/day)"]}, {"category": "Switching Device", "subcategory": "Toggle or Pushbutton", "params": ["Type", "Quality Level", "Operating Current", "Rated Current", "Current Ratio", "Load Type", "Cycling Rate (#/day)", "Contact Form"]}, {"category": "Relay", "subcategory": "Automotive", "params": ["Failure Rate"]}, {"category": "Relay", "subcategory": "Contactor", "params": ["Quality Level", "Temperature Rise", "Case Temp Override", "Construction Type", "Operating Current", "Rated Current", "Current Ratio", "Max Rated Temp", "Load Type", "Cycling Rate (#/day)", "Contact Form"]}, {"category": "Relay", "subcategory": "Dry Circuit", "params": ["Quality Level", "Temperature Rise", "Case Temp Override", "Construction Type", "Operating Current", "Rated Current", "Current Ratio", "Max Rated Temp", "Load Type", "Cycling Rate (#/day)", "Contact Form"]}, {"category": "Relay", "subcategory": "Electronic Time Delay, Non-Thermal", "params": ["Quality Level", "Temperature Rise", "Case Temp Override", "Operating Current", "Rated Current", "Current Ratio", "Max Rated Temp", "Load Type", "Cycling Rate (#/day)", "Contact Form"]}, {"category": "Relay", "subcategory": "General Purpose", "params": ["Quality Level", "Temperature Rise", "Case Temp Override", "Construction Type", "Operating Current", "Rated Current", "Current Ratio", "Max Rated Temp", "Load Type", "Contact Form", "Cycling Rate (#/hour)"]}, {"category": "Relay", "subcategory": "High Speed", "params": ["Quality Level", "Temperature Rise", "Case Temp Override", "Construction Type", "Operating Current", "Rated Current", "Current Ratio", "Max Rated Temp", "Load Type", "Cycling Rate (#/day)", "Contact Form"]}, {"category": "Relay", "subcategory": "High Voltage", "params": ["Quality Level", "Temperature Rise", "Case Temp Override", "Construction Type", "Operating Current", "Rated Current", "Current Ratio", "Max Rated Temp", "Load Type", "Cycling Rate (#/day)", "Contact Form"]}, {"category": "Relay", "subcategory": "Latching", "params": ["Quality Level", "Temperature Rise", "Case Temp Override", "Operating Current", "Rated Current", "Current Ratio", "Max Rated Temp", "Load Type", "Cycling Rate (#/day)", "Contact Form"]}, {"category": "Relay", "subcategory": "Low Power", "params": ["Failure Rate"]}, {"category": "Relay", "subcategory": "Medium Power", "params": ["Quality Level", "Temperature Rise", "Case Temp Override", "Construction Type", "Operating Current", "Rated Current", "Current Ratio", "Max Rated Temp", "Load Type", "Cycling Rate (#/day)", "Contact Form"]}, {"category": "Relay", "subcategory": "Mercury", "params": ["Failure Rate"]}, {"category": "Relay", "subcategory": "Polarized", "params": ["Quality Level", "Temperature Rise", "Case Temp Override", "Construction Type", "Operating Current", "Rated Current", "Current Ratio", "Max Rated Temp", "Load Type", "Cycling Rate (#/day)", "Contact Form"]}, {"category": "Relay", "subcategory": "Reed, Dual In Line", "params": ["Quality Level", "Temperature Rise", "Case Temp Override", "Construction Type", "Operating Current", "Rated Current", "Current Ratio", "Max Rated Temp", "Load Type", "Cycling Rate (#/day)", "Contact Form"]}, {"category": "Relay", "subcategory": "Sensitive", "params": ["Quality Level", "Temperature Rise", "Case Temp Override", "Construction Type", "Operating Current", "Rated Current", "Current Ratio", "Max Rated Temp", "Load Type", "Cycling Rate (#/day)", "Contact Form"]}, {"category": "Relay", "subcategory": "Solid State, Time Delay", "params": ["Type", "Quality Level"]}, {"category": "Relay", "subcategory": "Thermal, Bimetal", "params": ["Quality Level", "Temperature Rise", "Case Temp Override", "Construction Type", "Operating Current", "Rated Current", "Current Ratio", "Max Rated Temp", "Load Type", "Cycling Rate (#/day)", "Contact Form"]}, {"category": "Optical Device", "subcategory": "Amplifier", "params": ["Failure Rate"]}, {"category": "Optical Device", "subcategory": "Coupler / Splitter", "params": ["Failure Rate"]}, {"category": "Optical Device", "subcategory": "Detector, Isolator, Emitter", "params": ["Type", "Quality Level", "Temperature Rise", "Initial Temp Rise", "Operating Power", "Thermal Resistance", "Junction-", "Junction Temp Override"]}, {"category": "Optical Device", "subcategory": "Dispersion Compensating Module", "params": ["Failure Rate"]}, {"category": "Optical Device", "subcategory": "Fiber Optic Item", "params": ["Type", "Length"]}, {"category": "Optical Device", "subcategory": "Laser Diode", "params": ["Type", "Duty Cycle", "Temperature Rise", "Initial Temp Rise", "Operating Power", "Thermal Resistance", "Junction-", "Junction Temp Override", "Application", "Construction Type", "Forward Peak Current", "Required Optical Power", "Rated Optical Power", "Optical Power Ratio"]}, {"category": "Optical Device", "subcategory": "Laser Module", "params": ["Failure Rate"]}, {"category": "Optical Device", "subcategory": "Modulator", "params": ["Failure Rate"]}, {"category": "Optical Device", "subcategory": "Optical Switch", "params": ["Failure Rate"]}, {"category": "Optical Device", "subcategory": "Optical Wavelength Locker", "params": ["Failure Rate"]}, {"category": "Optical Device", "subcategory": "Other Optical Module or Device", "params": ["Failure Rate"]}, {"category": "Optical Device", "subcategory": "Power Coupler / Divider (Tap)", "params": ["Failure Rate"]}, {"category": "Optical Device", "subcategory": "Receiver Module", "params": ["Failure Rate"]}, {"category": "Optical Device", "subcategory": "Transceiver", "params": ["Failure Rate"]}, {"category": "Optical Device", "subcategory": "Transponder", "params": ["Failure Rate"]}, {"category": "Optical Device", "subcategory": "Wavelength Division Multiplexer", "params": ["Failure Rate"]}, {"category": "Rotating Device", "subcategory": "Motor", "params": ["Temperature Rise", "Operating Time", "Frame Temp Override"]}, {"category": "Rotating Device", "subcategory": "Other", "params": ["Type", "Temperature Rise", "Max Rated Temp", "Frame Temp Override", "Size", "Number of Brushes", "Elapsed Time Meter Type"]}, {"category": "Miscellaneous", "subcategory": "Antenna, Loop", "params": ["Failure Rate"]}, {"category": "Miscellaneous", "subcategory": "Antenna, Telescopic", "params": ["Failure Rate"]}, {"category": "Miscellaneous", "subcategory": "Battery", "params": ["Failure Rate"]}, {"category": "Miscellaneous", "subcategory": "Ceramic Resonator", "params": ["Failure Rate"]}, {"category": "Miscellaneous", "subcategory": "Computer Subsystem", "params": ["Failure Rate"]}, {"category": "Miscellaneous", "subcategory": "Crystal Resonator", "params": ["Failure Rate"]}, {"category": "Miscellaneous", "subcategory": "Delay Line", "params": ["Failure Rate"]}, {"category": "Miscellaneous", "subcategory": "Display", "params": ["Failure Rate"]}, {"category": "Miscellaneous", "subcategory": "Electric Bell", "params": ["Failure Rate"]}, {"category": "Miscellaneous", "subcategory": "Electric Cable", "params": ["Failure Rate"]}, {"category": "Miscellaneous", "subcategory": "Ferrite Device, Microwave", "params": ["Type"]}, {"category": "Miscellaneous", "subcategory": "Filter", "params": ["Quality Level", "Composition"]}, {"category": "Miscellaneous", "subcategory": "Fuse", "params": []}, {"category": "Miscellaneous", "subcategory": "Gas Discharge Tube", "params": ["Failure Rate"]}, {"category": "Miscellaneous", "subcategory": "Gyroscope", "params": ["Failure Rate"]}, {"category": "Miscellaneous", "subcategory": "Heater", "params": ["Failure Rate"]}, {"category": "Miscellaneous", "subcategory": "Incandescent Lamp", "params": ["Application", "Rated Voltage", "Utilization"]}, {"category": "Miscellaneous", "subcategory": "Laser", "params": ["Type", "Number Optical Surfaces", "Average Power", "Current (mA)", "Energy/Pulse", "CO2 Overfill Percent", "Diameter", "% Ballast Vol Increase", "Pulse Width", "Cleanliness Level", "Cooling Media", "Arc Length", "Pulse Rate", "Energy Density"]}, {"category": "Miscellaneous", "subcategory": "LCD", "params": ["Failure Rate"]}, {"category": "Miscellaneous", "subcategory": "Load, Dummy or Microwave", "params": ["Type"]}, {"category": "Miscellaneous", "subcategory": "Loudspeaker", "params": ["Failure Rate"]}, {"category": "Miscellaneous", "subcategory": "Microphone", "params": ["Failure Rate"]}, {"category": "Miscellaneous", "subcategory": "Meter", "params": ["Quality Level", "Application", "Function"]}, {"category": "Miscellaneous", "subcategory": "Microwave Element", "params": ["Type"]}, {"category": "Miscellaneous", "subcategory": "Neon Lamp", "params": []}, {"category": "Miscellaneous", "subcategory": "Oscillator", "params": ["Failure Rate"]}, {"category": "Miscellaneous", "subcategory": "Piezoelectric Sensor / Transducer", "params": ["Failure Rate"]}, {"category": "Miscellaneous", "subcategory": "Power Module or Supply", "params": ["Failure Rate"]}, {"category": "Miscellaneous", "subcategory": "Quartz Crystal", "params": ["Quality Level", "Frequency"]}, {"category": "Miscellaneous", "subcategory": "Quartz Filter", "params": ["Failure Rate"]}, {"category": "Miscellaneous", "subcategory": "RF or Microwave Passive Device", "params": ["Failure Rate"]}, {"category": "Miscellaneous", "subcategory": "Surge Arrestor", "params": ["Failure Rate"]}, {"category": "Miscellaneous", "subcategory": "Termination", "params": []}, {"category": "Miscellaneous", "subcategory": "Thermal Sensitive Component", "params": ["Failure Rate"]}, {"category": "Miscellaneous", "subcategory": "Thermal-Electric Cooler", "params": ["Failure Rate"]}, {"category": "Miscellaneous", "subcategory": "Tube", "params": ["Type", "Years in Production", "Frequency", "Power", "Radiate/Filament Hrs (%)"]}, {"category": "Miscellaneous", "subcategory": "Vibrator", "params": ["Type"]}]
+[
+  {
+    "category": "Capacitor",
+    "subcategory": "Air Trimmer, Variable (CT)",
+    "params": [
+      "Quality Level",
+      "Applied DC Voltage",
+      "AC RMS Voltage",
+      "Rated Voltage",
+      "Voltage Ratio",
+      "Capacitance",
+      "Units",
+      "Temperature Rise",
+      "Case Temp Override"
+    ]
+  },
+  {
+    "category": "Capacitor",
+    "subcategory": "Button Mica (CB)",
+    "params": [
+      "Quality Level",
+      "Applied DC Voltage",
+      "AC RMS Voltage",
+      "Rated Voltage",
+      "Voltage Ratio",
+      "Capacitance",
+      "Units",
+      "Temperature Rise",
+      "Case Temp Override"
+    ]
+  },
+  {
+    "category": "Capacitor",
+    "subcategory": "Ceramic, Variable (CV)",
+    "params": [
+      "Quality Level",
+      "Applied DC Voltage",
+      "AC RMS Voltage",
+      "Rated Voltage",
+      "Voltage Ratio",
+      "Capacitance",
+      "Units",
+      "Temperature Rise",
+      "Case Temp Override"
+    ]
+  },
+  {
+    "category": "Capacitor",
+    "subcategory": "Chassis Mount, Elec, Alum (CU, CUR)",
+    "params": [
+      "Quality Level",
+      "Applied DC Voltage",
+      "AC RMS Voltage",
+      "Rated Voltage",
+      "Voltage Ratio",
+      "Capacitance",
+      "Units",
+      "Type",
+      "Temperature Rise",
+      "Case Temp Override"
+    ]
+  },
+  {
+    "category": "Capacitor",
+    "subcategory": "Chip, Ceramic (CDR)",
+    "params": [
+      "Quality Level",
+      "Applied DC Voltage",
+      "AC RMS Voltage",
+      "Rated Voltage",
+      "Voltage Ratio",
+      "Capacitance",
+      "Units",
+      "Temperature Rise",
+      "Case Temp Override"
+    ]
+  },
+  {
+    "category": "Capacitor",
+    "subcategory": "Chip, Elec (CWR)",
+    "params": [
+      "Quality Level",
+      "Applied DC Voltage",
+      "AC RMS Voltage",
+      "Rated Voltage",
+      "Voltage Ratio",
+      "Capacitance",
+      "Units",
+      "Series Resistance",
+      "Temperature Rise",
+      "Case Temp Override"
+    ]
+  },
+  {
+    "category": "Capacitor",
+    "subcategory": "Feed Through, Paper (CZ, CZR)",
+    "params": [
+      "Quality Level",
+      "Applied DC Voltage",
+      "AC RMS Voltage",
+      "Rated Voltage",
+      "Voltage Ratio",
+      "Capacitance",
+      "Units",
+      "Temperature Rise",
+      "Case Temp Override"
+    ]
+  },
+  {
+    "category": "Capacitor",
+    "subcategory": "General Ceramic (CK, CKR)",
+    "params": [
+      "Quality Level",
+      "Applied DC Voltage",
+      "AC RMS Voltage",
+      "Rated Voltage",
+      "Voltage Ratio",
+      "Capacitance",
+      "Units",
+      "Temperature Rise",
+      "Case Temp Override"
+    ]
+  },
+  {
+    "category": "Capacitor",
+    "subcategory": "Glass (CY, CYR)",
+    "params": [
+      "Quality Level",
+      "Applied DC Voltage",
+      "AC RMS Voltage",
+      "Rated Voltage",
+      "Voltage Ratio",
+      "Capacitance",
+      "Units",
+      "Temperature Rise",
+      "Case Temp Override"
+    ]
+  },
+  {
+    "category": "Capacitor",
+    "subcategory": "Lead Mount, Elec, Alum (CE)",
+    "params": [
+      "Quality Level",
+      "Applied DC Voltage",
+      "AC RMS Voltage",
+      "Rated Voltage",
+      "Voltage Ratio",
+      "Capacitance",
+      "Units",
+      "Temperature Rise",
+      "Case Temp Override"
+    ]
+  },
+  {
+    "category": "Capacitor",
+    "subcategory": "Metallized Paper-Plastic (CH, CHR)",
+    "params": [
+      "Quality Level",
+      "Applied DC Voltage",
+      "AC RMS Voltage",
+      "Rated Voltage",
+      "Voltage Ratio",
+      "Capacitance",
+      "Units",
+      "Temperature Rise",
+      "Case Temp Override"
+    ]
+  },
+  {
+    "category": "Capacitor",
+    "subcategory": "Mica (CM, CMR)",
+    "params": [
+      "Quality Level",
+      "Applied DC Voltage",
+      "AC RMS Voltage",
+      "Rated Voltage",
+      "Voltage Ratio",
+      "Capacitance",
+      "Units",
+      "Type",
+      "Temperature Rise",
+      "Case Temp Override"
+    ]
+  },
+  {
+    "category": "Capacitor",
+    "subcategory": "Nonsolid, Elec, Tant (CL, CLR, CRL)",
+    "params": [
+      "Quality Level",
+      "Applied DC Voltage",
+      "AC RMS Voltage",
+      "Rated Voltage",
+      "Voltage Ratio",
+      "Capacitance",
+      "Units",
+      "Type",
+      "Temperature Rise",
+      "Case Temp Override"
+    ]
+  },
+  {
+    "category": "Capacitor",
+    "subcategory": "Paper (CA, CP)",
+    "params": [
+      "Quality Level",
+      "Applied DC Voltage",
+      "AC RMS Voltage",
+      "Rated Voltage",
+      "Voltage Ratio",
+      "Capacitance",
+      "Units",
+      "Temperature Rise",
+      "Case Temp Override"
+    ]
+  },
+  {
+    "category": "Capacitor",
+    "subcategory": "Paper-Plastic (CQ, CQR, CPV)",
+    "params": [
+      "Quality Level",
+      "Applied DC Voltage",
+      "AC RMS Voltage",
+      "Rated Voltage",
+      "Voltage Ratio",
+      "Capacitance",
+      "Units",
+      "Type",
+      "Temperature Rise",
+      "Case Temp Override"
+    ]
+  },
+  {
+    "category": "Capacitor",
+    "subcategory": "Piston, Variable (PC)",
+    "params": [
+      "Quality Level",
+      "Applied DC Voltage",
+      "AC RMS Voltage",
+      "Rated Voltage",
+      "Voltage Ratio",
+      "Capacitance",
+      "Units",
+      "Type",
+      "Temperature Rise",
+      "Case Temp Override"
+    ]
+  },
+  {
+    "category": "Capacitor",
+    "subcategory": "Plastic (CFR)",
+    "params": [
+      "Quality Level",
+      "Applied DC Voltage",
+      "AC RMS Voltage",
+      "Rated Voltage",
+      "Voltage Ratio",
+      "Capacitance",
+      "Units",
+      "Temperature Rise",
+      "Case Temp Override"
+    ]
+  },
+  {
+    "category": "Capacitor",
+    "subcategory": "Solid, Elec, Tant (CSR)",
+    "params": [
+      "Quality Level",
+      "Applied DC Voltage",
+      "AC RMS Voltage",
+      "Rated Voltage",
+      "Voltage Ratio",
+      "Capacitance",
+      "Units",
+      "Series Resistance",
+      "Temperature Rise",
+      "Case Temp Override"
+    ]
+  },
+  {
+    "category": "Capacitor",
+    "subcategory": "Super Metallized Plastic (CRH)",
+    "params": [
+      "Quality Level",
+      "Applied DC Voltage",
+      "AC RMS Voltage",
+      "Rated Voltage",
+      "Voltage Ratio",
+      "Capacitance",
+      "Units",
+      "Temperature Rise",
+      "Case Temp Override"
+    ]
+  },
+  {
+    "category": "Capacitor",
+    "subcategory": "Temp Compensat, Ceramic (CC, CCR)",
+    "params": [
+      "Quality Level",
+      "Applied DC Voltage",
+      "AC RMS Voltage",
+      "Rated Voltage",
+      "Voltage Ratio",
+      "Capacitance",
+      "Units",
+      "Temperature Rise",
+      "Case Temp Override"
+    ]
+  },
+  {
+    "category": "Capacitor",
+    "subcategory": "Vacuum, Variable or Fixed (CG)",
+    "params": [
+      "Quality Level",
+      "Applied DC Voltage",
+      "AC RMS Voltage",
+      "Rated Voltage",
+      "Voltage Ratio",
+      "Capacitance",
+      "Units",
+      "Temperature Rise",
+      "Case Temp Override"
+    ]
+  },
+  {
+    "category": "Connection",
+    "subcategory": "Board with Plated Thru Holes",
+    "params": [
+      "Quality Level",
+      "Type",
+      "# of Circuit Planes"
+    ]
+  },
+  {
+    "category": "Connection",
+    "subcategory": "General",
+    "params": [
+      "Quality Level",
+      "Pairing",
+      "Connector Type",
+      "# of Mating Cycles",
+      "Contact Gauge",
+      "Amps/Contact",
+      "Temperature Rise",
+      "Case Temp Override"
+    ]
+  },
+  {
+    "category": "Connection",
+    "subcategory": "IC Socket",
+    "params": [
+      "Quality Level",
+      "# of Active Contacts",
+      "Type"
+    ]
+  },
+  {
+    "category": "Connection",
+    "subcategory": "PCB Edge",
+    "params": [
+      "Quality Level",
+      "Pairing",
+      "# of Mating Cycles",
+      "Contact Gauge",
+      "Amps/Contact",
+      "Temperature Rise",
+      "Case Temp Override"
+    ]
+  },
+  {
+    "category": "Connection",
+    "subcategory": "SMT Interconnect Assy",
+    "params": [
+      "Design Life Cycle",
+      "Equipment Type",
+      "Cycling Rate Override",
+      "Max Joining Distance",
+      "Joint Height",
+      "Board Substrate",
+      "Package Substrate",
+      "Lead Configuration",
+      "Initial Temp Rise",
+      "Operating Power",
+      "Thermal Resistance",
+      "Temperature Rise",
+      "Case Temp Override"
+    ]
+  },
+  {
+    "category": "Inductor",
+    "subcategory": "Coil",
+    "params": [
+      "Quality Level",
+      "Type",
+      "Temp Rise to Hot Spot",
+      "Hot Spot Temperature"
+    ]
+  },
+  {
+    "category": "Inductor",
+    "subcategory": "Transformer",
+    "params": [
+      "Quality Level",
+      "Type",
+      "Temp Rise to Hot Spot",
+      "Hot Spot Temperature"
+    ]
+  },
+  {
+    "category": "Integrated Circuit",
+    "subcategory": "Bubble Memory",
+    "params": [
+      "Type",
+      "Chips/Package",
+      "Dissipative Elements",
+      "Quality Level",
+      "Pi Q Value",
+      "# of Bits",
+      "Units",
+      "Pins",
+      "Years in Production",
+      "Reads/Write",
+      "Average Data Rate",
+      "Maximum Data Rate",
+      "Duty Cycle",
+      "Temperature Rise",
+      "Case Temp Override"
+    ]
+  },
+  {
+    "category": "Integrated Circuit",
+    "subcategory": "EEPROM",
+    "params": [
+      "Type",
+      "Error Correction",
+      "Programming Cycles",
+      "System Lifetime (Hrs)",
+      "Quality Level",
+      "Pi Q Value",
+      "# of Bits",
+      "Units",
+      "Pins",
+      "Package Type",
+      "Years in Production",
+      "Initial Temp Rise",
+      "Operating Power",
+      "Thermal Resistance",
+      "Junction-",
+      "Temperature Rise",
+      "Junction Temp Override"
+    ]
+  },
+  {
+    "category": "Integrated Circuit",
+    "subcategory": "GaAs Digital",
+    "params": [
+      "Complexity",
+      "Quality Level",
+      "Pi Q Value",
+      "Pins",
+      "Package Type",
+      "Years in Production",
+      "Initial Temp Rise",
+      "Operating Power",
+      "Thermal Resistance",
+      "Junction-",
+      "Temperature Rise",
+      "Junction Temp Override"
+    ]
+  },
+  {
+    "category": "Integrated Circuit",
+    "subcategory": "GaAs MMIC",
+    "params": [
+      "Complexity",
+      "Application",
+      "Quality Level",
+      "Pi Q Value",
+      "Pins",
+      "Package Type",
+      "Years in Production",
+      "Initial Temp Rise",
+      "Operating Power",
+      "Thermal Resistance",
+      "Junction-",
+      "Temperature Rise",
+      "Junction Temp Override"
+    ]
+  },
+  {
+    "category": "Integrated Circuit",
+    "subcategory": "Linear",
+    "params": [
+      "Quality Level",
+      "Pi Q Value",
+      "# of Transistors",
+      "Pins",
+      "Package Type",
+      "Years in Production",
+      "Initial Temp Rise",
+      "Operating Power",
+      "Thermal Resistance",
+      "Junction-",
+      "Temperature Rise",
+      "Junction Temp Override"
+    ]
+  },
+  {
+    "category": "Integrated Circuit",
+    "subcategory": "Logic, CGA or ASIC",
+    "params": [
+      "Technology Type",
+      "Quality Level",
+      "Pi Q Value",
+      "# of Gates",
+      "Pins",
+      "Package Type",
+      "Years in Production",
+      "Initial Temp Rise",
+      "Operating Power",
+      "Thermal Resistance",
+      "Junction-",
+      "Temperature Rise",
+      "Junction Temp Override"
+    ]
+  },
+  {
+    "category": "Integrated Circuit",
+    "subcategory": "Memory",
+    "params": [
+      "Type",
+      "Technology Type",
+      "Quality Level",
+      "Pi Q Value",
+      "# of Bits",
+      "Units",
+      "Pins",
+      "Package Type",
+      "Years in Production",
+      "Initial Temp Rise",
+      "Operating Power",
+      "Thermal Resistance",
+      "Junction-",
+      "Temperature Rise",
+      "Junction Temp Override"
+    ]
+  },
+  {
+    "category": "Integrated Circuit",
+    "subcategory": "Microprocessor",
+    "params": [
+      "Technology Type",
+      "Quality Level",
+      "Pi Q Value",
+      "Word Size",
+      "Pins",
+      "Package Type",
+      "Years in Production",
+      "Initial Temp Rise",
+      "Operating Power",
+      "Thermal Resistance",
+      "Junction-",
+      "Temperature Rise",
+      "Junction Temp Override"
+    ]
+  },
+  {
+    "category": "Integrated Circuit",
+    "subcategory": "PAL, PLA",
+    "params": [
+      "Technology Type",
+      "Quality Level",
+      "Pi Q Value",
+      "# of Gates",
+      "Pins",
+      "Package Type",
+      "Years in Production",
+      "Initial Temp Rise",
+      "Operating Power",
+      "Thermal Resistance",
+      "Junction-",
+      "Temperature Rise",
+      "Junction Temp Override"
+    ]
+  },
+  {
+    "category": "Integrated Circuit",
+    "subcategory": "SAW - Surface Acoustic Wave",
+    "params": [
+      "Quality Level"
+    ]
+  },
+  {
+    "category": "Integrated Circuit",
+    "subcategory": "VHSIC/VLSI CMOS",
+    "params": [
+      "Type",
+      "Manufacturing Process",
+      "Feature Size",
+      "Dissipation Surface",
+      "ESD Susceptibility",
+      "Seal",
+      "Quality Level",
+      "Pi Q Value",
+      "Pins",
+      "Package Type",
+      "Initial Temp Rise",
+      "Operating Power",
+      "Thermal Resistance",
+      "Junction-",
+      "Temperature Rise",
+      "Junction Temp Override"
+    ]
+  },
+  {
+    "category": "Miscellaneous",
+    "subcategory": "Ferrite Device, Microwave",
+    "params": [
+      "Type"
+    ]
+  },
+  {
+    "category": "Miscellaneous",
+    "subcategory": "Filter",
+    "params": [
+      "Quality Level",
+      "Composition"
+    ]
+  },
+  {
+    "category": "Miscellaneous",
+    "subcategory": "Incandescent Lamp",
+    "params": [
+      "Application",
+      "Utilization",
+      "Rated Voltage"
+    ]
+  },
+  {
+    "category": "Miscellaneous",
+    "subcategory": "Load, Dummy or Microwave",
+    "params": [
+      "Type"
+    ]
+  },
+  {
+    "category": "Miscellaneous",
+    "subcategory": "Meter",
+    "params": [
+      "Quality Level",
+      "Application",
+      "Function"
+    ]
+  },
+  {
+    "category": "Miscellaneous",
+    "subcategory": "Microwave Element",
+    "params": [
+      "Type"
+    ]
+  },
+  {
+    "category": "Miscellaneous",
+    "subcategory": "Quartz Crystal",
+    "params": [
+      "Quality Level",
+      "Frequency"
+    ]
+  },
+  {
+    "category": "Miscellaneous",
+    "subcategory": "Vibrator",
+    "params": [
+      "Type"
+    ]
+  },
+  {
+    "category": "Optical Device",
+    "subcategory": "Detector, Isolator, Emitter",
+    "params": [
+      "Quality Level",
+      "Type",
+      "Initial Temp Rise",
+      "Operating Power",
+      "Thermal Resistance",
+      "Junction-",
+      "Temperature Rise",
+      "Junction Temp Override"
+    ]
+  },
+  {
+    "category": "Optical Device",
+    "subcategory": "Laser Diode",
+    "params": [
+      "Application",
+      "Type",
+      "Construction Type",
+      "Duty Cycle",
+      "Forward Peak Current",
+      "Required Optical Power",
+      "Rated Optical Power",
+      "Optical Power Ratio",
+      "Initial Temp Rise",
+      "Operating Power",
+      "Thermal Resistance",
+      "Junction-",
+      "Temperature Rise",
+      "Junction Temp Override"
+    ]
+  },
+  {
+    "category": "Relay",
+    "subcategory": "Contactor",
+    "params": [
+      "Quality Level",
+      "Construction Type",
+      "Contact Form",
+      "Max Rated Temp",
+      "Load Type",
+      "Cycling Rate",
+      "Operating Current",
+      "Rated Current",
+      "Current Ratio",
+      "Temperature Rise",
+      "Case Temp Override"
+    ]
+  },
+  {
+    "category": "Relay",
+    "subcategory": "Dry Circuit",
+    "params": [
+      "Quality Level",
+      "Construction Type",
+      "Contact Form",
+      "Max Rated Temp",
+      "Load Type",
+      "Cycling Rate",
+      "Operating Current",
+      "Rated Current",
+      "Current Ratio",
+      "Temperature Rise",
+      "Case Temp Override"
+    ]
+  },
+  {
+    "category": "Relay",
+    "subcategory": "Electronic Time Delay, Non-Thermal",
+    "params": [
+      "Quality Level",
+      "Contact Form",
+      "Max Rated Temp",
+      "Load Type",
+      "Cycling Rate",
+      "Operating Current",
+      "Rated Current",
+      "Current Ratio",
+      "Temperature Rise",
+      "Case Temp Override"
+    ]
+  },
+  {
+    "category": "Relay",
+    "subcategory": "General Purpose",
+    "params": [
+      "Quality Level",
+      "Construction Type",
+      "Contact Form",
+      "Max Rated Temp",
+      "Load Type",
+      "Cycling Rate",
+      "Operating Current",
+      "Rated Current",
+      "Current Ratio",
+      "Temperature Rise",
+      "Case Temp Override"
+    ]
+  },
+  {
+    "category": "Relay",
+    "subcategory": "High Speed",
+    "params": [
+      "Quality Level",
+      "Construction Type",
+      "Contact Form",
+      "Max Rated Temp",
+      "Load Type",
+      "Cycling Rate",
+      "Operating Current",
+      "Rated Current",
+      "Current Ratio",
+      "Temperature Rise",
+      "Case Temp Override"
+    ]
+  },
+  {
+    "category": "Relay",
+    "subcategory": "High Voltage",
+    "params": [
+      "Quality Level",
+      "Construction Type",
+      "Contact Form",
+      "Max Rated Temp",
+      "Load Type",
+      "Cycling Rate",
+      "Operating Current",
+      "Rated Current",
+      "Current Ratio",
+      "Temperature Rise",
+      "Case Temp Override"
+    ]
+  },
+  {
+    "category": "Relay",
+    "subcategory": "Latching",
+    "params": [
+      "Quality Level",
+      "Construction Type",
+      "Contact Form",
+      "Max Rated Temp",
+      "Load Type",
+      "Cycling Rate",
+      "Operating Current",
+      "Rated Current",
+      "Current Ratio",
+      "Temperature Rise",
+      "Case Temp Override"
+    ]
+  },
+  {
+    "category": "Relay",
+    "subcategory": "Medium Power",
+    "params": [
+      "Quality Level",
+      "Construction Type",
+      "Contact Form",
+      "Max Rated Temp",
+      "Load Type",
+      "Cycling Rate",
+      "Operating Current",
+      "Rated Current",
+      "Current Ratio",
+      "Temperature Rise",
+      "Case Temp Override"
+    ]
+  },
+  {
+    "category": "Relay",
+    "subcategory": "Polarized",
+    "params": [
+      "Quality Level",
+      "Construction Type",
+      "Contact Form",
+      "Max Rated Temp",
+      "Load Type",
+      "Cycling Rate",
+      "Operating Current",
+      "Rated Current",
+      "Current Ratio",
+      "Temperature Rise",
+      "Case Temp Override"
+    ]
+  },
+  {
+    "category": "Relay",
+    "subcategory": "Reed, Dual In Line",
+    "params": [
+      "Quality Level",
+      "Construction Type",
+      "Contact Form",
+      "Max Rated Temp",
+      "Load Type",
+      "Cycling Rate",
+      "Operating Current",
+      "Rated Current",
+      "Current Ratio",
+      "Temperature Rise",
+      "Case Temp Override"
+    ]
+  },
+  {
+    "category": "Relay",
+    "subcategory": "Sensitive",
+    "params": [
+      "Quality Level",
+      "Construction Type",
+      "Contact Form",
+      "Max Rated Temp",
+      "Load Type",
+      "Cycling Rate",
+      "Operating Current",
+      "Rated Current",
+      "Current Ratio",
+      "Temperature Rise",
+      "Case Temp Override"
+    ]
+  },
+  {
+    "category": "Relay",
+    "subcategory": "Solid State, Time Delay",
+    "params": [
+      "Quality Level",
+      "Type"
+    ]
+  },
+  {
+    "category": "Relay",
+    "subcategory": "Thermal, Bimetal",
+    "params": [
+      "Quality Level",
+      "Contact Form",
+      "Max Rated Temp",
+      "Load Type",
+      "Cycling Rate",
+      "Operating Current",
+      "Rated Current",
+      "Current Ratio",
+      "Temperature Rise",
+      "Case Temp Override"
+    ]
+  },
+  {
+    "category": "Resistor",
+    "subcategory": "Accurate, WW (RB, RBR)",
+    "params": [
+      "Quality Level",
+      "Operating Power",
+      "Power Rating",
+      "Power Ratio",
+      "Temperature Rise",
+      "Case Temp Override"
+    ]
+  },
+  {
+    "category": "Resistor",
+    "subcategory": "Carbon, Var NonWW (RV)",
+    "params": [
+      "Quality Level",
+      "Operating Power",
+      "Power Rating",
+      "Power Ratio",
+      "Temperature Rise",
+      "Case Temp Override"
+    ]
+  },
+  {
+    "category": "Resistor",
+    "subcategory": "Chassis Mount, WW Power (RE, RER)",
+    "params": [
+      "Quality Level",
+      "Operating Power",
+      "Power Rating",
+      "Power Ratio",
+      "Temperature Rise",
+      "Case Temp Override"
+    ]
+  },
+  {
+    "category": "Resistor",
+    "subcategory": "Composition (RC, RCR)",
+    "params": [
+      "Quality Level",
+      "Operating Power",
+      "Power Rating",
+      "Power Ratio",
+      "Temperature Rise",
+      "Case Temp Override"
+    ]
+  },
+  {
+    "category": "Resistor",
+    "subcategory": "Film (RL, RLR, RN, RNR, RM)",
+    "params": [
+      "Quality Level",
+      "Operating Power",
+      "Power Rating",
+      "Power Ratio",
+      "Type",
+      "Temperature Rise",
+      "Case Temp Override"
+    ]
+  },
+  {
+    "category": "Resistor",
+    "subcategory": "Film, Power (RD)",
+    "params": [
+      "Quality Level",
+      "Operating Power",
+      "Power Rating",
+      "Power Ratio",
+      "Temperature Rise",
+      "Case Temp Override"
+    ]
+  },
+  {
+    "category": "Resistor",
+    "subcategory": "Film, Var NonWW (RVC)",
+    "params": [
+      "Quality Level",
+      "Operating Power",
+      "Power Rating",
+      "Power Ratio",
+      "Temperature Rise",
+      "Case Temp Override"
+    ]
+  },
+  {
+    "category": "Resistor",
+    "subcategory": "Lead Mount, WW Power (RW, RWR)",
+    "params": [
+      "Quality Level",
+      "Operating Power",
+      "Power Rating",
+      "Power Ratio",
+      "Temperature Rise",
+      "Case Temp Override"
+    ]
+  },
+  {
+    "category": "Resistor",
+    "subcategory": "Lead Screw, Var WW (RT, RTR)",
+    "params": [
+      "Quality Level",
+      "Operating Power",
+      "Power Rating",
+      "Power Ratio",
+      "Temperature Rise",
+      "Case Temp Override"
+    ]
+  },
+  {
+    "category": "Resistor",
+    "subcategory": "Network Film (RZ)",
+    "params": [
+      "Quality Level",
+      "Operating Power",
+      "Power Rating",
+      "Power Ratio",
+      "Temperature Rise",
+      "Case Temp Override"
+    ]
+  },
+  {
+    "category": "Resistor",
+    "subcategory": "Power, Var WW (RP)",
+    "params": [
+      "Quality Level",
+      "Operating Power",
+      "Power Rating",
+      "Power Ratio",
+      "Temperature Rise",
+      "Case Temp Override"
+    ]
+  },
+  {
+    "category": "Resistor",
+    "subcategory": "Precision, Var NonWW (RQ)",
+    "params": [
+      "Quality Level",
+      "Operating Power",
+      "Power Rating",
+      "Power Ratio",
+      "Temperature Rise",
+      "Case Temp Override"
+    ]
+  },
+  {
+    "category": "Resistor",
+    "subcategory": "Precision, Var WW (RR)",
+    "params": [
+      "Quality Level",
+      "Operating Power",
+      "Power Rating",
+      "Power Ratio",
+      "Temperature Rise",
+      "Case Temp Override"
+    ]
+  },
+  {
+    "category": "Resistor",
+    "subcategory": "Semiprec, Var WW (RA, RK)",
+    "params": [
+      "Quality Level",
+      "Operating Power",
+      "Power Rating",
+      "Power Ratio",
+      "Type",
+      "Temperature Rise",
+      "Case Temp Override"
+    ]
+  },
+  {
+    "category": "Resistor",
+    "subcategory": "Thermistor (RTH)",
+    "params": [
+      "Quality Level",
+      "Operating Power",
+      "Power Rating",
+      "Power Ratio"
+    ]
+  },
+  {
+    "category": "Resistor",
+    "subcategory": "Trimmer, Var NonWW (RJ, RJR)",
+    "params": [
+      "Quality Level",
+      "Operating Power",
+      "Power Rating",
+      "Power Ratio",
+      "Temperature Rise",
+      "Case Temp Override"
+    ]
+  },
+  {
+    "category": "Rotating Device",
+    "subcategory": "Motor",
+    "params": [
+      "Life Cycle",
+      "Type",
+      "Temperature Rise",
+      "Frame Temp Override"
+    ]
+  },
+  {
+    "category": "Rotating Device",
+    "subcategory": "Other",
+    "params": [
+      "Type",
+      "Size",
+      "Number of Brushes",
+      "Elapsed Time Meter Type",
+      "Max Rated Temp",
+      "Temperature Rise",
+      "Frame Temp Override"
+    ]
+  },
+  {
+    "category": "Semiconductor",
+    "subcategory": "Alphanumeric Display",
+    "params": [
+      "Quality Level",
+      "Type",
+      "# of Characters",
+      "Application",
+      "Initial Temp Rise",
+      "Operating Power",
+      "Thermal Resistance",
+      "Junction-",
+      "Temperature Rise",
+      "Junction Temp Override"
+    ]
+  },
+  {
+    "category": "Semiconductor",
+    "subcategory": "Diode",
+    "params": [
+      "Quality Level",
+      "Diode Type",
+      "Operating Voltage",
+      "Rated Voltage",
+      "Voltage Ratio",
+      "# of Stacks",
+      "Construction Type",
+      "Initial Temp Rise",
+      "Operating Power",
+      "Thermal Resistance",
+      "Junction-",
+      "Temperature Rise",
+      "Junction Temp Override"
+    ]
+  },
+  {
+    "category": "Semiconductor",
+    "subcategory": "Si FET",
+    "params": [
+      "Quality Level",
+      "Two Sided",
+      "Application",
+      "Power Rating",
+      "Type"
+    ]
+  },
+  {
+    "category": "Semiconductor",
+    "subcategory": "Thyristor",
+    "params": [
+      "Quality Level",
+      "Operating Voltage",
+      "Rated Voltage",
+      "Voltage Ratio",
+      "Rated Forward Current",
+      "Initial Temp Rise",
+      "Operating Power",
+      "Thermal Resistance",
+      "Junction-",
+      "Temperature Rise",
+      "Junction Temp Override"
+    ]
+  },
+  {
+    "category": "Semiconductor",
+    "subcategory": "Transistor",
+    "params": [
+      "Quality Level",
+      "Two Sided",
+      "Application",
+      "Operating Voltage"
+    ]
+  },
+  {
+    "category": "Semiconductor",
+    "subcategory": "Unijunction Transistor",
+    "params": [
+      "Quality Level",
+      "Initial Temp Rise",
+      "Operating Power",
+      "Thermal Resistance",
+      "Junction-",
+      "Temperature Rise",
+      "Junction Temp Override"
+    ]
+  },
+  {
+    "category": "Semiconductor",
+    "subcategory": "Microwave Diode",
+    "params": [
+      "Quality Level",
+      "Diode Type",
+      "Power Rating",
+      "Initial Temp Rise",
+      "Operating Power",
+      "Thermal Resistance",
+      "Junction-",
+      "Temperature Rise"
+    ]
+  },
+  {
+    "category": "Semiconductor",
+    "subcategory": "GaAs FET",
+    "params": [
+      "Quality Level"
+    ]
+  },
+  {
+    "category": "Semiconductor",
+    "subcategory": "Microwave Transistor",
+    "params": [
+      "Quality Level",
+      "Operating Voltage",
+      "Rated Voltage",
+      "Voltage Ratio",
+      "Power Rating",
+      "Initial Temp Rise",
+      "Operating Power",
+      "Thermal Resistance",
+      "Junction-",
+      "Temperature Rise",
+      "Junction Temp Override"
+    ]
+  },
+  {
+    "category": "Semiconductor",
+    "subcategory": "Microwave Power Transistor",
+    "params": [
+      "Quality Level",
+      "Application",
+      "Metallization",
+      "Internal Matching",
+      "Operating Voltage",
+      "Rated Voltage",
+      "Voltage Ratio",
+      "Average Output Power",
+      "Frequency",
+      "Duty Cycle",
+      "Initial Temp Rise",
+      "Operating Power",
+      "Thermal Resistance",
+      "Junction-",
+      "Temperature Rise",
+      "Junction Temp Override"
+    ]
+  },
+  {
+    "category": "Switching Device",
+    "subcategory": "Basic Sensitive",
+    "params": [
+      "Quality Level",
+      "Load Type",
+      "Operating Current",
+      "Rated Current",
+      "Current Ratio"
+    ]
+  },
+  {
+    "category": "Switching Device",
+    "subcategory": "Circuit Breaker",
+    "params": [
+      "Quality Level",
+      "Type",
+      "Application",
+      "Contact Form"
+    ]
+  },
+  {
+    "category": "Switching Device",
+    "subcategory": "Other",
+    "params": [
+      "Quality Level",
+      "Type",
+      "Load Type",
+      "Operating Current",
+      "Rated Current",
+      "Current Ratio"
+    ]
+  },
+  {
+    "category": "Switching Device",
+    "subcategory": "Rocker or Slide",
+    "params": [
+      "Quality Level",
+      "Load Type",
+      "Operating Current",
+      "Rated Current",
+      "Current Ratio"
+    ]
+  },
+  {
+    "category": "Switching Device",
+    "subcategory": "Rotary",
+    "params": [
+      "Quality Level",
+      "Load Type",
+      "Operating Current",
+      "Rated Current",
+      "Current Ratio"
+    ]
+  },
+  {
+    "category": "Switching Device",
+    "subcategory": "Thumbwheel",
+    "params": [
+      "Quality Level",
+      "Load Type",
+      "Operating Current",
+      "Rated Current",
+      "Current Ratio"
+    ]
+  },
+  {
+    "category": "Switching Device",
+    "subcategory": "Toggle or Pushbutton",
+    "params": [
+      "Quality Level",
+      "Contact Form",
+      "Load Type",
+      "Operating Current",
+      "Rated Current",
+      "Current Ratio"
+    ]
+  }
+]

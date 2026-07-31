@@ -106,6 +106,10 @@ class AnalysisReviewDialog(QDialog):
 
             name_item = QTableWidgetItem(name)
             name_item.setFlags(name_item.flags() & ~Qt.ItemIsEditable)
+            # 참고표로 자동 판정한 값이면 근거를 툴팁으로 보여줘 사람이 왜 이 값인지 알고 대조하게 해요.
+            note = self.analysis.reference_notes.get(name)
+            if note:
+                name_item.setToolTip(f"자동 판정 근거: {note}")
             self.table.setItem(row, COL_FIELD, name_item)
             self.table.setItem(row, COL_VALUE, QTableWidgetItem(value or ""))
 

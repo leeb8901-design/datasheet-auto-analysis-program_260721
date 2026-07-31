@@ -19,10 +19,10 @@ LOG_DIR = APP_DIR / "logs"  # 로그 파일을 저장할 폴더
 # 파일("- 복사본")을 마스터로 사용해요.
 MAPPING_TEMPLATE_PATH = APP_DIR / "Windchill_217F_Mapping_Template - 복사본.xlsx"
 
-# "Import 양식" 버튼이 그대로 복사해서 내보내는 마스터 파일이에요. VBA 다운로드 도우미 매크로
-# (vba/datasheet_helper.bas)가 이미 내장되어 있고, 부품리스트 시트 헤더도 output_builder.py가
-# 만드는 구조와 똑같이 맞춰뒀어요. 프로그램은 이 파일을 읽기만 하고 절대 수정하지 않아요.
-IMPORT_TEMPLATE_PATH = APP_DIR / "vba" / "Import_양식.xlsm"
+# "Import 양식" 버튼이 그대로 복사해서 내보내는 마스터 파일이에요. 이제 입력지(Data_list_217F.xlsx)를
+# 그대로 내보내요 - 사용자가 이 파일을 받아 품번을 채워 넣고 다시 입력지로 쓰는 흐름이에요.
+# 프로그램은 이 파일을 읽기만 하고(복사만) 절대 수정하지 않아요.
+IMPORT_TEMPLATE_PATH = APP_DIR / "Data_list_217F.xlsx"
 
 # .env 파일에 적어둔 값(예: MOUSER_API_KEY)을 읽어와요.
 load_dotenv(dotenv_path=APP_DIR / ".env")
@@ -35,6 +35,8 @@ PART_LIST_SHEET_NAME = "부품리스트"
 PART_NUMBER_KEYWORDS = ["품번", "part number", "part no", "partnumber", "pn", "mpn"]
 # "이게 제조사 칸이구나!"를 알아내기 위한 힌트 단어들이에요.
 MANUFACTURER_KEYWORDS = ["제조사", "manufacturer", "mfr", "mfg"]
+# "이게 품명 칸이구나!"를 알아내기 위한 힌트 단어들이에요 (PSA 시트 부품 행에 품명을 같이 적어요).
+PART_NAME_KEYWORDS = ["품명", "품 명", "part name", "description"]
 
 # 프로그램이 엑셀에 자동으로 채워 넣는 결과 컬럼들의 이름이에요.
 COL_DOWNLOAD_STATUS = "다운로드 상태"
@@ -53,6 +55,17 @@ RESULT_COLUMNS = [
     COL_UNRESOLVED_FIELDS,
     COL_SAVE_PATH,
 ]
+
+# '작업지'(입력지 Data_list_217F.xlsx)에 분석 결과를 되쓸 때, 앱 내부 결과 컬럼 -> 작업지의 실제
+# 컬럼(헤더 이름) 매핑이에요. 사용자가 정한 규칙(2026-07-31):
+#   다운로드 상태 -> '상태' / 데이터시트 링크 -> '데이터시트 다운로드 링크' / 저장 경로 -> '분석된 데이터시트 링크'
+# 여기 없는 결과(분석 상태/오류내용/미확인 항목)는 작업지에 쓰지 않아요.
+# ExcelResultWriter가 이 매핑으로 결과를 해당 컬럼에 써넣어요.
+WORKSHEET_RESULT_COLUMN_MAP = {
+    COL_DOWNLOAD_STATUS: "상태",
+    COL_DATASHEET_LINK: "데이터시트 다운로드 링크",
+    COL_SAVE_PATH: "분석된 데이터시트 링크",
+}
 
 # 다운로드 상태로 쓰는 값들이에요. 여러 곳에서 같은 글자를 쓰도록 여기 모아뒀어요.
 STATUS_PENDING = "대기"

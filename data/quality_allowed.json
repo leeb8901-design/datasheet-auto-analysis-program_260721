@@ -1,0 +1,1392 @@
+{
+  "source": "유효성 목록 / 서브카테고리별 허용 Quality Level",
+  "note": "commercial_fixed=true 는 온도 기반 등급이 이 서브카테고리에서 미허용이라 Quality Level 을 Commercial 로 고정하는 항목(규칙2). 엑셀에서 채우기색 FFE699 로 표시됨.",
+  "commercial_fixed_count": 18,
+  "by_category": {
+    "Capacitor": {
+      "Air Trimmer, Variable (CT)": {
+        "allowed": [
+          "Mil-Spec",
+          "Commercial"
+        ],
+        "allowed_tokens": [
+          "Commercial",
+          "Mil-Spec"
+        ],
+        "commercial_fixed": true
+      },
+      "Button Mica (CB)": {
+        "allowed": [
+          "Mil-Spec",
+          "Commercial"
+        ],
+        "allowed_tokens": [
+          "Commercial",
+          "Mil-Spec"
+        ],
+        "commercial_fixed": true
+      },
+      "Ceramic, Variable (CV)": {
+        "allowed": [
+          "Mil-Spec",
+          "Commercial"
+        ],
+        "allowed_tokens": [
+          "Commercial",
+          "Mil-Spec"
+        ],
+        "commercial_fixed": true
+      },
+      "Chassis Mount, Elec, Alum (CU, CUR)": {
+        "allowed": [
+          "D",
+          "C, T",
+          "S, B",
+          "R",
+          "P",
+          "M",
+          "L",
+          "Mil-Spec",
+          "Commercial"
+        ],
+        "allowed_tokens": [
+          "B",
+          "C",
+          "Commercial",
+          "D",
+          "L",
+          "M",
+          "Mil-Spec",
+          "P",
+          "R",
+          "S",
+          "T"
+        ],
+        "commercial_fixed": false
+      },
+      "Chip, Ceramic (CDR)": {
+        "allowed": [
+          "D",
+          "C, T",
+          "S, B",
+          "R",
+          "P",
+          "M",
+          "L",
+          "Mil-Spec",
+          "Commercial"
+        ],
+        "allowed_tokens": [
+          "B",
+          "C",
+          "Commercial",
+          "D",
+          "L",
+          "M",
+          "Mil-Spec",
+          "P",
+          "R",
+          "S",
+          "T"
+        ],
+        "commercial_fixed": false
+      },
+      "Chip, Elec (CWR)": {
+        "allowed": [
+          "D",
+          "C, T",
+          "S, B",
+          "R",
+          "P",
+          "M",
+          "L",
+          "Mil-Spec",
+          "Commercial"
+        ],
+        "allowed_tokens": [
+          "B",
+          "C",
+          "Commercial",
+          "D",
+          "L",
+          "M",
+          "Mil-Spec",
+          "P",
+          "R",
+          "S",
+          "T"
+        ],
+        "commercial_fixed": false
+      },
+      "Feed Through, Paper (CZ, CZR)": {
+        "allowed": [
+          "D",
+          "C, T",
+          "S, B",
+          "R",
+          "P",
+          "M",
+          "L",
+          "Mil-Spec",
+          "Commercial"
+        ],
+        "allowed_tokens": [
+          "B",
+          "C",
+          "Commercial",
+          "D",
+          "L",
+          "M",
+          "Mil-Spec",
+          "P",
+          "R",
+          "S",
+          "T"
+        ],
+        "commercial_fixed": false
+      },
+      "General Ceramic (CK, CKR)": {
+        "allowed": [
+          "D",
+          "C, T",
+          "S, B",
+          "R",
+          "P",
+          "M",
+          "L",
+          "Mil-Spec",
+          "Commercial"
+        ],
+        "allowed_tokens": [
+          "B",
+          "C",
+          "Commercial",
+          "D",
+          "L",
+          "M",
+          "Mil-Spec",
+          "P",
+          "R",
+          "S",
+          "T"
+        ],
+        "commercial_fixed": false
+      },
+      "Glass (CY, CYR)": {
+        "allowed": [
+          "D",
+          "C, T",
+          "S, B",
+          "R",
+          "P",
+          "M",
+          "L",
+          "Mil-Spec",
+          "Commercial"
+        ],
+        "allowed_tokens": [
+          "B",
+          "C",
+          "Commercial",
+          "D",
+          "L",
+          "M",
+          "Mil-Spec",
+          "P",
+          "R",
+          "S",
+          "T"
+        ],
+        "commercial_fixed": false
+      },
+      "Lead Mount, Elec, Alum (CE)": {
+        "allowed": [
+          "Mil-Spec",
+          "Commercial"
+        ],
+        "allowed_tokens": [
+          "Commercial",
+          "Mil-Spec"
+        ],
+        "commercial_fixed": true
+      },
+      "Metallized Paper-Plastic (CH, CHR)": {
+        "allowed": [
+          "D",
+          "C, T",
+          "S, B",
+          "R",
+          "P",
+          "M",
+          "L",
+          "Mil-Spec",
+          "Commercial"
+        ],
+        "allowed_tokens": [
+          "B",
+          "C",
+          "Commercial",
+          "D",
+          "L",
+          "M",
+          "Mil-Spec",
+          "P",
+          "R",
+          "S",
+          "T"
+        ],
+        "commercial_fixed": false
+      },
+      "Mica (CM, CMR)": {
+        "allowed": [
+          "D",
+          "C, T",
+          "S, B",
+          "R",
+          "P",
+          "M",
+          "L",
+          "Mil-Spec",
+          "Commercial"
+        ],
+        "allowed_tokens": [
+          "B",
+          "C",
+          "Commercial",
+          "D",
+          "L",
+          "M",
+          "Mil-Spec",
+          "P",
+          "R",
+          "S",
+          "T"
+        ],
+        "commercial_fixed": false
+      },
+      "Nonsolid, Elec, Tant (CL, CLR, CRL)": {
+        "allowed": [
+          "D",
+          "C, T",
+          "S, B",
+          "R",
+          "P",
+          "M",
+          "L",
+          "Mil-Spec",
+          "Commercial"
+        ],
+        "allowed_tokens": [
+          "B",
+          "C",
+          "Commercial",
+          "D",
+          "L",
+          "M",
+          "Mil-Spec",
+          "P",
+          "R",
+          "S",
+          "T"
+        ],
+        "commercial_fixed": false
+      },
+      "Paper (CA, CP)": {
+        "allowed": [
+          "Mil-Spec",
+          "Commercial"
+        ],
+        "allowed_tokens": [
+          "Commercial",
+          "Mil-Spec"
+        ],
+        "commercial_fixed": true
+      },
+      "Paper-Plastic (CQ, CQR, CPV)": {
+        "allowed": [
+          "D",
+          "C, T",
+          "S, B",
+          "R",
+          "P",
+          "M",
+          "L",
+          "Mil-Spec",
+          "Commercial"
+        ],
+        "allowed_tokens": [
+          "B",
+          "C",
+          "Commercial",
+          "D",
+          "L",
+          "M",
+          "Mil-Spec",
+          "P",
+          "R",
+          "S",
+          "T"
+        ],
+        "commercial_fixed": false
+      },
+      "Piston, Variable (PC)": {
+        "allowed": [
+          "Mil-Spec",
+          "Commercial"
+        ],
+        "allowed_tokens": [
+          "Commercial",
+          "Mil-Spec"
+        ],
+        "commercial_fixed": true
+      },
+      "Plastic (CFR)": {
+        "allowed": [
+          "D",
+          "C, T",
+          "S, B",
+          "R",
+          "P",
+          "M",
+          "L",
+          "Mil-Spec",
+          "Commercial"
+        ],
+        "allowed_tokens": [
+          "B",
+          "C",
+          "Commercial",
+          "D",
+          "L",
+          "M",
+          "Mil-Spec",
+          "P",
+          "R",
+          "S",
+          "T"
+        ],
+        "commercial_fixed": false
+      },
+      "Solid, Elec, Tant (CSR)": {
+        "allowed": [
+          "D",
+          "C, T",
+          "S, B",
+          "R",
+          "P",
+          "M",
+          "L",
+          "Mil-Spec",
+          "Commercial"
+        ],
+        "allowed_tokens": [
+          "B",
+          "C",
+          "Commercial",
+          "D",
+          "L",
+          "M",
+          "Mil-Spec",
+          "P",
+          "R",
+          "S",
+          "T"
+        ],
+        "commercial_fixed": false
+      },
+      "Super Metallized Plastic (CRH)": {
+        "allowed": [
+          "D",
+          "C, T",
+          "S, B",
+          "R",
+          "P",
+          "M",
+          "L",
+          "Mil-Spec",
+          "Commercial"
+        ],
+        "allowed_tokens": [
+          "B",
+          "C",
+          "Commercial",
+          "D",
+          "L",
+          "M",
+          "Mil-Spec",
+          "P",
+          "R",
+          "S",
+          "T"
+        ],
+        "commercial_fixed": false
+      },
+      "Temp Compensat, Ceramic (CC, CCR)": {
+        "allowed": [
+          "D",
+          "C, T",
+          "S, B",
+          "R",
+          "P",
+          "M",
+          "L",
+          "Mil-Spec",
+          "Commercial"
+        ],
+        "allowed_tokens": [
+          "B",
+          "C",
+          "Commercial",
+          "D",
+          "L",
+          "M",
+          "Mil-Spec",
+          "P",
+          "R",
+          "S",
+          "T"
+        ],
+        "commercial_fixed": false
+      },
+      "Vacuum, Variable or Fixed (CG)": {
+        "allowed": [
+          "Mil-Spec",
+          "Commercial"
+        ],
+        "allowed_tokens": [
+          "Commercial",
+          "Mil-Spec"
+        ],
+        "commercial_fixed": true
+      }
+    },
+    "Connection": {
+      "Board with Plated Thru Holes": {
+        "allowed": [
+          "Mil-Spec",
+          "Commercial"
+        ],
+        "allowed_tokens": [
+          "Commercial",
+          "Mil-Spec"
+        ],
+        "commercial_fixed": false
+      },
+      "General": {
+        "allowed": [
+          "Mil-Spec",
+          "Commercial"
+        ],
+        "allowed_tokens": [
+          "Commercial",
+          "Mil-Spec"
+        ],
+        "commercial_fixed": false
+      },
+      "IC Socket": {
+        "allowed": [
+          "Mil-Spec",
+          "Commercial"
+        ],
+        "allowed_tokens": [
+          "Commercial",
+          "Mil-Spec"
+        ],
+        "commercial_fixed": false
+      },
+      "PCB Edge": {
+        "allowed": [
+          "Mil-Spec",
+          "Commercial"
+        ],
+        "allowed_tokens": [
+          "Commercial",
+          "Mil-Spec"
+        ],
+        "commercial_fixed": false
+      }
+    },
+    "Inductor": {
+      "Coil": {
+        "allowed": [
+          "S",
+          "R",
+          "P",
+          "M",
+          "Mil-Spec",
+          "Commercial"
+        ],
+        "allowed_tokens": [
+          "Commercial",
+          "M",
+          "Mil-Spec",
+          "P",
+          "R",
+          "S"
+        ],
+        "commercial_fixed": false
+      },
+      "Transformer": {
+        "allowed": [
+          "Mil-Spec",
+          "Commercial"
+        ],
+        "allowed_tokens": [
+          "Commercial",
+          "Mil-Spec"
+        ],
+        "commercial_fixed": false
+      }
+    },
+    "Integrated Circuit": {
+      "Linear": {
+        "allowed": [
+          "S",
+          "B",
+          "B-1",
+          "Commercial"
+        ],
+        "allowed_tokens": [
+          "B",
+          "B-1",
+          "Commercial",
+          "S"
+        ],
+        "commercial_fixed": false
+      },
+      "SAW - Surface Acoustic Wave": {
+        "allowed": [
+          "Above Commercial",
+          "Commercial"
+        ],
+        "allowed_tokens": [
+          "Above Commercial",
+          "Commercial"
+        ],
+        "commercial_fixed": true
+      }
+    },
+    "Miscellaneous": {
+      "Filter": {
+        "allowed": [
+          "Mil-Spec",
+          "Commercial"
+        ],
+        "allowed_tokens": [
+          "Commercial",
+          "Mil-Spec"
+        ],
+        "commercial_fixed": false
+      },
+      "Meter": {
+        "allowed": [
+          "Mil-Spec",
+          "Commercial"
+        ],
+        "allowed_tokens": [
+          "Commercial",
+          "Mil-Spec"
+        ],
+        "commercial_fixed": false
+      },
+      "Quartz Crystal": {
+        "allowed": [
+          "Mil-Spec",
+          "Commercial"
+        ],
+        "allowed_tokens": [
+          "Commercial",
+          "Mil-Spec"
+        ],
+        "commercial_fixed": false
+      }
+    },
+    "Optical Device": {
+      "Detector, Isolator, Emitter": {
+        "allowed": [
+          "JANTXV",
+          "JANTX",
+          "JAN",
+          "Commercial",
+          "Plastic"
+        ],
+        "allowed_tokens": [
+          "Commercial",
+          "JAN",
+          "JANTX",
+          "JANTXV",
+          "Plastic"
+        ],
+        "commercial_fixed": false
+      }
+    },
+    "Relay": {
+      "Contactor": {
+        "allowed": [
+          "R",
+          "P",
+          "X",
+          "U",
+          "M",
+          "L",
+          "Mil-Spec",
+          "Commercial"
+        ],
+        "allowed_tokens": [
+          "Commercial",
+          "L",
+          "M",
+          "Mil-Spec",
+          "P",
+          "R",
+          "U",
+          "X"
+        ],
+        "commercial_fixed": false
+      },
+      "Dry Circuit": {
+        "allowed": [
+          "R",
+          "P",
+          "X",
+          "U",
+          "M",
+          "L",
+          "Mil-Spec",
+          "Commercial"
+        ],
+        "allowed_tokens": [
+          "Commercial",
+          "L",
+          "M",
+          "Mil-Spec",
+          "P",
+          "R",
+          "U",
+          "X"
+        ],
+        "commercial_fixed": false
+      },
+      "Electronic Time Delay, Non-Thermal": {
+        "allowed": [
+          "R",
+          "P",
+          "X",
+          "U",
+          "M",
+          "L",
+          "Mil-Spec",
+          "Commercial"
+        ],
+        "allowed_tokens": [
+          "Commercial",
+          "L",
+          "M",
+          "Mil-Spec",
+          "P",
+          "R",
+          "U",
+          "X"
+        ],
+        "commercial_fixed": false
+      },
+      "General Purpose": {
+        "allowed": [
+          "R",
+          "P",
+          "X",
+          "U",
+          "M",
+          "L",
+          "Mil-Spec",
+          "Commercial"
+        ],
+        "allowed_tokens": [
+          "Commercial",
+          "L",
+          "M",
+          "Mil-Spec",
+          "P",
+          "R",
+          "U",
+          "X"
+        ],
+        "commercial_fixed": false
+      },
+      "High Speed": {
+        "allowed": [
+          "R",
+          "P",
+          "X",
+          "U",
+          "M",
+          "L",
+          "Mil-Spec",
+          "Commercial"
+        ],
+        "allowed_tokens": [
+          "Commercial",
+          "L",
+          "M",
+          "Mil-Spec",
+          "P",
+          "R",
+          "U",
+          "X"
+        ],
+        "commercial_fixed": false
+      },
+      "High Voltage": {
+        "allowed": [
+          "R",
+          "P",
+          "X",
+          "U",
+          "M",
+          "L",
+          "Mil-Spec",
+          "Commercial"
+        ],
+        "allowed_tokens": [
+          "Commercial",
+          "L",
+          "M",
+          "Mil-Spec",
+          "P",
+          "R",
+          "U",
+          "X"
+        ],
+        "commercial_fixed": false
+      },
+      "Latching": {
+        "allowed": [
+          "R",
+          "P",
+          "X",
+          "U",
+          "M",
+          "L",
+          "Mil-Spec",
+          "Commercial"
+        ],
+        "allowed_tokens": [
+          "Commercial",
+          "L",
+          "M",
+          "Mil-Spec",
+          "P",
+          "R",
+          "U",
+          "X"
+        ],
+        "commercial_fixed": false
+      },
+      "Medium Power": {
+        "allowed": [
+          "R",
+          "P",
+          "X",
+          "U",
+          "M",
+          "L",
+          "Mil-Spec",
+          "Commercial"
+        ],
+        "allowed_tokens": [
+          "Commercial",
+          "L",
+          "M",
+          "Mil-Spec",
+          "P",
+          "R",
+          "U",
+          "X"
+        ],
+        "commercial_fixed": false
+      },
+      "Polarized": {
+        "allowed": [
+          "R",
+          "P",
+          "X",
+          "U",
+          "M",
+          "L",
+          "Mil-Spec",
+          "Commercial"
+        ],
+        "allowed_tokens": [
+          "Commercial",
+          "L",
+          "M",
+          "Mil-Spec",
+          "P",
+          "R",
+          "U",
+          "X"
+        ],
+        "commercial_fixed": false
+      },
+      "Reed, Dual In Line": {
+        "allowed": [
+          "R",
+          "P",
+          "X",
+          "U",
+          "M",
+          "L",
+          "Mil-Spec",
+          "Commercial"
+        ],
+        "allowed_tokens": [
+          "Commercial",
+          "L",
+          "M",
+          "Mil-Spec",
+          "P",
+          "R",
+          "U",
+          "X"
+        ],
+        "commercial_fixed": false
+      },
+      "Sensitive": {
+        "allowed": [
+          "R",
+          "P",
+          "X",
+          "U",
+          "M",
+          "L",
+          "Mil-Spec",
+          "Commercial"
+        ],
+        "allowed_tokens": [
+          "Commercial",
+          "L",
+          "M",
+          "Mil-Spec",
+          "P",
+          "R",
+          "U",
+          "X"
+        ],
+        "commercial_fixed": false
+      },
+      "Solid State, Time Delay": {
+        "allowed": [
+          "Mil-Spec",
+          "Commercial"
+        ],
+        "allowed_tokens": [
+          "Commercial",
+          "Mil-Spec"
+        ],
+        "commercial_fixed": true
+      },
+      "Thermal, Bimetal": {
+        "allowed": [
+          "R",
+          "P",
+          "X",
+          "U",
+          "M",
+          "L",
+          "Mil-Spec",
+          "Commercial"
+        ],
+        "allowed_tokens": [
+          "Commercial",
+          "L",
+          "M",
+          "Mil-Spec",
+          "P",
+          "R",
+          "U",
+          "X"
+        ],
+        "commercial_fixed": false
+      }
+    },
+    "Resistor": {
+      "Accurate, WW (RB, RBR)": {
+        "allowed": [
+          "S",
+          "R",
+          "P",
+          "M",
+          "Mil-Spec",
+          "Commercial"
+        ],
+        "allowed_tokens": [
+          "Commercial",
+          "M",
+          "Mil-Spec",
+          "P",
+          "R",
+          "S"
+        ],
+        "commercial_fixed": false
+      },
+      "Carbon, Var NonWW (RV)": {
+        "allowed": [
+          "Mil-Spec",
+          "Commercial"
+        ],
+        "allowed_tokens": [
+          "Commercial",
+          "Mil-Spec"
+        ],
+        "commercial_fixed": true
+      },
+      "Chassis Mount, WW Power (RE, RER)": {
+        "allowed": [
+          "S",
+          "R",
+          "P",
+          "M",
+          "Mil-Spec",
+          "Commercial"
+        ],
+        "allowed_tokens": [
+          "Commercial",
+          "M",
+          "Mil-Spec",
+          "P",
+          "R",
+          "S"
+        ],
+        "commercial_fixed": false
+      },
+      "Composition (RC, RCR)": {
+        "allowed": [
+          "S",
+          "R",
+          "P",
+          "M",
+          "Mil-Spec",
+          "Commercial"
+        ],
+        "allowed_tokens": [
+          "Commercial",
+          "M",
+          "Mil-Spec",
+          "P",
+          "R",
+          "S"
+        ],
+        "commercial_fixed": false
+      },
+      "Film (RL, RLR, RN, RNR, RM)": {
+        "allowed": [
+          "S",
+          "R",
+          "P",
+          "M",
+          "Mil-Spec",
+          "Commercial"
+        ],
+        "allowed_tokens": [
+          "Commercial",
+          "M",
+          "Mil-Spec",
+          "P",
+          "R",
+          "S"
+        ],
+        "commercial_fixed": false
+      },
+      "Film, Power (RD)": {
+        "allowed": [
+          "Mil-Spec",
+          "Commercial"
+        ],
+        "allowed_tokens": [
+          "Commercial",
+          "Mil-Spec"
+        ],
+        "commercial_fixed": true
+      },
+      "Film, Var NonWW (RVC)": {
+        "allowed": [
+          "Mil-Spec",
+          "Commercial"
+        ],
+        "allowed_tokens": [
+          "Commercial",
+          "Mil-Spec"
+        ],
+        "commercial_fixed": true
+      },
+      "Lead Mount, WW Power (RW, RWR)": {
+        "allowed": [
+          "S",
+          "R",
+          "P",
+          "M",
+          "Mil-Spec",
+          "Commercial"
+        ],
+        "allowed_tokens": [
+          "Commercial",
+          "M",
+          "Mil-Spec",
+          "P",
+          "R",
+          "S"
+        ],
+        "commercial_fixed": false
+      },
+      "Lead Screw, Var WW (RT, RTR)": {
+        "allowed": [
+          "S",
+          "R",
+          "P",
+          "M",
+          "Mil-Spec",
+          "Commercial"
+        ],
+        "allowed_tokens": [
+          "Commercial",
+          "M",
+          "Mil-Spec",
+          "P",
+          "R",
+          "S"
+        ],
+        "commercial_fixed": false
+      },
+      "Network Film (RZ)": {
+        "allowed": [
+          "Mil-Spec",
+          "Commercial"
+        ],
+        "allowed_tokens": [
+          "Commercial",
+          "Mil-Spec"
+        ],
+        "commercial_fixed": true
+      },
+      "Power, Var WW (RP)": {
+        "allowed": [
+          "Mil-Spec",
+          "Commercial"
+        ],
+        "allowed_tokens": [
+          "Commercial",
+          "Mil-Spec"
+        ],
+        "commercial_fixed": true
+      },
+      "Precision, Var NonWW (RQ)": {
+        "allowed": [
+          "Mil-Spec",
+          "Commercial"
+        ],
+        "allowed_tokens": [
+          "Commercial",
+          "Mil-Spec"
+        ],
+        "commercial_fixed": true
+      },
+      "Precision, Var WW (RR)": {
+        "allowed": [
+          "Mil-Spec",
+          "Commercial"
+        ],
+        "allowed_tokens": [
+          "Commercial",
+          "Mil-Spec"
+        ],
+        "commercial_fixed": true
+      },
+      "Semiprec, Var WW (RA, RK)": {
+        "allowed": [
+          "Mil-Spec",
+          "Commercial"
+        ],
+        "allowed_tokens": [
+          "Commercial",
+          "Mil-Spec"
+        ],
+        "commercial_fixed": true
+      },
+      "Thermistor (RTH)": {
+        "allowed": [
+          "Mil-Spec",
+          "Commercial"
+        ],
+        "allowed_tokens": [
+          "Commercial",
+          "Mil-Spec"
+        ],
+        "commercial_fixed": true
+      },
+      "Trimmer, Var NonWW (RJ, RJR)": {
+        "allowed": [
+          "S",
+          "R",
+          "P",
+          "M",
+          "Mil-Spec",
+          "Commercial"
+        ],
+        "allowed_tokens": [
+          "Commercial",
+          "M",
+          "Mil-Spec",
+          "P",
+          "R",
+          "S"
+        ],
+        "commercial_fixed": false
+      }
+    },
+    "Semiconductor": {
+      "Alphanumeric Display": {
+        "allowed": [
+          "JANTXV",
+          "JANTX",
+          "JAN",
+          "Commercial",
+          "Plastic"
+        ],
+        "allowed_tokens": [
+          "Commercial",
+          "JAN",
+          "JANTX",
+          "JANTXV",
+          "Plastic"
+        ],
+        "commercial_fixed": false
+      },
+      "Diode": {
+        "allowed": [
+          "JANTXV",
+          "JANTX",
+          "JAN",
+          "Commercial",
+          "Plastic"
+        ],
+        "allowed_tokens": [
+          "Commercial",
+          "JAN",
+          "JANTX",
+          "JANTXV",
+          "Plastic"
+        ],
+        "commercial_fixed": false
+      },
+      "GaAs FET": {
+        "allowed": [
+          "JANTXV",
+          "JANTX",
+          "JAN",
+          "Commercial"
+        ],
+        "allowed_tokens": [
+          "Commercial",
+          "JAN",
+          "JANTX",
+          "JANTXV"
+        ],
+        "commercial_fixed": false
+      },
+      "Microwave Diode": {
+        "allowed": [
+          "JANTXV",
+          "JANTX",
+          "JAN",
+          "Commercial",
+          "Plastic"
+        ],
+        "allowed_tokens": [
+          "Commercial",
+          "JAN",
+          "JANTX",
+          "JANTXV",
+          "Plastic"
+        ],
+        "commercial_fixed": false
+      },
+      "Microwave Power Transistor": {
+        "allowed": [
+          "JANTXV",
+          "JANTX",
+          "JAN",
+          "Commercial"
+        ],
+        "allowed_tokens": [
+          "Commercial",
+          "JAN",
+          "JANTX",
+          "JANTXV"
+        ],
+        "commercial_fixed": false
+      },
+      "Microwave Transistor": {
+        "allowed": [
+          "JANTXV",
+          "JANTX",
+          "JAN",
+          "Commercial"
+        ],
+        "allowed_tokens": [
+          "Commercial",
+          "JAN",
+          "JANTX",
+          "JANTXV"
+        ],
+        "commercial_fixed": false
+      },
+      "Si FET": {
+        "allowed": [
+          "JANTXV",
+          "JANTX",
+          "JAN",
+          "Commercial",
+          "Plastic"
+        ],
+        "allowed_tokens": [
+          "Commercial",
+          "JAN",
+          "JANTX",
+          "JANTXV",
+          "Plastic"
+        ],
+        "commercial_fixed": false
+      },
+      "Thyristor": {
+        "allowed": [
+          "JANTXV",
+          "JANTX",
+          "JAN",
+          "Commercial",
+          "Plastic"
+        ],
+        "allowed_tokens": [
+          "Commercial",
+          "JAN",
+          "JANTX",
+          "JANTXV",
+          "Plastic"
+        ],
+        "commercial_fixed": false
+      },
+      "Transistor": {
+        "allowed": [
+          "JANTXV",
+          "JANTX",
+          "JAN",
+          "Commercial",
+          "Plastic"
+        ],
+        "allowed_tokens": [
+          "Commercial",
+          "JAN",
+          "JANTX",
+          "JANTXV",
+          "Plastic"
+        ],
+        "commercial_fixed": false
+      },
+      "Unijunction Transistor": {
+        "allowed": [
+          "JANTXV",
+          "JANTX",
+          "JAN",
+          "Commercial",
+          "Plastic"
+        ],
+        "allowed_tokens": [
+          "Commercial",
+          "JAN",
+          "JANTX",
+          "JANTXV",
+          "Plastic"
+        ],
+        "commercial_fixed": false
+      }
+    },
+    "Switching Device": {
+      "Basic Sensitive": {
+        "allowed": [
+          "Mil-Spec",
+          "Commercial"
+        ],
+        "allowed_tokens": [
+          "Commercial",
+          "Mil-Spec"
+        ],
+        "commercial_fixed": false
+      },
+      "Circuit Breaker": {
+        "allowed": [
+          "Mil-Spec",
+          "Commercial"
+        ],
+        "allowed_tokens": [
+          "Commercial",
+          "Mil-Spec"
+        ],
+        "commercial_fixed": false
+      },
+      "Other": {
+        "allowed": [
+          "Mil-Spec",
+          "Commercial"
+        ],
+        "allowed_tokens": [
+          "Commercial",
+          "Mil-Spec"
+        ],
+        "commercial_fixed": false
+      },
+      "Rocker or Slide": {
+        "allowed": [
+          "Mil-Spec",
+          "Commercial"
+        ],
+        "allowed_tokens": [
+          "Commercial",
+          "Mil-Spec"
+        ],
+        "commercial_fixed": false
+      },
+      "Rotary": {
+        "allowed": [
+          "Mil-Spec",
+          "Commercial"
+        ],
+        "allowed_tokens": [
+          "Commercial",
+          "Mil-Spec"
+        ],
+        "commercial_fixed": false
+      },
+      "Thumbwheel": {
+        "allowed": [
+          "Mil-Spec",
+          "Commercial"
+        ],
+        "allowed_tokens": [
+          "Commercial",
+          "Mil-Spec"
+        ],
+        "commercial_fixed": false
+      },
+      "Toggle or Pushbutton": {
+        "allowed": [
+          "Mil-Spec",
+          "Commercial"
+        ],
+        "allowed_tokens": [
+          "Commercial",
+          "Mil-Spec"
+        ],
+        "commercial_fixed": false
+      }
+    }
+  }
+}

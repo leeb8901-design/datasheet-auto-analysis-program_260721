@@ -1,0 +1,78 @@
+{
+  "source": "217F 분석기준 / 운용 온도별 품질등급",
+  "note": "카테고리 x 동작온도범위 -> 적용 품질등급. (Inductor는 Coil/Transformer 구분)",
+  "temperature_ranges": [
+    "0℃ ~ 70℃",
+    "-40℃ ~ 85℃",
+    "-55℃ ~ 125℃",
+    "No Data"
+  ],
+  "mapping": {
+    "Integrated Circuit": {
+      "0℃ ~ 70℃": "Commercial",
+      "-40℃ ~ 85℃": "B-1",
+      "-55℃ ~ 125℃": "B",
+      "No Data": "Commercial"
+    },
+    "Semiconductor": {
+      "0℃ ~ 70℃": "Commercial",
+      "-40℃ ~ 85℃": "JAN",
+      "-55℃ ~ 125℃": "JANTX",
+      "No Data": "Commercial"
+    },
+    "Resistor": {
+      "0℃ ~ 70℃": "Commercial",
+      "-40℃ ~ 85℃": "M",
+      "-55℃ ~ 125℃": "P",
+      "No Data": "Commercial"
+    },
+    "Capacitor": {
+      "0℃ ~ 70℃": "Commercial",
+      "-40℃ ~ 85℃": "L",
+      "-55℃ ~ 125℃": "M",
+      "No Data": "Commercial"
+    },
+    "Inductor - Coil": {
+      "0℃ ~ 70℃": "Commercial",
+      "-40℃ ~ 85℃": "Mil-Spec",
+      "-55℃ ~ 125℃": "P",
+      "No Data": "Commercial"
+    },
+    "Inductor - Transformer": {
+      "0℃ ~ 70℃": "Commercial",
+      "-40℃ ~ 85℃": "Mil-Spec",
+      "-55℃ ~ 125℃": "Mil-Spec",
+      "No Data": "Commercial"
+    },
+    "Relay": {
+      "0℃ ~ 70℃": "Commercial",
+      "-40℃ ~ 85℃": "Mil-Spec",
+      "-55℃ ~ 125℃": "P",
+      "No Data": "Commercial"
+    },
+    "Connection": {
+      "0℃ ~ 70℃": "Commercial",
+      "-40℃ ~ 85℃": "Mil-Spec",
+      "-55℃ ~ 125℃": "Mil-Spec",
+      "No Data": "Commercial"
+    },
+    "Switching Device": {
+      "0℃ ~ 70℃": "Commercial",
+      "-40℃ ~ 85℃": "Mil-Spec",
+      "-55℃ ~ 125℃": "Mil-Spec",
+      "No Data": "Commercial"
+    },
+    "Optical Device": {
+      "0℃ ~ 70℃": "Commercial",
+      "-40℃ ~ 85℃": "JAN",
+      "-55℃ ~ 125℃": "JANTX",
+      "No Data": "Commercial"
+    },
+    "Miscellaneous": {
+      "0℃ ~ 70℃": "Commercial",
+      "-40℃ ~ 85℃": "Mil-Spec",
+      "-55℃ ~ 125℃": "Mil-Spec",
+      "No Data": "Commercial"
+    }
+  }
+}

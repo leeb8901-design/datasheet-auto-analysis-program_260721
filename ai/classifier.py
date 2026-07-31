@@ -65,7 +65,7 @@ IC_SUBCATEGORY_KEYWORDS: dict[str, list[str]] = {
     "Microprocessor": [r"\bcpu\b", r"\bmcu\b", r"microcontroller", r"processor core"],
     "GaAs Digital": [r"\bgaas\b.*digital", r"gallium arsenide.*digital"],
     "GaAs MMIC": [r"\bmmic\b", r"\bgaas\b"],
-    "Custom": [r"\bcustom\b", r"\bfixed failure rate\b"],
+    # 'Custom' 소분류는 새 입력지(97개 정본)에 없어서 뽑아도 매핑맵에서 누락되므로 제거함.
     "Bubble Memory": [r"bubble memory"],
     "EEPROM": [r"\beeprom\b"],
     "PAL, PLA": [r"\bpal\b", r"\bpla\b"],

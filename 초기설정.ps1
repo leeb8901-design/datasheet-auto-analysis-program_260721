@@ -93,7 +93,52 @@ if (Test-Path $scraplingExe) {
     Write-Warn "scrapling.exe를 찾지 못했습니다. requirements.txt 설치가 제대로 됐는지 확인하세요."
 }
 
-# ---------------- ⑤ 직접 챙겨야 하는 파일 안내 ----------------
+# scrapling의 StealthyFetcher는 실제로는 patchright(패치된 Playwright)로 브라우저를 띄워요.
+# 'scrapling install'만으로는 patchright 전용 Chromium(chrome-win64\chrome.exe)이 빠져서
+# 실행 시 "Executable doesn't exist ... chromium-xxxx\chrome-win64\chrome.exe" 오류가 나요.
+# 그래서 patchright 브라우저를 반드시 따로 설치해줘야 해요 (이미 있으면 즉시 통과).
+$patchrightExe = Join-Path $PSScriptRoot ".venv\Scripts\patchright.exe"
+if (Test-Path $patchrightExe) {
+    & $patchrightExe install chromium
+    if ($LASTEXITCODE -ne 0) {
+        Write-Warn "patchright 브라우저 설치가 실패했습니다. 나중에 직접 '.venv\Scripts\patchright.exe install chromium'을 실행해보세요."
+    } else {
+        Write-Host "  patchright용 Chromium 설치 완료."
+    }
+} else {
+    Write-Warn "patchright.exe를 찾지 못했습니다. requirements.txt(scrapling[fetchers]) 설치가 제대로 됐는지 확인하세요."
+}
+
+# ---------------- ⑤ 데이터시트 다운로드용 브라우저(실제 Chrome) 점검 ----------------
+Write-Step "데이터시트 다운로드용 브라우저(실제 Google Chrome) 확인 중..."
+
+# [중요 - 2026-07-31에 실제로 겪은 문제와 해결법]
+# scrapling이 내려받는 'Chrome for Testing' 번들 브라우저(chrome.exe)가 일부 Windows에서
+# side-by-side(SxS) 오류로 아예 실행되지 않습니다.
+#   - 증상(로그): "side-by-side configuration is incorrect" / "spawn UNKNOWN" /
+#                 "Executable doesn't exist ... chromium-xxxx\chrome-win64\chrome.exe"
+#   - 원인: chrome.exe 매니페스트가 요구하는 SxS 어셈블리(예: 149.0.7827.55)를 Windows가 못 만듦.
+#           번들 브라우저를 지우고 새로 받아도, VC++ 재배포판을 복구해도 안 고쳐짐.
+#           (검증됨: headless_shell은 되지만 스텔스용 '풀 chrome.exe'만 실패.)
+#   - 해결: 프로그램은 이 문제를 피하려고 기본적으로 '시스템에 설치된 진짜 Google Chrome'을
+#           사용합니다 (datasheet/downloader.py 의 real_chrome=True). 그래서 실제 Chrome이 필요해요.
+$chromePaths = @(
+    "$env:ProgramFiles\Google\Chrome\Application\chrome.exe",
+    "${env:ProgramFiles(x86)}\Google\Chrome\Application\chrome.exe",
+    "$env:LocalAppData\Google\Chrome\Application\chrome.exe"
+)
+$chromeFound = $chromePaths | Where-Object { Test-Path $_ } | Select-Object -First 1
+if ($chromeFound) {
+    Write-Host "  실제 Google Chrome 찾음: $chromeFound"
+    Write-Host "  다운로드는 이 Chrome으로 실행돼요 (번들 브라우저 SxS 문제를 피함)."
+} else {
+    Write-Warn "실제 Google Chrome이 설치되어 있지 않습니다. 데이터시트 다운로드가 실패할 수 있어요."
+    Write-Warn "권장 해결: Google Chrome을 설치하세요 ->  winget install --id Google.Chrome -e"
+    Write-Warn "Chrome을 못 쓰는 환경이면, 번들 브라우저를 강제로 쓰도록 환경변수를 켤 수 있어요(이 PC에서"
+    Write-Warn "번들 브라우저가 SxS로 실패하면 소용없음):  setx SCRAPLING_REAL_CHROME 0"
+}
+
+# ---------------- ⑥ 직접 챙겨야 하는 파일 안내 ----------------
 Write-Step "직접 옮겨와야 하는 파일 확인 중..."
 
 $envPath = Join-Path $PSScriptRoot ".env"

@@ -38,9 +38,9 @@ def expected_hex_for(field_name: str, applicable_fields: set[str]) -> str:
 
 
 def build_blank_mapping_sheet(wb) -> "openpyxl.worksheet.worksheet.Worksheet":
-    """새 워크북에 154개 서브카테고리 빈 행이 색칠된 '매핑맵' 시트를 만들어 돌려줘요."""
+    """새 워크북에 서브카테고리마다 빈 행이 색칠된 '매핑맵' 시트를 만들어 돌려줘요(개수는 subcat_params 기준)."""
     ws = wb.create_sheet(MAPPING_SHEET_NAME)
-    headers = load_headers()  # [품번, Part Category, Part Subcategory, 파라미터124개...]
+    headers = load_headers()  # [품번, Part Category, Part Subcategory, PSA 파라미터들...]
 
     for col, (hex_code, text) in enumerate(LEGEND_ENTRIES, start=1):
         cell = ws.cell(row=LEGEND_ROW, column=col, value=text)
