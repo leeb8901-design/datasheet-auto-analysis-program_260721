@@ -76,6 +76,16 @@ def num(v):
     return v
 
 
+def cell_value(ws, row, col):
+    """병합된 셀이면 병합 범위의 왼쪽 위(앵커) 셀 값을 돌려줘요. openpyxl은 병합된 칸 중
+    앵커가 아닌 나머지는 그냥 .cell()로 읽으면 항상 None을 주기 때문에, 서브카테고리 이름처럼
+    여러 파라미터 컬럼에 걸쳐 병합된 셀은 이렇게 읽어야 해요."""
+    for rng in ws.merged_cells.ranges:
+        if rng.min_row <= row <= rng.max_row and rng.min_col <= col <= rng.max_col:
+            return ws.cell(row=rng.min_row, column=rng.min_col).value
+    return ws.cell(row=row, column=col).value
+
+
 # ----------------------------------------------------------------------
 # 1) 운용 온도별 품질등급  ->  quality_by_temp.json
 # ----------------------------------------------------------------------
@@ -261,6 +271,118 @@ def build_quality_allowed(ws):
 
 
 # ----------------------------------------------------------------------
+# 5-1) 서브카테고리별 허용 Package Type  ->  package_type_allowed.json
+# ----------------------------------------------------------------------
+def build_package_type_allowed(ws):
+    """Package Type은 실제 물리적 패키지명(예: 'UTQFN-12')이 아니라, 217F가 정한 표준
+    패키지 분류(예: 'Nonhermetic: DIPs, PGA, SMT')예요. build_quality_allowed와 완전히
+    같은 방식(4행=서브카테고리명, 6행=파라미터명, 7행부터 아래로 허용값)으로 읽어요."""
+    cat_marks = sorted(
+        (c.column, str(c.value).strip())
+        for c in ws[2] if c.value not in (None, "")
+    )
+
+    def cat_of(col):
+        name = None
+        for cc, nm in cat_marks:
+            if cc <= col:
+                name = nm
+            else:
+                break
+        return name
+
+    by_cat = {}
+    for c in ws[6]:
+        if _norm(c.value) != "Package Type":
+            continue
+        col = c.column
+        subname = _norm(cell_value(ws, 4, col))
+        if not subname:
+            continue
+        allowed = []
+        r = 7
+        while True:
+            v = _norm(ws.cell(row=r, column=col).value)
+            if v is None or v == "":
+                break
+            allowed.append(v)
+            r += 1
+        by_cat.setdefault(cat_of(col), {})[subname] = allowed
+
+    return {
+        "source": f"{SHEET_VALIDITY} / 서브카테고리별 허용 Package Type",
+        "note": ("Package Type 파라미터가 이 서브카테고리에서 가질 수 있는 217F 표준 분류값 "
+                 "목록(엑셀 드롭다운과 동일). 실제 물리적 패키지명이 아니에요 - 물리적 패키지를"
+                 "이 목록 중 하나로 매핑하는 규칙은 ai/reference.py의 classify_package_hermeticity 참고."),
+        "by_category": by_cat,
+    }
+
+
+# ----------------------------------------------------------------------
+# 5-2) 서브카테고리별 허용값 전체 (모든 파라미터)  ->  valid_values.json
+# ----------------------------------------------------------------------
+def build_valid_values(ws):
+    """'유효성 목록' 시트에 허용값 목록이 있는 모든 파라미터를 통째로 읽어요(Quality Level/
+    Package Type뿐 아니라 Type/Units/Junction-/Technology Type/Construction Type 등 전부).
+
+    CLAUDE.md 0번 원칙(2026-08-27 확정): 이 시트에 허용값이 정의된 파라미터는, 그 값 중에서만
+    골라야 해요. 이 JSON은 ai/reference.py의 get_allowed_values()/is_allowed_value()가 읽어서,
+    분석 파이프라인 마지막에 모든 필드값을 이 목록과 대조하는 안전망으로 써요 - 목록에 없는
+    값은 자동으로 비우고(사람 확인 필요), 이 시트에 애초에 없는 파라미터(전압/전류 등 연속값)는
+    이 규칙 대상이 아니니 그대로 둬요.
+
+    build_quality_allowed/build_package_type_allowed와 같은 표 구조(2행=카테고리 마커,
+    4행=서브카테고리명(병합 셀), 6행=파라미터명, 7행부터 아래로 허용값)를 파라미터 이름 상관없이
+    전부 훑어요."""
+    cat_marks = sorted(
+        (c.column, str(c.value).strip())
+        for c in ws[2] if c.value not in (None, "")
+    )
+
+    def cat_of(col):
+        name = None
+        for cc, nm in cat_marks:
+            if cc <= col:
+                name = nm
+            else:
+                break
+        return name
+
+    by_cat = {}
+    param_count = 0
+    for c in ws[6]:
+        pname = _norm(c.value)
+        if not pname:
+            continue
+        col = c.column
+        subname = _norm(cell_value(ws, 4, col))
+        if not subname:
+            continue
+        allowed = []
+        r = 7
+        while True:
+            v = _norm(ws.cell(row=r, column=col).value)
+            if v is None or v == "":
+                break
+            allowed.append(v)
+            r += 1
+        if not allowed:
+            continue
+        cat = cat_of(col)
+        by_cat.setdefault(cat, {}).setdefault(subname, {})[pname] = allowed
+        param_count += 1
+
+    return {
+        "source": f"{SHEET_VALIDITY} (전체 파라미터)",
+        "note": ("카테고리/서브카테고리/파라미터별 허용값 전체 목록. 이 목록에 있는 파라미터의 "
+                 "값은 반드시 이 중에서만 골라야 함(CLAUDE.md 0번 원칙, 2026-08-27). 여기 없는 "
+                 "파라미터(연속 측정값 등)는 이 규칙 대상이 아님."),
+        "param_column_count": param_count,
+        "by_category": by_cat,
+    }
+
+
+# ----------------------------------------------------------------------
 # 6) PSA 파라미터 목록  ->  subcat_params.json
 # ----------------------------------------------------------------------
 def build_subcat_params(ws):
@@ -272,20 +394,31 @@ def build_subcat_params(ws):
     cat_col = sub_col - 1  # Category
     param_start = sub_col + 1  # 파라미터 나열 시작 열
 
+    # 파라미터 열은 전체 서브카테고리가 공유하는 고정 슬롯(헤더행에 SD25, SD26, ... 처럼
+    # 이름이 매겨져 있음)이라, 어떤 행에서는 슬롯 사이사이가 비어요(그 서브카테고리엔 해당
+    # 안 되는 파라미터라서) - 그래서 "빈 칸을 만나면 끝"이 아니라, 헤더행에 실제로 슬롯이
+    # 있는 마지막 열까지는 전부 훑고 빈 칸은 그냥 건너뛰어야 해요(2026-09-04 수정 - PSA
+    # 입력 파라미터 시트는 그대로 두고 읽는 방식만 고침, 사용자 확정). 예전 방식(첫 빈 칸에서
+    # 멈춤)은 Transistor 행에서 Operating Voltage 다음 칸이 비어 있다는 이유로 그 뒤의 Rated
+    # Voltage/Voltage Ratio/Power Rating/Operating Power/Thermal Resistance/Junction-/
+    # Temperature Rise/Junction Temp Override를 전부 놓치고 있었음(실제 확인).
+    param_end = param_start
+    col = param_start
+    while _norm(ws.cell(row=hr, column=col).value):
+        param_end = col
+        col += 1
+
     items = []
     for r in range(hr + 1, ws.max_row + 1):
         cat = _norm(ws.cell(row=r, column=cat_col).value)
         sub = _norm(ws.cell(row=r, column=sub_col).value)
         if not cat or not sub:
             continue
-        params = []
-        col = param_start
-        while True:
-            v = _norm(ws.cell(row=r, column=col).value)
-            if v is None or v == "":
-                break
-            params.append(v)
-            col += 1
+        params = [
+            v
+            for col in range(param_start, param_end + 1)
+            if (v := _norm(ws.cell(row=r, column=col).value))
+        ]
         items.append({"category": cat, "subcategory": sub, "params": params})
 
     return items
@@ -341,6 +474,8 @@ def main():
             ws_c, "To Temperature", "From Temperature",
             f"{SHEET_CRITERIA} / 온도 변환 팩터", "temperatures"),
         "quality_allowed.json": build_quality_allowed(ws_v),
+        "package_type_allowed.json": build_package_type_allowed(ws_v),
+        "valid_values.json": build_valid_values(ws_v),
         "subcat_params.json": subcat_items,
         # headers 는 subcat_params 에서 파생 — 모든 파라미터가 headers 에 포함됨을 구조적으로 보장.
         "headers.json": build_headers(subcat_items),
@@ -379,6 +514,16 @@ def _verify(outputs):
     print("[quality_allowed] 서브카테고리 수:",
           sum(len(v) for v in qa["by_category"].values()),
           "| Commercial 고정:", qa["commercial_fixed_count"], "개")
+
+    pa = outputs["package_type_allowed.json"]
+    print("[package_type_allowed] 서브카테고리 수:",
+          sum(len(v) for v in pa["by_category"].values()),
+          "| Linear:", pa["by_category"].get("Integrated Circuit", {}).get("Linear"))
+
+    vv = outputs["valid_values.json"]
+    print("[valid_values] 파라미터 칸 수:", vv["param_column_count"],
+          "| Linear Package Type:",
+          vv["by_category"].get("Integrated Circuit", {}).get("Linear", {}).get("Package Type"))
 
     sp = outputs["subcat_params.json"]
     print("[subcat_params] 항목 수:", len(sp),

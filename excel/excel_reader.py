@@ -67,6 +67,25 @@ def find_header_row(path: str, sheet_name: str) -> tuple[int, list[str]] | None:
         wb.close()
 
 
+def find_input_columns(path: str, sheet_name: str) -> dict | None:
+    """'부품번호'/'제조사' 컬럼이 실제 엑셀에서 몇 번째 컬럼(1-indexed, openpyxl 기준)인지
+    찾아줘요. 프로그램 창에서 셀을 직접 고쳤을 때 원본 엑셀의 정확히 같은 칸에 되써넣기
+    위해 필요해요. 헤더를 못 찾으면 None."""
+    found = find_header_row(path, sheet_name)
+    if found is None:
+        return None
+    header_row, headers = found
+    part_col = find_column(headers, PART_NUMBER_KEYWORDS)
+    if part_col is None:
+        return None
+    mfr_col = find_column(headers, MANUFACTURER_KEYWORDS)
+    return {
+        "header_row": header_row,
+        "part_col": part_col + 1,  # openpyxl은 1-indexed
+        "mfr_col": (mfr_col + 1) if mfr_col is not None else None,
+    }
+
+
 def read_part_list_sheet(path: str) -> list[dict] | None:
     """'부품리스트' 시트에서 '부품번호'와 '제조사' 컬럼을 찾아 읽어온다.
     이 시트가 없거나 부품번호 컬럼을 찾을 수 없으면 None을 반환한다.

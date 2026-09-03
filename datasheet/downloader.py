@@ -1,9 +1,14 @@
 # 데이터시트를 실제로 찾아서 다운로드하는 파일이에요.
-# 순서: ① 이미 있으면 스킵 -> ② Mouser 검색+다운로드 -> ③ 실패하면 웹(DuckDuckGo) 검색+다운로드 -> ④ 그래도 실패하면 포기.
+# 순서: ① 이미 있으면 스킵 -> ② Mouser 검색+다운로드 -> ③ 실패하면 웹(DuckDuckGo) 검색+다운로드
+# -> ④ 그래도 못 찾으면 Mouser + DigiKey + 일반 구글 검색, 참고 링크 3개를 전부 남김(자동
+# 다운로드/접속은 안 함, 2026-09-03 도입 - DDG를 자동으로 두드리다 IP가 차단된 적이 있어서, 구글
+# 검색결과를 긁는 것도 시도해봤지만 구글이 실제 링크를 암호화해 숨겨놔서 포기하고 이 방식으로 바꿈.
+# 링크를 하나만 주면 그 사이트에 없는 품번일 때 막히니, 세 곳 다 줌).
 
 import os
 import random
 import re
+import threading
 import time
 from dataclasses import dataclass
 from pathlib import Path
@@ -37,10 +42,53 @@ def get_download_dir() -> Path:
 
 # ---- 검색/다운로드 요청에 공통으로 쓰는 설정 ----
 HEADERS = {"Accept-Language": "ko-KR,ko;q=0.9,en;q=0.8"}
-MIN_DELAY_SECONDS = 1.5  # 검색 사이 최소 대기시간 (너무 빠르면 로봇으로 의심받아요)
-MAX_DELAY_SECONDS = 3.5
+# 2026-09-03: 실제로 DuckDuckGo가 이 프로그램이 쓰는 IP를 막은 사고가 있었음(사용자가 일반
+# 브라우저로 duckduckgo.com에 직접 접속해도 안 됨을 확인 - ping은 되는데 TCP 연결만 막힘,
+# 즉 DDG 쪽에서 이 IP를 막은 것으로 보임). 자동화 요청이 ①짧은 간격으로 ②여러 스레드가 동시에
+# 나가던 게 봇으로 보였을 가능성이 커서, 대기시간을 늘리고(아래) 동시 요청도 막았어요(밑의
+# _ddg_request_lock 참고).
+MIN_DELAY_SECONDS = 3.0  # 검색 사이 최소 대기시간 (너무 빠르면 로봇으로 의심받아요)
+MAX_DELAY_SECONDS = 7.0
 RETRY_DELAY_SECONDS = (6.0, 10.0)  # 캡차에 걸렸을 때 재시도 전 대기시간
 DOWNLOAD_RETRY_DELAY = 2.0  # 다운로드 실패 시 재시도 전 대기시간
+
+# DDG 요청은 항상 한 번에 하나만 나가게 잠가요 - 동시에 여러 스레드가 같은 사이트를 두드리는 것
+# 자체가 강한 봇 신호라서, MAX_CONCURRENT_DOWNLOADS(main_window.py)로 여러 품번을 동시에 처리
+# 중이어도 DDG 검색 단계만큼은 줄을 서게 해요(Mouser API 호출은 이 잠금과 무관하게 그대로 동시에
+# 진행돼요 - 정식 API라 문제 없음).
+_ddg_request_lock = threading.Lock()
+
+# 연결 자체가 안 되면(첫 번째든 몇 번째든) "지금은(아마 IP 차단으로) DDG를 못 쓴다"고 보고,
+# 한동안 재시도 없이 바로 건너뛰어요 - 이미 막힌 상태에서 계속 두드리는 것도 봇처럼 보이고,
+# 사용자 입장에서도 실패할 게 뻔한 20~45초짜리 타임아웃을 배치 전체에서 계속 기다릴 이유가
+# 없어요. 임계값을 1로 낮춤(2026-09-03 사용자 확정 - 원래 3번 연속 실패해야 건너뛰었는데,
+# 처음 한 번만 실패해도 이후 품목은 바로 건너뛰고 참고 링크로 대체하도록 바꿈. DDG가 막혔을 때는
+# 재시도해도 대부분 계속 막혀 있어서, 3번 다 기다려볼 이유가 없다고 판단함).
+_ddg_state_lock = threading.Lock()
+_ddg_consecutive_failures = 0
+_ddg_blocked_until = 0.0  # time.time() 기준 - 이 시각 전까지는 DDG 요청 자체를 안 보내요.
+_DDG_FAILURE_THRESHOLD = 1
+_DDG_COOLDOWN_SECONDS = 600  # 10분
+
+
+def _ddg_is_blocked() -> bool:
+    with _ddg_state_lock:
+        return time.time() < _ddg_blocked_until
+
+
+def _ddg_report_result(ok: bool):
+    global _ddg_consecutive_failures, _ddg_blocked_until
+    with _ddg_state_lock:
+        if ok:
+            _ddg_consecutive_failures = 0
+            return
+        _ddg_consecutive_failures += 1
+        if _ddg_consecutive_failures >= _DDG_FAILURE_THRESHOLD and time.time() >= _ddg_blocked_until:
+            _ddg_blocked_until = time.time() + _DDG_COOLDOWN_SECONDS
+            logger.log(
+                f"  [알림] DuckDuckGo 연결이 {_ddg_consecutive_failures}번 연속 실패해서, "
+                f"앞으로 {_DDG_COOLDOWN_SECONDS // 60}분 동안 DDG를 건너뛰고 구글 검색 링크로 대신 안내합니다."
+            )
 
 # 유통사(부품 파는 가게) 사이트 — 대부분 데이터시트 출처로 원하지 않아서 아예 걸러요.
 DISTRIBUTOR_DOMAINS = [
@@ -89,18 +137,19 @@ def sanitize_filename(name: str) -> str:
     return cleaned or "unknown"
 
 
-# 대분류/소분류는 다운로드 시점(제조사만 앎)이 아니라 PDF 분석 이후에야 알 수 있어요. 그래서
-# 폴더 정리는 2단계예요: ① 받을 땐 일단 "미분류" 폴더에 품번.pdf로 저장 -> ② 분석 후 대분류/소분류가
-# 밝혀지면 그 폴더로 옮겨요(move_to_classified). 분석이 실패하거나 아직 안 됐으면 계속 "미분류"에 남아요.
-UNCLASSIFIED_DIR_NAME = "미분류"
+# 다운로드 단계에서는 대분류/소분류를 구분하지 않아요 - 모든 PDF를 Download_ datasheets 폴더
+# 바로 아래에 "품번.pdf"로 평평하게 저장해요(자동 다운로드든 사용자가 직접 받아서 넣은 것이든).
+# '신뢰도 분석' 단계에서 대분류/소분류가 밝혀지면, 그때서야 <대분류>/<소분류> 폴더를 만들어
+# 그 안으로 옮겨요(move_to_classified) - 다운로드 시점엔 아직 분류를 모르니 여기서는 안 해요.
 
 
 def _pdf_filename(part_number: str) -> str:
     return sanitize_filename(part_number) + ".pdf"
 
 
-def staging_dest_path(part_number: str) -> Path:
-    return _download_dir / UNCLASSIFIED_DIR_NAME / _pdf_filename(part_number)
+def dest_path_for_part(part_number: str) -> Path:
+    """다운로드가 저장할(또는 저장된) 평평한 경로예요. 새로 받는 PDF는 항상 여기로 가요."""
+    return _download_dir / _pdf_filename(part_number)
 
 
 def classified_dest_path(part_number: str, category: str, subcategory: str) -> Path:
@@ -108,24 +157,25 @@ def classified_dest_path(part_number: str, category: str, subcategory: str) -> P
     return folder / _pdf_filename(part_number)
 
 
-def find_existing_pdf(part_number: str) -> Path | None:
-    """이미 받아둔 파일이 있으면 그 경로를 돌려줘요 (미분류 폴더든, 이미 분류돼 옮겨진 폴더든)."""
-    staging = staging_dest_path(part_number)
-    if staging.exists():
-        return staging
+def resolve_existing_pdf(part_number: str) -> Path | None:
+    """이 품번의 PDF가 지금 있는 위치를 찾아요 - 평평한 자리(다운로드 직후)든, 분석 후 분류돼
+    옮겨진 자리(<대분류>/<소분류>)든 상관없이. 없으면 None."""
+    flat = dest_path_for_part(part_number)
+    if flat.exists():
+        return flat
     if not _download_dir.exists():
         return None
     matches = list(_download_dir.glob(f"*/*/{_pdf_filename(part_number)}"))
     return matches[0] if matches else None
 
 
-def resolve_pdf_path(part_number: str) -> Path:
-    """이 품번의 PDF가 지금 있는(또는 있을 예정인) 경로. 아직 없으면 저장될 자리(미분류)를 돌려줘요."""
-    return find_existing_pdf(part_number) or staging_dest_path(part_number)
+def has_pdf(part_number: str) -> bool:
+    return resolve_existing_pdf(part_number) is not None
 
 
 def move_to_classified(part_number: str, category: str, subcategory: str, current_path: Path) -> Path:
-    """분석으로 대분류/소분류가 밝혀진 뒤, 미분류 폴더에 있던 파일을 최종 폴더로 옮겨요."""
+    """분석으로 대분류/소분류가 밝혀진 뒤, 평평한 자리에 있던 PDF를 <대분류>/<소분류> 폴더로
+    옮겨요. 이미 그 자리에 있으면(재분석 등) 그대로 두고, 옮길 파일이 없으면 목표 경로만 돌려줘요."""
     dest = classified_dest_path(part_number, category, subcategory)
     if dest == current_path:
         return dest
@@ -133,7 +183,7 @@ def move_to_classified(part_number: str, category: str, subcategory: str, curren
         return dest
     dest.parent.mkdir(parents=True, exist_ok=True)
     if dest.exists():
-        current_path.unlink(missing_ok=True)  # 이미 옮겨져 있으면(재실행 등) 미분류 쪽 사본만 정리해요.
+        current_path.unlink(missing_ok=True)  # 이미 옮겨져 있으면(재실행 등) 평평한 쪽 사본만 정리해요.
     else:
         current_path.replace(dest)
     return dest
@@ -334,6 +384,67 @@ def _pick_reference_url(tried_urls: list[str]) -> str | None:
     return tried_urls[-1]  # 아는 사이트가 없으면 그냥 마지막으로 시도한 링크를 남겨요.
 
 
+def _general_search_url(part_number: str, manufacturer: str | None) -> str:
+    """Mouser 자체 검색(_distributor_search_url)까지도 부족하게 느껴질 때, 사람이 좀 더 폭넓게
+    찾아볼 수 있게 주는 일반 구글 검색 링크예요(2026-09-03 도입 - "실패한 항목엔 항상 눌러볼
+    게 있어야 한다"). 특정 데이터시트가 아니라 검색결과 페이지라, 실제로 찾는 건 사람 몫이에요.
+
+    구글로 만들어요(같은 날 DuckDuckGo에서 구글로 교체) - DuckDuckGo가 지금 이 IP에서 안 됨을
+    이미 확인한 뒤라, DDG 링크를 또 줘봤자 사용자 브라우저에서도 안 열릴 가능성이 높아서예요.
+    이 함수는 URL만 만들 뿐 절대 구글에 접속하지 않아요(스크래핑 없음) - 순수하게 "사람이 실제
+    브라우저로 직접 눌러서 찾는" 용도예요."""
+    query = f"{manufacturer} {part_number} datasheet" if manufacturer else f"{part_number} datasheet"
+    return "https://www.google.com/search?" + urlencode({"q": query})
+
+
+# ---- Mouser/DigiKey 자체 검색 링크 (2026-09-03 사용자 요청, 같은 날 구글 스크래핑에서 전환) ----
+#
+# 처음엔 구글에서 "<품번> (site:mouser.com OR site:digikey.com)"으로 검색해서 실제 제품 페이지
+# 링크를 찾아보려 했는데, 실제로 겪어보니 두 가지 문제가 있었어요.
+#   ① 정상 결과 페이지도 "차단 페이지"로 오탐하는 버그가 있었음(구글 자체 봇 감지 스크립트
+#      코드의 "/sorry/index" 문자열이 본문에 항상 있어서) - 이건 최종 URL 리다이렉트 여부로
+#      바꿔서 고침.
+#   ② 그런데 오탐을 고친 뒤에도 여전히 링크를 못 찾았음 - 확인해보니 **구글이 최근 검색결과의
+#      실제 목적지 URL을 아예 안 보여줌**. 예전엔 "/url?q=실제주소" 형태였는데, 지금은
+#      "/goto?url=CAESgwEB6zsw..." 처럼 암호화된 값이라 사람이 브라우저에서 실제로 클릭해야만
+#      풀리고, 정적으로 읽어서는 알아낼 방법이 없음(구글이 스크래핑 방지 목적으로 일부러 이렇게
+#      바꾼 것으로 보임 - 코드로 고칠 수 있는 문제가 아님).
+#
+# 그래서 구글 검색 결과를 파싱하는 대신, **Mouser/DigiKey 자체 검색 페이지로 바로 연결되는
+# 링크**를 만들어요. 오히려 더 안전하고(구글/DDG 차단 위험 자체가 없음 - 두 사이트 모두 자동
+# 접속은 절대 안 하고 URL만 만듦), 품번이 정확히 일치하면 Mouser/DigiKey 검색이 그 자리에서
+# 바로 제품 페이지로 넘어가는 경우도 많아서 한 단계 더 직접적이에요. Mouser를 먼저 시도하는 건
+# PREFERRED_DISTRIBUTOR_DOMAINS와 같은 우선순위(Mouser가 DigiKey보다 먼저)를 따른 거예요.
+def _mouser_search_url(part_number: str) -> str:
+    """Mouser 자체 검색 결과 페이지 링크를 만들어요. 실제로 접속해서 확인하지는 않아요(사람이
+    직접 눌러서 봄) - 그래서 이 부품을 Mouser가 취급하는지는 사람이 눌러봐야 알 수 있어요."""
+    return "https://www.mouser.com/c/?" + urlencode({"q": part_number})
+
+
+def _digikey_search_url(part_number: str) -> str:
+    """DigiKey 자체 검색 결과 페이지 링크예요. Mouser와 마찬가지로 실제 접속은 안 해요."""
+    return "https://www.digikey.com/en/products/result?" + urlencode({"keywords": part_number})
+
+
+def _reference_url_with_distributor_fallback(part_number: str, manufacturer: str | None) -> str:
+    """참고 링크를 정할 때, Mouser·DigiKey 검색 링크에 일반 구글 검색 링크까지 **셋 다** 줘요
+    (사용자 확정, 2026-09-03) - 한 품번을 Mouser는 안 팔고 DigiKey는 파는(또는 반대) 경우가
+    실제로 있고(NXH50VB47M2.5TP6.3X11 사례), 둘 다 없으면 구글로 더 폭넓게 찾아볼 수 있어야
+    해서예요. "Mouser/DigiKey에 있는지"를 자동으로 확인하려면 검색 결과 페이지에 자동으로
+    접속해야 하는데, 이건 Mouser/DigiKey 제품 페이지 자동접속이 봇 차단(403)되는 걸 이미 겪은
+    것과 같은 위험이라 하지 않기로 함 - 대신 사람이 셋 다 눌러보고 고르면 됨.
+
+    세 링크를 줄바꿈으로 이어서 하나의 문자열로 돌려줘요 - DownloadResult.reference_url이
+    문자열 하나라서(엑셀 하이퍼링크 칸도 원래 한 셀에 링크 하나만 가능), 화면(ui/main_window.py의
+    _set_datasheet_cell)에서 줄바꿈 기준으로 나눠 링크 여러 개로 보여줘요. 엑셀에 실제로 저장되는
+    하이퍼링크는 첫 번째(Mouser) 것만이에요(excel/excel_writer.py 참고)."""
+    return "\n".join([
+        _mouser_search_url(part_number),
+        _digikey_search_url(part_number),
+        _general_search_url(part_number, manufacturer),
+    ])
+
+
 # ---- DuckDuckGo 웹 검색 (Mouser에 없을 때 제조사 공식 사이트를 찾아봐요) ----
 
 
@@ -401,16 +512,26 @@ def _fetch_ddg_html(query):
 
 
 def search_datasheet_urls(part_number, manufacturer=None, max_results=10):
+    if _ddg_is_blocked():
+        logger.log("  [디버그] DuckDuckGo가 최근 연속 실패해서 이번 품번은 건너뜁니다(쿨다운 중).")
+        return []
+
     query = f"{manufacturer} {part_number} datasheet pdf" if manufacturer else f"{part_number} datasheet pdf"
 
-    time.sleep(random.uniform(MIN_DELAY_SECONDS, MAX_DELAY_SECONDS))
-    html_text = _fetch_ddg_html(query)
+    with _ddg_request_lock:  # 동시에 여러 스레드가 DDG를 두드리지 않도록, 요청은 한 번에 하나만.
+        time.sleep(random.uniform(MIN_DELAY_SECONDS, MAX_DELAY_SECONDS))
+        try:
+            html_text = _fetch_ddg_html(query)
+        except Exception:
+            _ddg_report_result(False)
+            raise
+        _ddg_report_result(True)
 
-    if _is_captcha_page(html_text):
-        time.sleep(random.uniform(*RETRY_DELAY_SECONDS))
-        html_text = _fetch_ddg_html(query)
         if _is_captcha_page(html_text):
-            return []  # 계속 캡차면 억지로 뚫으려 하지 않고 포기해요.
+            time.sleep(random.uniform(*RETRY_DELAY_SECONDS))
+            html_text = _fetch_ddg_html(query)
+            if _is_captcha_page(html_text):
+                return []  # 계속 캡차면 억지로 뚫으려 하지 않고 포기해요.
 
     soup = BeautifulSoup(html_text, "html.parser")
     result_links = soup.select("a.result__a")
@@ -479,9 +600,10 @@ def download_datasheet_for_part(
 ) -> DownloadResult:
     """부품 하나에 대해 ① 이미 있는지 확인 -> ② Mouser -> ③ 웹 검색 순서로 데이터시트를 받아온다."""
     manufacturer = manufacturer_hint
+    dest = dest_path_for_part(part_number)
 
-    # ① 이미 받아둔 파일이 있으면 그냥 스킵해요 (미분류 폴더든, 이미 분류돼 옮겨진 폴더든 상관없이).
-    existing = find_existing_pdf(part_number)
+    # ① 이미 받아둔 파일이 있으면 그냥 스킵해요 (평평한 자리든, 이미 분석돼 분류 폴더로 옮겨진 자리든).
+    existing = resolve_existing_pdf(part_number)
     if existing is not None:
         return DownloadResult(STATUS_SKIPPED_EXISTING, existing.name, None, manufacturer)
 
@@ -497,9 +619,6 @@ def download_datasheet_for_part(
     if result and result.get("manufacturer"):
         manufacturer = result["manufacturer"]  # Mouser가 확인해준 제조사가 더 정확해요.
 
-    # 대분류/소분류는 아직 몰라요(PDF를 받아서 분석해야 알 수 있음) - 일단 미분류 폴더에 받아요.
-    dest = staging_dest_path(part_number)
-
     if result and result.get("datasheet_url"):
         fail_reason = download_pdf(result["datasheet_url"], dest)
         if fail_reason is None:
@@ -509,7 +628,15 @@ def download_datasheet_for_part(
     try:
         web_result = find_datasheet(part_number, manufacturer)
     except Exception as e:
-        return DownloadResult(STATUS_FAILED, None, f"웹 검색 오류: {e}", manufacturer)
+        # 검색 자체가 오류로 실패해도(네트워크 문제 등) 후보 링크가 하나도 없으니, Mouser 자체
+        # 검색 링크를 참고 링크로 남겨요(사용자 확정, 2026-09-03 - 아래 "찾지 못함" 케이스와 동일).
+        return DownloadResult(
+            STATUS_FAILED,
+            None,
+            f"웹 검색 오류: {e}",
+            manufacturer,
+            _reference_url_with_distributor_fallback(part_number, manufacturer),
+        )
 
     if web_result and web_result.get("candidates"):
         succeeded, tried_urls = _try_candidates(web_result["candidates"], dest)
@@ -523,5 +650,13 @@ def download_datasheet_for_part(
             _pick_reference_url(tried_urls),
         )
 
+    # 후보 링크를 단 하나도 못 찾은 경우(DuckDuckGo 검색 결과 자체가 0개 등) - "찾지 못함"이라고만
+    # 하고 끝내면 사용자가 누를 게 아무것도 없어서, Mouser 자체 검색 링크를 대신 참고 링크로
+    # 남겨요(사용자 확정, 2026-09-03 - T495C107K010ATE100 사례에서 이 경로가 링크 없이 끝나는 걸
+    # 확인함).
     reason = mouser_error or "Mouser/웹 모두에서 찾지 못함"
-    return DownloadResult(STATUS_FAILED, None, reason, manufacturer)
+    if _ddg_is_blocked():
+        reason += " (DuckDuckGo 연결 불안정으로 이번엔 건너뜀 - Mouser 검색 링크로 대신 안내)"
+    return DownloadResult(
+        STATUS_FAILED, None, reason, manufacturer, _reference_url_with_distributor_fallback(part_number, manufacturer)
+    )

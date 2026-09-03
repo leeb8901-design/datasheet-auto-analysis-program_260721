@@ -327,7 +327,10 @@
     "params": [
       "Quality Level",
       "Type",
-      "# of Circuit Planes"
+      "# of Circuit Planes",
+      "# of Wave Soldered PTHs",
+      "# of Hand Soldered PTHs",
+      "Adjust Connector Count"
     ]
   },
   {
@@ -1175,7 +1178,13 @@
       "Two Sided",
       "Application",
       "Power Rating",
-      "Type"
+      "Type",
+      "Initial Temp Rise",
+      "Operating Power",
+      "Thermal Resistance",
+      "Junction-",
+      "Temperature Rise",
+      "Junction Temp Override"
     ]
   },
   {
@@ -1202,7 +1211,16 @@
       "Quality Level",
       "Two Sided",
       "Application",
-      "Operating Voltage"
+      "Operating Voltage",
+      "Rated Voltage",
+      "Voltage Ratio",
+      "Power Rating",
+      "Initial Temp Rise",
+      "Operating Power",
+      "Thermal Resistance",
+      "Junction-",
+      "Temperature Rise",
+      "Junction Temp Override"
     ]
   },
   {
@@ -1236,7 +1254,17 @@
     "category": "Semiconductor",
     "subcategory": "GaAs FET",
     "params": [
-      "Quality Level"
+      "Quality Level",
+      "Application",
+      "Internal Matching",
+      "Average Output Power",
+      "Frequency",
+      "Initial Temp Rise",
+      "Operating Power",
+      "Thermal Resistance",
+      "Junction-",
+      "Temperature Rise",
+      "Junction Temp Override"
     ]
   },
   {

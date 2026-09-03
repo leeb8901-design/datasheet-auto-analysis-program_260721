@@ -76,4 +76,9 @@ class SheetColumnDialog(QDialog):
         has_header = self.header_checkbox.isChecked()
 
         self.result_rows = read_custom_sheet(self.path, sheet_name, part_col, mfr_col, has_header)
+        # 창에서 셀을 직접 고쳤을 때 원본 엑셀의 같은 칸에 되써넣을 수 있도록(1-indexed로 변환),
+        # 사용자가 고른 컬럼 위치를 기억해둬요.
+        self.header_row = 2 if has_header else 1
+        self.part_col = part_col + 1
+        self.mfr_col = (mfr_col + 1) if mfr_col is not None else None
         self.accept()

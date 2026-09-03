@@ -14,6 +14,9 @@
   "Type",
   "Series Resistance",
   "# of Circuit Planes",
+  "# of Wave Soldered PTHs",
+  "# of Hand Soldered PTHs",
+  "Adjust Connector Count",
   "Pairing",
   "Connector Type",
   "# of Mating Cycles",
@@ -89,7 +92,7 @@
   "# of Stacks",
   "Two Sided",
   "Rated Forward Current",
-  "Metallization",
   "Internal Matching",
-  "Average Output Power"
+  "Average Output Power",
+  "Metallization"
 ]

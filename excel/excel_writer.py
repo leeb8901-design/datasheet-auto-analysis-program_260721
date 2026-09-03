@@ -1,4 +1,9 @@
-# 처리 결과(다운로드 상태, 분석 상태 등)를 원본 엑셀 파일에 다시 써넣는 파일이에요.
+# 처리 결과(다운로드 상태, 분석 상태 등)를 엑셀 파일에 써넣는 파일이에요.
+#
+# 입력지/출력지 분리 원칙: 사용자가 품번을 채워 넣은 "입력지"는 프로그램이 절대 수정하지
+# 않아요. 다운로드/분석 도중에는 결과를 메모리(MainWindow)에만 담아두고, 사용자가 "출력지
+# 저장" 버튼을 눌러 저장 위치를 고른 그 순간에만 입력지를 복사해서 한 번에 써요
+# (ui/main_window.py의 MainWindow._write_output_to 참고).
 
 from pathlib import Path
 
@@ -94,7 +99,10 @@ class ExcelResultWriter:
                 cell.hyperlink = str(link_path.resolve())
                 cell.font = _HYPERLINK_FONT
             elif reference_url:
-                cell.hyperlink = reference_url
+                # reference_url이 줄바꿈으로 여러 링크를 담고 있을 수 있어요(예: Mouser+DigiKey
+                # 검색 링크 둘 다, 2026-09-03) - 엑셀 하이퍼링크는 셀 하나에 하나만 걸 수 있어서
+                # 첫 번째(우선순위가 더 높은) 링크만 실제 하이퍼링크로 걸어요.
+                cell.hyperlink = reference_url.split("\n", 1)[0]
                 cell.font = _HYPERLINK_FONT
 
     def write_part_params(self, category, subcategory, part_number, part_name, field_values):
