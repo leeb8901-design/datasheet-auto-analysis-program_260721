@@ -1,0 +1,69 @@
+{
+  "source": "유효성 목록 / 서브카테고리별 허용 Package Type",
+  "note": "Package Type 파라미터가 이 서브카테고리에서 가질 수 있는 217F 표준 분류값 목록(엑셀 드롭다운과 동일). 실제 물리적 패키지명이 아니에요 - 물리적 패키지를이 목록 중 하나로 매핑하는 규칙은 ai/reference.py의 classify_package_hermeticity 참고.",
+  "by_category": {
+    "Integrated Circuit": {
+      "EEPROM": [
+        "Can",
+        "DIP, Glass Seal",
+        "Flatpack",
+        "Hermetic: DIPs, PGA, SMT",
+        "Nonhermetic: DIPs, PGA, SMT"
+      ],
+      "GaAs Digital": [
+        "Can",
+        "DIP, Glass Seal",
+        "Flatpack",
+        "Hermetic: DIPs, PGA, SMT",
+        "Nonhermetic: DIPs, PGA, SMT"
+      ],
+      "GaAs MMIC": [
+        "Can",
+        "DIP, Glass Seal",
+        "Flatpack",
+        "Hermetic: DIPs, PGA, SMT",
+        "Nonhermetic: DIPs, PGA, SMT"
+      ],
+      "Linear": [
+        "Can",
+        "DIP, Glass Seal",
+        "Flatpack",
+        "Hermetic: DIPs, PGA, SMT",
+        "Nonhermetic: DIPs, PGA, SMT"
+      ],
+      "Logic, CGA or ASIC": [
+        "Can",
+        "DIP, Glass Seal",
+        "Flatpack",
+        "Hermetic: DIPs, PGA, SMT",
+        "Nonhermetic: DIPs, PGA, SMT"
+      ],
+      "Memory": [
+        "Can",
+        "DIP, Glass Seal",
+        "Flatpack",
+        "Hermetic: DIPs, PGA, SMT",
+        "Nonhermetic: DIPs, PGA, SMT"
+      ],
+      "Microprocessor": [
+        "Can",
+        "DIP, Glass Seal",
+        "Flatpack",
+        "Hermetic: DIPs, PGA, SMT",
+        "Nonhermetic: DIPs, PGA, SMT"
+      ],
+      "PAL, PLA": [
+        "Can",
+        "DIP, Glass Seal",
+        "Flatpack",
+        "Hermetic: DIPs, PGA, SMT",
+        "Nonhermetic: DIPs, PGA, SMT"
+      ],
+      "VHSIC/VLSI CMOS": [
+        "Chip Carrier",
+        "DIP",
+        "Pin Grid Array"
+      ]
+    }
+  }
+}

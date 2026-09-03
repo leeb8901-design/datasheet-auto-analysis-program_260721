@@ -9,7 +9,10 @@ from pathlib import Path
 
 DATA_DIR = Path(__file__).resolve().parent.parent / "data"
 
-# 데이터시트로는 절대 못 채우는(=사람이 값을 넣으면 안 되는) 칸들이에요. CLAUDE.md 3번 표 참고.
+# 데이터시트로는 절대 못 채우는(=사람이 값을 넣으면 안 되는) 칸들이에요. 참고로 실제 엑셀에서
+# 이 칸들이 "데이터시트" 색이 아닌지는 PSA 시트 정의행 색이 최종 결정권을 가져요(psa_writer.py가
+# 색으로 한 번 더 걸러줌) - 이 목록은 그 전에 애초에 추출 시도조차 안 하기 위한 1차 필터예요.
+# CLAUDE.md 4번 참고.
 PTC_AUTO_DETERMINED_FIELDS = {
     "Pi Q Value",
     "Case Temp Override",
@@ -17,8 +20,10 @@ PTC_AUTO_DETERMINED_FIELDS = {
     "Frame Temp Override",
     "Hot Spot Temperature",
 }
+# "Years in Production"은 여기 있었으나 2026-08-27에 뺐어요 - Revision History의 양산/최초
+# 출시 연도로 추정 가능하다고 판단해서(ai/reference.py의 resolve_years_in_production 참고),
+# 이제 시도는 하고 못 찾으면 기본값(">=2.0")을 씀. CLAUDE.md 7번 결정 로그 참고.
 UNKNOWN_FROM_DATASHEET_FIELDS = {
-    "Years in Production",
     "Initial Temp Rise",
 }
 

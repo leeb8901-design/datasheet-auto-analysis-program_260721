@@ -11,8 +11,8 @@ import tempfile
 from dataclasses import dataclass
 from pathlib import Path
 
-import fitz
 import openpyxl
+import pymupdf as fitz  # "import fitz"는 옛 이름이라 매번 경고가 떠서 새 이름으로 불러옴
 import requests
 
 from ai.field_extractor import FIELD_SYNONYMS
@@ -25,7 +25,7 @@ from excel.mapping_template_builder import (
     MAPPING_SHEET_NAME,
     expected_hex_for,
 )
-from utils.config import DOWNLOAD_DIR, MOUSER_API_KEY
+from utils.config import DOWNLOAD_DIR, ENV_SEARCH_PATHS, MOUSER_API_KEY
 
 
 @dataclass
@@ -94,7 +94,8 @@ def check_connectivity(download_dir: Path | None = None) -> list[Issue]:
     issues: list[Issue] = []
 
     if not MOUSER_API_KEY:
-        issues.append(Issue("오류", "MOUSER_API_KEY가 .env에 설정되어 있지 않습니다."))
+        checked = " / ".join(str(p) for p in ENV_SEARCH_PATHS)
+        issues.append(Issue("오류", f"MOUSER_API_KEY가 .env에 설정되어 있지 않습니다. (확인한 위치: {checked})"))
     else:
         try:
             resp = requests.post(

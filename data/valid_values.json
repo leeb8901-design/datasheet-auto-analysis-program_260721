@@ -1,0 +1,2110 @@
+{
+  "source": "유효성 목록 (전체 파라미터)",
+  "note": "카테고리/서브카테고리/파라미터별 허용값 전체 목록. 이 목록에 있는 파라미터의 값은 반드시 이 중에서만 골라야 함(CLAUDE.md 0번 원칙, 2026-08-27). 여기 없는 파라미터(연속 측정값 등)는 이 규칙 대상이 아님.",
+  "param_column_count": 287,
+  "by_category": {
+    "Capacitor": {
+      "Air Trimmer, Variable (CT)": {
+        "Quality Level": [
+          "Mil-Spec",
+          "Commercial"
+        ],
+        "Units": [
+          "F",
+          "uF",
+          "nF",
+          "pF"
+        ]
+      },
+      "Button Mica (CB)": {
+        "Quality Level": [
+          "Mil-Spec",
+          "Commercial"
+        ],
+        "Units": [
+          "F",
+          "uF",
+          "nF",
+          "pF"
+        ]
+      },
+      "Ceramic, Variable (CV)": {
+        "Quality Level": [
+          "Mil-Spec",
+          "Commercial"
+        ],
+        "Units": [
+          "F",
+          "uF",
+          "nF",
+          "pF"
+        ]
+      },
+      "Chassis Mount, Elec, Alum (CU, CUR)": {
+        "Quality Level": [
+          "D",
+          "C, T",
+          "S, B",
+          "R",
+          "P",
+          "M",
+          "L",
+          "Mil-Spec",
+          "Commercial"
+        ],
+        "Type": [
+          "CUR13, 15",
+          "CUR71",
+          "Other"
+        ],
+        "Units": [
+          "F",
+          "uF",
+          "nF",
+          "pF"
+        ]
+      },
+      "Chip, Ceramic (CDR)": {
+        "Quality Level": [
+          "D",
+          "C, T",
+          "S, B",
+          "R",
+          "P",
+          "M",
+          "L",
+          "Mil-Spec",
+          "Commercial"
+        ],
+        "Units": [
+          "F",
+          "uF",
+          "nF",
+          "pF"
+        ]
+      },
+      "Chip, Elec (CWR)": {
+        "Quality Level": [
+          "D",
+          "C, T",
+          "S, B",
+          "R",
+          "P",
+          "M",
+          "L",
+          "Mil-Spec",
+          "Commercial"
+        ],
+        "Series Resistance": [
+          ">0.8",
+          ">0.6 to 0.8",
+          ">0.4 to 0.6",
+          ">0.2 to 0.4",
+          ">0.1 to 0.2",
+          "0 to 0.1"
+        ],
+        "Units": [
+          "F",
+          "uF",
+          "nF",
+          "pF"
+        ]
+      },
+      "Feed Through, Paper (CZ, CZR)": {
+        "Quality Level": [
+          "D",
+          "C, T",
+          "S, B",
+          "R",
+          "P",
+          "M",
+          "L",
+          "Mil-Spec",
+          "Commercial"
+        ],
+        "Units": [
+          "F",
+          "uF",
+          "nF",
+          "pF"
+        ]
+      },
+      "General Ceramic (CK, CKR)": {
+        "Quality Level": [
+          "D",
+          "C, T",
+          "S, B",
+          "R",
+          "P",
+          "M",
+          "L",
+          "Mil-Spec",
+          "Commercial"
+        ],
+        "Units": [
+          "F",
+          "uF",
+          "nF",
+          "pF"
+        ]
+      },
+      "Glass (CY, CYR)": {
+        "Quality Level": [
+          "D",
+          "C, T",
+          "S, B",
+          "R",
+          "P",
+          "M",
+          "L",
+          "Mil-Spec",
+          "Commercial"
+        ],
+        "Units": [
+          "F",
+          "uF",
+          "nF",
+          "pF"
+        ]
+      },
+      "Lead Mount, Elec, Alum (CE)": {
+        "Quality Level": [
+          "Mil-Spec",
+          "Commercial"
+        ],
+        "Units": [
+          "F",
+          "uF",
+          "nF",
+          "pF"
+        ]
+      },
+      "Metallized Paper-Plastic (CH, CHR)": {
+        "Quality Level": [
+          "D",
+          "C, T",
+          "S, B",
+          "R",
+          "P",
+          "M",
+          "L",
+          "Mil-Spec",
+          "Commercial"
+        ],
+        "Units": [
+          "F",
+          "uF",
+          "nF",
+          "pF"
+        ]
+      },
+      "Mica (CM, CMR)": {
+        "Quality Level": [
+          "D",
+          "C, T",
+          "S, B",
+          "R",
+          "P",
+          "M",
+          "L",
+          "Mil-Spec",
+          "Commercial"
+        ],
+        "Type": [
+          "CMR03",
+          "Other"
+        ],
+        "Units": [
+          "F",
+          "uF",
+          "nF",
+          "pF"
+        ]
+      },
+      "Nonsolid, Elec, Tant (CL, CLR, CRL)": {
+        "Quality Level": [
+          "D",
+          "C, T",
+          "S, B",
+          "R",
+          "P",
+          "M",
+          "L",
+          "Mil-Spec",
+          "Commercial"
+        ],
+        "Type": [
+          "CLR79, 81",
+          "Other"
+        ],
+        "Units": [
+          "F",
+          "uF",
+          "nF",
+          "pF"
+        ]
+      },
+      "Paper (CA, CP)": {
+        "Quality Level": [
+          "Mil-Spec",
+          "Commercial"
+        ],
+        "Units": [
+          "F",
+          "uF",
+          "nF",
+          "pF"
+        ]
+      },
+      "Paper-Plastic (CQ, CQR, CPV)": {
+        "Quality Level": [
+          "D",
+          "C, T",
+          "S, B",
+          "R",
+          "P",
+          "M",
+          "L",
+          "Mil-Spec",
+          "Commercial"
+        ],
+        "Type": [
+          "CPV (Mil-C-14157)",
+          "CQR29, 32, 33 (Mil-C-19978)",
+          "Other CQ, CQR (Mil-C-19978)"
+        ],
+        "Units": [
+          "F",
+          "uF",
+          "nF",
+          "pF"
+        ]
+      },
+      "Piston, Variable (PC)": {
+        "Quality Level": [
+          "Mil-Spec",
+          "Commercial"
+        ],
+        "Type": [
+          "PC38, 40, 42",
+          "Other"
+        ],
+        "Units": [
+          "F",
+          "uF",
+          "nF",
+          "pF"
+        ]
+      },
+      "Plastic (CFR)": {
+        "Quality Level": [
+          "D",
+          "C, T",
+          "S, B",
+          "R",
+          "P",
+          "M",
+          "L",
+          "Mil-Spec",
+          "Commercial"
+        ],
+        "Units": [
+          "F",
+          "uF",
+          "nF",
+          "pF"
+        ]
+      },
+      "Solid, Elec, Tant (CSR)": {
+        "Quality Level": [
+          "D",
+          "C, T",
+          "S, B",
+          "R",
+          "P",
+          "M",
+          "L",
+          "Mil-Spec",
+          "Commercial"
+        ],
+        "Series Resistance": [
+          ">0.8",
+          ">0.6 to 0.8",
+          ">0.4 to 0.6",
+          ">0.2 to 0.4",
+          ">0.1 to 0.2",
+          "0 to 0.1"
+        ],
+        "Units": [
+          "F",
+          "uF",
+          "nF",
+          "pF"
+        ]
+      },
+      "Super Metallized Plastic (CRH)": {
+        "Quality Level": [
+          "D",
+          "C, T",
+          "S, B",
+          "R",
+          "P",
+          "M",
+          "L",
+          "Mil-Spec",
+          "Commercial"
+        ],
+        "Units": [
+          "F",
+          "uF",
+          "nF",
+          "pF"
+        ]
+      },
+      "Temp Compensat, Ceramic (CC, CCR)": {
+        "Quality Level": [
+          "D",
+          "C, T",
+          "S, B",
+          "R",
+          "P",
+          "M",
+          "L",
+          "Mil-Spec",
+          "Commercial"
+        ],
+        "Units": [
+          "F",
+          "uF",
+          "nF",
+          "pF"
+        ]
+      },
+      "Vacuum, Variable or Fixed (CG)": {
+        "Quality Level": [
+          "Mil-Spec",
+          "Commercial"
+        ],
+        "Units": [
+          "F",
+          "uF",
+          "nF",
+          "pF"
+        ]
+      }
+    },
+    "Connection": {
+      "Board with Plated Thru Holes": {
+        "Quality Level": [
+          "Mil-Spec",
+          "Commercial"
+        ],
+        "Type": [
+          "Discrete Wiring",
+          "Printed Wiring"
+        ],
+        "Automatically Count Connections": [
+          "None",
+          "# of Wave Soldered PTHs",
+          "# of Hand Soldered PTHs"
+        ]
+      },
+      "General": {
+        "Quality Level": [
+          "Mil-Spec",
+          "Commercial"
+        ],
+        "Pairing": [
+          "Mated Pair",
+          "Single Connector"
+        ],
+        "Connector Type": [
+          "Circular/Cylindrical",
+          "Hexagonal",
+          "Power",
+          "RF Coaxial",
+          "Rack and Panel",
+          "Rectangular",
+          "Telephone",
+          "Triaxial"
+        ],
+        "Contact Gauge": [
+          "12",
+          "16",
+          "18",
+          "20",
+          "22",
+          "24",
+          "26",
+          "28",
+          "30",
+          "32"
+        ],
+        "# of Mating Cycles": [
+          "0 to 0.05",
+          ">0.05 to 0.5",
+          ">0.5 to 5",
+          ">5 to 50",
+          ">50"
+        ]
+      },
+      "IC Socket": {
+        "Quality Level": [
+          "Mil-Spec",
+          "Commercial"
+        ],
+        "Type": [
+          "Chip Carrier",
+          "Dual-in-Line Package",
+          "Electron Tube, CRT",
+          "Pin Grid Array",
+          "Relay",
+          "Single-in-Line Package",
+          "Transistor"
+        ]
+      },
+      "Other Connection": {
+        "Automatically Count Connections": [
+          "None",
+          "# Hand Soldered",
+          "# Crimped",
+          "# Welded",
+          "# Solderless Wrapped",
+          "# Wrapped and Soldered",
+          "# Clip Termination",
+          "# Reflow Soldered",
+          "# Spring Contact",
+          "# Terminal Block"
+        ]
+      },
+      "PCB Edge": {
+        "Quality Level": [
+          "Mil-Spec",
+          "Commercial"
+        ],
+        "Pairing": [
+          "Mated Pair",
+          "Single Connector"
+        ],
+        "# of Mating Cycles": [
+          "0 to 0.05",
+          ">0.05 to 0.5",
+          ">0.5 to 5",
+          ">5 to 50",
+          ">50"
+        ],
+        "Contact Gauge": [
+          "12",
+          "16",
+          "18",
+          "20",
+          "22",
+          "24",
+          "26",
+          "28",
+          "30",
+          "32"
+        ]
+      },
+      "SMT Interconnect Assy": {
+        "Equipment Type": [
+          "Automotive",
+          "Commercial Aircraft",
+          "Computer",
+          "Consumer (TV, radio, etc)",
+          "Industrial",
+          "Military Aircraft (Cargo)",
+          "Military Aircraft (Fighter)",
+          "Military Ground Applications",
+          "Telecommunications"
+        ],
+        "Board Substrate": [
+          "Alumina (Ceramic)",
+          "Carbon-Fiber/Epoxy Composite",
+          "Ceramic Clad Invar",
+          "Ceramic Multilayer",
+          "Copper Clad Molybdenum",
+          "Epoxy Aramid Fiber",
+          "Epoxy-Quartz",
+          "Epoxy/Glass Laminate",
+          "Epoxy/Kevlar Laminate",
+          "FR-4 Laminate",
+          "FR-4 Multi w/Copper Clad Invar",
+          "FR-4 Multilayer",
+          "Fiberglass Ceramic Fiber",
+          "Fiberglass Teflon Laminates",
+          "Glass Fiber",
+          "Kevlar Fiber",
+          "Polyamide Aramid Fiber",
+          "Polyamide/Glass Laminate",
+          "Polyamide/Kevlar Laminate",
+          "Polyamide/Quartz Laminate",
+          "Porcelain Copper Clad Invar",
+          "Quartz Fiber"
+        ],
+        "Package Substrate": [
+          "Ceramic",
+          "Plastic"
+        ],
+        "Lead Configuration": [
+          "Gull Wing",
+          "J or S Lead",
+          "Leadless"
+        ]
+      }
+    },
+    "Inductor": {
+      "Coil": {
+        "Quality Level": [
+          "S",
+          "R",
+          "P",
+          "M",
+          "Mil-Spec",
+          "Commercial"
+        ],
+        "Type": [
+          "Load",
+          "Power Filter",
+          "RF, Fixed or Molded",
+          "RF, Variable"
+        ]
+      },
+      "Transformer": {
+        "Quality Level": [
+          "Mil-Spec",
+          "Commercial"
+        ],
+        "Type": [
+          "Audio",
+          "Flyback",
+          "Power, Filter Choke",
+          "Pulse, High Power",
+          "Pulse, Low Power",
+          "RF, High Voltage"
+        ]
+      }
+    },
+    "Integrated Circuit": {
+      "Bubble Memory": {
+        "Type": [
+          "Nonseed Bubble Generator",
+          "Seed Bubble Generator"
+        ],
+        "Quality Level": [
+          "S",
+          "B",
+          "B-1",
+          "Commercial"
+        ],
+        "Years in Production": [
+          ">=2.0",
+          "1.5",
+          "1",
+          "0.5",
+          "<=0.1"
+        ],
+        "Units": [
+          "b",
+          "Kb",
+          "Mb",
+          "Gb"
+        ]
+      },
+      "EEPROM": {
+        "Type": [
+          "Flotox",
+          "Textured-Poly",
+          "Other"
+        ],
+        "Error Correction": [
+          "None",
+          "Hamming Code",
+          "Redundant Cell"
+        ],
+        "Quality Level": [
+          "S",
+          "B",
+          "B-1",
+          "Commercial"
+        ],
+        "Package Type": [
+          "Can",
+          "DIP, Glass Seal",
+          "Flatpack",
+          "Hermetic: DIPs, PGA, SMT",
+          "Nonhermetic: DIPs, PGA, SMT"
+        ],
+        "Years in Production": [
+          ">=2.0",
+          "1.5",
+          "1",
+          "0.5",
+          "<=0.1"
+        ],
+        "Units": [
+          "b",
+          "Kb",
+          "Mb",
+          "Gb"
+        ],
+        "Junction-": [
+          "Case",
+          "Ambient"
+        ]
+      },
+      "GaAs Digital": {
+        "Complexity": [
+          "1-1000",
+          "1001-10000"
+        ],
+        "Quality Level": [
+          "S",
+          "B",
+          "B-1",
+          "Commercial"
+        ],
+        "Package Type": [
+          "Can",
+          "DIP, Glass Seal",
+          "Flatpack",
+          "Hermetic: DIPs, PGA, SMT",
+          "Nonhermetic: DIPs, PGA, SMT"
+        ],
+        "Years in Production": [
+          ">=2.0",
+          "1.5",
+          "1",
+          "0.5",
+          "<=0.1"
+        ],
+        "Junction-": [
+          "Case",
+          "Ambient"
+        ]
+      },
+      "GaAs MMIC": {
+        "Complexity": [
+          "1-100",
+          "101-1000"
+        ],
+        "Application": [
+          "Driver and High Power",
+          "Low Noise and Low Power",
+          "Unknown"
+        ],
+        "Quality Level": [
+          "S",
+          "B",
+          "B-1",
+          "Commercial"
+        ],
+        "Package Type": [
+          "Can",
+          "DIP, Glass Seal",
+          "Flatpack",
+          "Hermetic: DIPs, PGA, SMT",
+          "Nonhermetic: DIPs, PGA, SMT"
+        ],
+        "Years in Production": [
+          ">=2.0",
+          "1.5",
+          "1",
+          "0.5",
+          "<=0.1"
+        ],
+        "Junction-": [
+          "Case",
+          "Ambient"
+        ]
+      },
+      "Linear": {
+        "Quality Level": [
+          "S",
+          "B",
+          "B-1",
+          "Commercial"
+        ],
+        "Package Type": [
+          "Can",
+          "DIP, Glass Seal",
+          "Flatpack",
+          "Hermetic: DIPs, PGA, SMT",
+          "Nonhermetic: DIPs, PGA, SMT"
+        ],
+        "Years in Production": [
+          ">=2.0",
+          "1.5",
+          "1",
+          "0.5",
+          "<=0.1"
+        ],
+        "Junction-": [
+          "Case",
+          "Ambient"
+        ]
+      },
+      "Logic, CGA or ASIC": {
+        "Technology Type": [
+          "ALSTTL",
+          "ASTTL",
+          "BiCMOS",
+          "CML",
+          "DTL",
+          "ECL",
+          "FTTL",
+          "HTTL, HTL",
+          "IIIL",
+          "IIL, MNOS",
+          "ISL",
+          "LSTTL",
+          "LTTL",
+          "MOS",
+          "STTL",
+          "TTL"
+        ],
+        "Quality Level": [
+          "S",
+          "B",
+          "B-1",
+          "Commercial"
+        ],
+        "Package Type": [
+          "Can",
+          "DIP, Glass Seal",
+          "Flatpack",
+          "Hermetic: DIPs, PGA, SMT",
+          "Nonhermetic: DIPs, PGA, SMT"
+        ],
+        "Years in Production": [
+          ">=2.0",
+          "1.5",
+          "1",
+          "0.5",
+          "<=0.1"
+        ],
+        "Junction-": [
+          "Case",
+          "Ambient"
+        ]
+      },
+      "Memory": {
+        "Type": [
+          "DRAM",
+          "EAPROM",
+          "PROM, EPROM",
+          "ROM",
+          "SRAM",
+          "UVEPROM"
+        ],
+        "Technology Type": [
+          "Bipolar",
+          "CMOS",
+          "NMOS"
+        ],
+        "Quality Level": [
+          "S",
+          "B",
+          "B-1",
+          "Commercial"
+        ],
+        "Package Type": [
+          "Can",
+          "DIP, Glass Seal",
+          "Flatpack",
+          "Hermetic: DIPs, PGA, SMT",
+          "Nonhermetic: DIPs, PGA, SMT"
+        ],
+        "Years in Production": [
+          ">=2.0",
+          "1.5",
+          "1",
+          "0.5",
+          "<=0.1"
+        ],
+        "Units": [
+          "b",
+          "Kb",
+          "Mb",
+          "Gb"
+        ],
+        "Junction-": [
+          "Case",
+          "Ambient"
+        ]
+      },
+      "Microprocessor": {
+        "Technology Type": [
+          "ALSTTL",
+          "ASTTL",
+          "BiCMOS",
+          "CML",
+          "DTL",
+          "ECL",
+          "FTTL",
+          "HTTL, HTL",
+          "IIIL",
+          "IIL, MNOS",
+          "ISL",
+          "LSTTL",
+          "LTTL",
+          "MOS",
+          "STTL",
+          "TTL"
+        ],
+        "Quality Level": [
+          "S",
+          "B",
+          "B-1",
+          "Commercial"
+        ],
+        "Word Size": [
+          "8 Bits",
+          "16 Bits",
+          "32 Bits"
+        ],
+        "Package Type": [
+          "Can",
+          "DIP, Glass Seal",
+          "Flatpack",
+          "Hermetic: DIPs, PGA, SMT",
+          "Nonhermetic: DIPs, PGA, SMT"
+        ],
+        "Years in Production": [
+          ">=2.0",
+          "1.5",
+          "1",
+          "0.5",
+          "<=0.1"
+        ],
+        "Junction-": [
+          "Case",
+          "Ambient"
+        ]
+      },
+      "PAL, PLA": {
+        "Technology Type": [
+          "ALSTTL",
+          "ASTTL",
+          "BiCMOS",
+          "CML",
+          "DTL",
+          "ECL",
+          "FTTL",
+          "HTTL, HTL",
+          "IIIL",
+          "IIL, MNOS",
+          "ISL",
+          "LSTTL",
+          "LTTL",
+          "MOS",
+          "STTL",
+          "TTL"
+        ],
+        "Quality Level": [
+          "S",
+          "B",
+          "B-1",
+          "Commercial"
+        ],
+        "Package Type": [
+          "Can",
+          "DIP, Glass Seal",
+          "Flatpack",
+          "Hermetic: DIPs, PGA, SMT",
+          "Nonhermetic: DIPs, PGA, SMT"
+        ],
+        "Years in Production": [
+          ">=2.0",
+          "1.5",
+          "1",
+          "0.5",
+          "<=0.1"
+        ],
+        "Junction-": [
+          "Case",
+          "Ambient"
+        ]
+      },
+      "SAW - Surface Acoustic Wave": {
+        "Quality Level": [
+          "Above Commercial",
+          "Commercial"
+        ]
+      },
+      "VHSIC/VLSI CMOS": {
+        "Type": [
+          "Gate Array & Memory",
+          "Logic & Custom"
+        ],
+        "Manufacturing Process": [
+          "Non QML/QPL",
+          "QML/QPL"
+        ],
+        "Seal": [
+          "Hermetic",
+          "Non-Hermetic"
+        ],
+        "Quality Level": [
+          "S",
+          "B",
+          "B-1",
+          "Commercial"
+        ],
+        "Package Type": [
+          "Chip Carrier",
+          "DIP",
+          "Pin Grid Array"
+        ],
+        "Junction-": [
+          "Case",
+          "Ambient"
+        ]
+      }
+    },
+    "Miscellaneous": {
+      "Ferrite Device, Microwave": {
+        "Type": [
+          "Hi Isolator/Circulator >100W",
+          "Lo Isolator/Circulator <=100W",
+          "Phase Shifter"
+        ]
+      },
+      "Filter": {
+        "Quality Level": [
+          "Mil-Spec",
+          "Commercial"
+        ],
+        "Composition": [
+          "Ceramic Ferrite, MIL-F-15733",
+          "Composition 1, MIL-F-18327",
+          "Composition 2, MIL-F-18327",
+          "Discrete LC, MIL-F-15733"
+        ]
+      },
+      "Incandescent Lamp": {
+        "Application": [
+          "AC",
+          "DC"
+        ],
+        "Utilization": [
+          "< 0.10",
+          "0.10 to 0.90",
+          "> 0.90"
+        ]
+      },
+      "Laser": {
+        "Type": [
+          "Argon Ion",
+          "Flowing CO2",
+          "Helium/Cadmium",
+          "Helium/Neon",
+          "Nd:YAG Rod, Krypton",
+          "Nd:YAG Rod, Xenon",
+          "Ruby Rod, Krypton",
+          "Ruby Rod, Xenon",
+          "Sealed CO2"
+        ],
+        "Cleanliness Level": [
+          "Minimal w/Bellows",
+          "Minimal w/o Bellows",
+          "Rigorous w/Bellows"
+        ],
+        "Cooling Media": [
+          "Gas",
+          "Liquid"
+        ]
+      },
+      "Load, Dummy or Microwave": {
+        "Type": [
+          "< 100W",
+          "100 to 1000W",
+          "> 1000W"
+        ]
+      },
+      "Meter": {
+        "Quality Level": [
+          "Mil-Spec",
+          "Commercial"
+        ],
+        "Application": [
+          "AC",
+          "DC"
+        ],
+        "Function": [
+          "Ammeter",
+          "Voltmeter",
+          "Other"
+        ]
+      },
+      "Microwave Element": {
+        "Type": [
+          "Attenuator",
+          "Fixed",
+          "Variable"
+        ]
+      },
+      "Quartz Crystal": {
+        "Quality Level": [
+          "Mil-Spec",
+          "Commercial"
+        ]
+      },
+      "Tube": {
+        "Type": [
+          "2041, Pulsed Gridded",
+          "3K210000LQ, Klystron, CW",
+          "3K210000LQ, Klystron, CW",
+          "3K50000LF, Klystron, CW",
+          "3KM3000LA, Klystron, CW",
+          "3KM300LA, Klystron, CW",
+          "3KM50000PA, Klystron, CW",
+          "3KM50000PA1, Klystron, CW",
+          "3KM50000PA2, Klystron, CW",
+          "4K3CC, Klystron, CW",
+          "4K3SK, Klystron, CW",
+          "4K50000LQ, Klystron, CW",
+          "4KM170000LA, Klystron, CW",
+          "4KM3000LR, Klystron, CW",
+          "4KM50000LQ, Klystron, CW",
+          "4KM50000LR, Klystron, CW",
+          "4KM50LB, Klystron, CW",
+          "4KM50LC, Klystron, CW",
+          "4KM50SJ, Klystron, CW",
+          "4KM50SK, Klystron, CW",
+          "4KMP10000LF, Klystron, Pulsed",
+          "6952, Pulsed Gridded",
+          "7835, Pulsed Gridded",
+          "8568, Klystron, Pulsed",
+          "8824, Klystron, CW",
+          "8825, Klystron, CW",
+          "8826, Klystron, CW",
+          "Antimony Trisulfide, Vidicon",
+          "CRT",
+          "CW, Magnetron",
+          "Coaxial Pulsed Magnetron",
+          "Conventional Pulsed, Magnetron",
+          "Klystron, Low Power",
+          "L3035, Klystron, Pulsed",
+          "L3250, Klystron, Pulsed",
+          "L3403, Klystron, Pulsed",
+          "Other, Klystron, CW",
+          "Other, Klystron, Pulsed",
+          "Power Rectifier, Receiver",
+          "QK681, Crossed Field Amplifier",
+          "SAC42A, Klystron, Pulsed",
+          "SFD261, Crossed Field Amplifier",
+          "Silicon Diode Array, Vidicon",
+          "Tetrode, Pentode, Transmitting",
+          "Thyratron",
+          "Transmitting, Over Pwr/Freq Limit",
+          "Traveling Wave",
+          "Triode, Tetrode, Pentode, Receiver",
+          "Triode, Transmitting",
+          "VA144, Twystron",
+          "VA145E, Twystron",
+          "VA145H, Twystron",
+          "VA800E, Klystron, CW",
+          "VA842, Klystron, Pulsed",
+          "VA853, Klystron, CW",
+          "VA856B, Klystron, CW",
+          "VA888E, Klystron, CW",
+          "VA913A, Twystron",
+          "Z5010A, Klystron, Pulsed",
+          "ZM3038A, Klystron, Pulsed"
+        ]
+      },
+      "Vibrator": {
+        "Type": [
+          "60 Hertz",
+          "120 Hertz",
+          "400 Hertz"
+        ]
+      }
+    },
+    "Optical Device": {
+      "Detector, Isolator, Emitter": {
+        "Quality Level": [
+          "JANTXV",
+          "JANTX",
+          "JAN",
+          "Commercial",
+          "Plastic"
+        ],
+        "Junction-": [
+          "Case",
+          "Ambient"
+        ],
+        "Type": [
+          "Dual Isolator Darlington",
+          "Dual Isolator Diode",
+          "Dual Isolator Resistor",
+          "Dual Isolator Transistor",
+          "LED, Infrared",
+          "LED, Standard",
+          "Photodiode",
+          "Phototransistor",
+          "Single Isolator Darlington",
+          "Single Isolator Diode",
+          "Single Isolator Resistor",
+          "Single Isolator Transistor"
+        ]
+      },
+      "Fiber Optic Item": {
+        "Type": [
+          "Cable",
+          "Connector"
+        ]
+      },
+      "Laser Diode": {
+        "Application": [
+          "CW",
+          "Pulsed"
+        ],
+        "Type": [
+          "GaAs/AlGaAs",
+          "InGaAs/InGaAsP"
+        ],
+        "Junction-": [
+          "Case",
+          "Ambient"
+        ],
+        "Construction Type": [
+          "Hermetic Package",
+          "Nonhermetic w/Facet Coating",
+          "Nonhermetic w/o Facet Coating"
+        ]
+      }
+    },
+    "Relay": {
+      "Contactor": {
+        "Quality Level": [
+          "R",
+          "P",
+          "X",
+          "U",
+          "M",
+          "L",
+          "Mil-Spec",
+          "Commercial"
+        ],
+        "Construction Type": [
+          "Armature (short)",
+          "Balanced armature",
+          "Mechanical latching",
+          "Solenoid"
+        ],
+        "Contact Form": [
+          "SPST",
+          "DPST",
+          "SPDT",
+          "3PST",
+          "4PST",
+          "DPDT",
+          "3PDT",
+          "4PDT",
+          "6PDT"
+        ],
+        "Max Rated Temp": [
+          "85",
+          "125"
+        ],
+        "Load Type": [
+          "Inductive",
+          "Lamp",
+          "Resistive"
+        ]
+      },
+      "Dry Circuit": {
+        "Quality Level": [
+          "R",
+          "P",
+          "X",
+          "U",
+          "M",
+          "L",
+          "Mil-Spec",
+          "Commercial"
+        ],
+        "Construction Type": [
+          "Armature (long)",
+          "Balanced armature",
+          "Dry Reed",
+          "Magnetic latching",
+          "Mercury wetted",
+          "Solenoid"
+        ],
+        "Contact Form": [
+          "SPST",
+          "DPST",
+          "SPDT",
+          "3PST",
+          "4PST",
+          "DPDT",
+          "3PDT",
+          "4PDT",
+          "6PDT"
+        ],
+        "Max Rated Temp": [
+          "85",
+          "125"
+        ],
+        "Load Type": [
+          "Inductive",
+          "Lamp",
+          "Resistive"
+        ]
+      },
+      "Electronic Time Delay, Non-Thermal": {
+        "Quality Level": [
+          "R",
+          "P",
+          "X",
+          "U",
+          "M",
+          "L",
+          "Mil-Spec",
+          "Commercial"
+        ],
+        "Contact Form": [
+          "SPST",
+          "DPST",
+          "SPDT",
+          "3PST",
+          "4PST",
+          "DPDT",
+          "3PDT",
+          "4PDT",
+          "6PDT"
+        ],
+        "Max Rated Temp": [
+          "85",
+          "125"
+        ],
+        "Load Type": [
+          "Inductive",
+          "Lamp",
+          "Resistive"
+        ]
+      },
+      "General Purpose": {
+        "Quality Level": [
+          "R",
+          "P",
+          "X",
+          "U",
+          "M",
+          "L",
+          "Mil-Spec",
+          "Commercial"
+        ],
+        "Construction Type": [
+          "Armature (long)",
+          "Balanced armature",
+          "Solenoid"
+        ],
+        "Contact Form": [
+          "SPST",
+          "DPST",
+          "SPDT",
+          "3PST",
+          "4PST",
+          "DPDT",
+          "3PDT",
+          "4PDT",
+          "6PDT"
+        ],
+        "Max Rated Temp": [
+          "85",
+          "125"
+        ],
+        "Load Type": [
+          "Inductive",
+          "Lamp",
+          "Resistive"
+        ]
+      },
+      "High Speed": {
+        "Quality Level": [
+          "R",
+          "P",
+          "X",
+          "U",
+          "M",
+          "L",
+          "Mil-Spec",
+          "Commercial"
+        ],
+        "Construction Type": [
+          "Armature (balanced and short)",
+          "Dry reed"
+        ],
+        "Contact Form": [
+          "SPST",
+          "DPST",
+          "SPDT",
+          "3PST",
+          "4PST",
+          "DPDT",
+          "3PDT",
+          "4PDT",
+          "6PDT"
+        ],
+        "Max Rated Temp": [
+          "85",
+          "125"
+        ],
+        "Load Type": [
+          "Inductive",
+          "Lamp",
+          "Resistive"
+        ]
+      },
+      "High Voltage": {
+        "Quality Level": [
+          "R",
+          "P",
+          "X",
+          "U",
+          "M",
+          "L",
+          "Mil-Spec",
+          "Commercial"
+        ],
+        "Construction Type": [
+          "Ceramic, Vacuum",
+          "Glass, Vacuum"
+        ],
+        "Contact Form": [
+          "SPST",
+          "DPST",
+          "SPDT",
+          "3PST",
+          "4PST",
+          "DPDT",
+          "3PDT",
+          "4PDT",
+          "6PDT"
+        ],
+        "Max Rated Temp": [
+          "85",
+          "125"
+        ],
+        "Load Type": [
+          "Inductive",
+          "Lamp",
+          "Resistive"
+        ]
+      },
+      "Latching": {
+        "Quality Level": [
+          "R",
+          "P",
+          "X",
+          "U",
+          "M",
+          "L",
+          "Mil-Spec",
+          "Commercial"
+        ],
+        "Construction Type": [
+          "Balanced armature",
+          "Dry reed",
+          "Mercury wetted"
+        ],
+        "Contact Form": [
+          "SPST",
+          "DPST",
+          "SPDT",
+          "3PST",
+          "4PST",
+          "DPDT",
+          "3PDT",
+          "4PDT",
+          "6PDT"
+        ],
+        "Max Rated Temp": [
+          "85",
+          "125"
+        ],
+        "Load Type": [
+          "Inductive",
+          "Lamp",
+          "Resistive"
+        ]
+      },
+      "Medium Power": {
+        "Quality Level": [
+          "R",
+          "P",
+          "X",
+          "U",
+          "M",
+          "L",
+          "Mil-Spec",
+          "Commercial"
+        ],
+        "Construction Type": [
+          "Armature (long and short)",
+          "Balanced armature",
+          "Magnetic latching",
+          "Mechanical latching",
+          "Mercury wetted",
+          "Solenoid"
+        ],
+        "Contact Form": [
+          "SPST",
+          "DPST",
+          "SPDT",
+          "3PST",
+          "4PST",
+          "DPDT",
+          "3PDT",
+          "4PDT",
+          "6PDT"
+        ],
+        "Max Rated Temp": [
+          "85",
+          "125"
+        ],
+        "Load Type": [
+          "Inductive",
+          "Lamp",
+          "Resistive"
+        ]
+      },
+      "Polarized": {
+        "Quality Level": [
+          "R",
+          "P",
+          "X",
+          "U",
+          "M",
+          "L",
+          "Mil-Spec",
+          "Commercial"
+        ],
+        "Construction Type": [
+          "Armature (short)",
+          "Meter movement"
+        ],
+        "Contact Form": [
+          "SPST",
+          "DPST",
+          "SPDT",
+          "3PST",
+          "4PST",
+          "DPDT",
+          "3PDT",
+          "4PDT",
+          "6PDT"
+        ],
+        "Max Rated Temp": [
+          "85",
+          "125"
+        ],
+        "Load Type": [
+          "Inductive",
+          "Lamp",
+          "Resistive"
+        ]
+      },
+      "Reed, Dual In Line": {
+        "Quality Level": [
+          "R",
+          "P",
+          "X",
+          "U",
+          "M",
+          "L",
+          "Mil-Spec",
+          "Commercial"
+        ],
+        "Construction Type": [
+          "Dry reed",
+          "Mercury wetted"
+        ],
+        "Contact Form": [
+          "SPST",
+          "DPST",
+          "SPDT",
+          "3PST",
+          "4PST",
+          "DPDT",
+          "3PDT",
+          "4PDT",
+          "6PDT"
+        ],
+        "Max Rated Temp": [
+          "85",
+          "125"
+        ],
+        "Load Type": [
+          "Inductive",
+          "Lamp",
+          "Resistive"
+        ]
+      },
+      "Sensitive": {
+        "Quality Level": [
+          "R",
+          "P",
+          "X",
+          "U",
+          "M",
+          "L",
+          "Mil-Spec",
+          "Commercial"
+        ],
+        "Construction Type": [
+          "Armature (long and short)",
+          "Balanced armature",
+          "Magnetic latching",
+          "Mercury wetted",
+          "Meter movement"
+        ],
+        "Contact Form": [
+          "SPST",
+          "DPST",
+          "SPDT",
+          "3PST",
+          "4PST",
+          "DPDT",
+          "3PDT",
+          "4PDT",
+          "6PDT"
+        ],
+        "Max Rated Temp": [
+          "85",
+          "125"
+        ],
+        "Load Type": [
+          "Inductive",
+          "Lamp",
+          "Resistive"
+        ]
+      },
+      "Solid State, Time Delay": {
+        "Quality Level": [
+          "Mil-Spec",
+          "Commercial"
+        ],
+        "Type": [
+          "Hybrid",
+          "Solid State",
+          "Time Delay"
+        ]
+      },
+      "Thermal, Bimetal": {
+        "Quality Level": [
+          "R",
+          "P",
+          "X",
+          "U",
+          "M",
+          "L",
+          "Mil-Spec",
+          "Commercial"
+        ],
+        "Contact Form": [
+          "SPST",
+          "DPST",
+          "SPDT",
+          "3PST",
+          "4PST",
+          "DPDT",
+          "3PDT",
+          "4PDT",
+          "6PDT"
+        ],
+        "Max Rated Temp": [
+          "85",
+          "125"
+        ],
+        "Load Type": [
+          "Inductive",
+          "Lamp",
+          "Resistive"
+        ]
+      }
+    },
+    "Resistor": {
+      "Accurate, WW (RB, RBR)": {
+        "Quality Level": [
+          "S",
+          "R",
+          "P",
+          "M",
+          "Mil-Spec",
+          "Commercial"
+        ]
+      },
+      "Carbon, Var NonWW (RV)": {
+        "Quality Level": [
+          "Mil-Spec",
+          "Commercial"
+        ]
+      },
+      "Chassis Mount, WW Power (RE, RER)": {
+        "Quality Level": [
+          "S",
+          "R",
+          "P",
+          "M",
+          "Mil-Spec",
+          "Commercial"
+        ]
+      },
+      "Composition (RC, RCR)": {
+        "Quality Level": [
+          "S",
+          "R",
+          "P",
+          "M",
+          "Mil-Spec",
+          "Commercial"
+        ]
+      },
+      "Film (RL, RLR, RN, RNR, RM)": {
+        "Quality Level": [
+          "S",
+          "R",
+          "P",
+          "M",
+          "Mil-Spec",
+          "Commercial"
+        ],
+        "Type": [
+          "Chip (RM)",
+          "High Stability (RN, RNR)",
+          "Insulated (RL, RLR)"
+        ]
+      },
+      "Film, Power (RD)": {
+        "Quality Level": [
+          "Mil-Spec",
+          "Commercial"
+        ]
+      },
+      "Film, Var NonWW (RVC)": {
+        "Quality Level": [
+          "Mil-Spec",
+          "Commercial"
+        ]
+      },
+      "Lead Mount, WW Power (RW, RWR)": {
+        "Quality Level": [
+          "S",
+          "R",
+          "P",
+          "M",
+          "Mil-Spec",
+          "Commercial"
+        ]
+      },
+      "Lead Screw, Var WW (RT, RTR)": {
+        "Quality Level": [
+          "S",
+          "R",
+          "P",
+          "M",
+          "Mil-Spec",
+          "Commercial"
+        ]
+      },
+      "Network Film (RZ)": {
+        "Quality Level": [
+          "Mil-Spec",
+          "Commercial"
+        ]
+      },
+      "Power, Var WW (RP)": {
+        "Quality Level": [
+          "Mil-Spec",
+          "Commercial"
+        ]
+      },
+      "Precision, Var NonWW (RQ)": {
+        "Quality Level": [
+          "Mil-Spec",
+          "Commercial"
+        ]
+      },
+      "Precision, Var WW (RR)": {
+        "Quality Level": [
+          "Mil-Spec",
+          "Commercial"
+        ]
+      },
+      "Semiprec, Var WW (RA, RK)": {
+        "Quality Level": [
+          "Mil-Spec",
+          "Commercial"
+        ],
+        "Type": [
+          "RA",
+          "RK"
+        ]
+      },
+      "Thermistor (RTH)": {
+        "Quality Level": [
+          "Mil-Spec",
+          "Commercial"
+        ]
+      },
+      "Trimmer, Var NonWW (RJ, RJR)": {
+        "Quality Level": [
+          "S",
+          "R",
+          "P",
+          "M",
+          "Mil-Spec",
+          "Commercial"
+        ]
+      }
+    },
+    "Rotating Device": {
+      "Motor": {
+        "Type": [
+          "Electrical (General)",
+          "Sensor",
+          "Servo",
+          "Stepper"
+        ]
+      },
+      "Other": {
+        "Type": [
+          "Elapsed Time Meter",
+          "Resolver",
+          "Synchro"
+        ],
+        "Size": [
+          "8 or smaller",
+          "10 to 16",
+          "18 or larger"
+        ],
+        "Number of Brushes": [
+          "2",
+          "3",
+          "4"
+        ],
+        "Elapsed Time Meter Type": [
+          "AC",
+          "DC Commutator",
+          "Inverter Driven"
+        ]
+      }
+    },
+    "Semiconductor": {
+      "Alphanumeric Display": {
+        "Quality Level": [
+          "JANTXV",
+          "JANTX",
+          "JAN",
+          "Commercial",
+          "Plastic"
+        ],
+        "Type": [
+          "With Logic Chip",
+          "Without Logic Chip"
+        ],
+        "Junction-": [
+          "Case",
+          "Ambient"
+        ],
+        "Application": [
+          "Diode Array Display",
+          "Segment Display"
+        ]
+      },
+      "Diode": {
+        "Quality Level": [
+          "JANTXV",
+          "JANTX",
+          "JAN",
+          "Commercial",
+          "Plastic"
+        ],
+        "Diode Type": [
+          "Current Regulator",
+          "General Purpose",
+          "Rectifier, Fast Recovery",
+          "Rectifier, High Volt. Stacks",
+          "Rectifier, Schottky",
+          "Switching",
+          "Transient Suppressor",
+          "Voltage Regulator, Ref, Zener"
+        ],
+        "Junction-": [
+          "Case",
+          "Ambient"
+        ],
+        "Construction Type": [
+          "Metallurgically",
+          "Non-Metallurgically/Spring Loaded"
+        ]
+      },
+      "GaAs FET": {
+        "Quality Level": [
+          "JANTXV",
+          "JANTX",
+          "JAN",
+          "Commercial"
+        ],
+        "Two Sided": [
+          "1",
+          "0"
+        ],
+        "Application": [
+          "CW",
+          "Low Power or Pulsed"
+        ],
+        "Junction-": [
+          "Case",
+          "Ambient"
+        ],
+        "Internal Matching": [
+          "Both Input and Output",
+          "Input Only or Output Only",
+          "No Matching"
+        ]
+      },
+      "Microwave Diode": {
+        "Quality Level": [
+          "JANTXV",
+          "JANTX",
+          "JAN",
+          "Commercial",
+          "Plastic"
+        ],
+        "Junction-": [
+          "Case",
+          "Ambient"
+        ],
+        "Diode Type": [
+          "Gunn, Bulk Effect",
+          "PIN",
+          "Schottky Barrier",
+          "Si IMPATT",
+          "Step Recovery",
+          "Tunnel, Back",
+          "Varactor, Multiplier",
+          "Varactor, Voltage Control"
+        ]
+      },
+      "Microwave Power Transistor": {
+        "Quality Level": [
+          "JANTXV",
+          "JANTX",
+          "JAN",
+          "Commercial"
+        ],
+        "Application": [
+          "CW",
+          "Pulsed"
+        ],
+        "Metallization": [
+          "Aluminum",
+          "Gold"
+        ],
+        "Junction-": [
+          "Case",
+          "Ambient"
+        ],
+        "Internal Matching": [
+          "Both Input and Output",
+          "Input Only or Output Only",
+          "No Matching"
+        ]
+      },
+      "Microwave Transistor": {
+        "Quality Level": [
+          "JANTXV",
+          "JANTX",
+          "JAN",
+          "Commercial"
+        ],
+        "Junction-": [
+          "Case",
+          "Ambient"
+        ]
+      },
+      "Si FET": {
+        "Quality Level": [
+          "JANTXV",
+          "JANTX",
+          "JAN",
+          "Commercial",
+          "Plastic"
+        ],
+        "Application": [
+          "High Frequency",
+          "Linear",
+          "Power",
+          "Switching"
+        ],
+        "Junction-": [
+          "Case",
+          "Ambient"
+        ],
+        "Type": [
+          "JFET",
+          "MOSFET"
+        ]
+      },
+      "Thyristor": {
+        "Quality Level": [
+          "JANTXV",
+          "JANTX",
+          "JAN",
+          "Commercial",
+          "Plastic"
+        ],
+        "Junction-": [
+          "Case",
+          "Ambient"
+        ]
+      },
+      "Transistor": {
+        "Quality Level": [
+          "JANTXV",
+          "JANTX",
+          "JAN",
+          "Commercial",
+          "Plastic"
+        ],
+        "Junction-": [
+          "Case",
+          "Ambient"
+        ],
+        "Application": [
+          "Linear",
+          "Switching"
+        ]
+      },
+      "Unijunction Transistor": {
+        "Quality Level": [
+          "JANTXV",
+          "JANTX",
+          "JAN",
+          "Commercial",
+          "Plastic"
+        ],
+        "Junction-": [
+          "Case",
+          "Ambient"
+        ]
+      }
+    },
+    "Switching Device": {
+      "Basic Sensitive": {
+        "Quality Level": [
+          "Mil-Spec",
+          "Commercial"
+        ],
+        "Load Type": [
+          "Inductive",
+          "Lamp",
+          "Resistive"
+        ]
+      },
+      "Circuit Breaker": {
+        "Quality Level": [
+          "Mil-Spec",
+          "Commercial"
+        ],
+        "Type": [
+          "Magnetic",
+          "Thermal",
+          "Thermal-Magnetic"
+        ],
+        "Application": [
+          "Power On/Off",
+          "Protection Only"
+        ],
+        "Contact Form": [
+          "3PST",
+          "4PST",
+          "DPST",
+          "SPST"
+        ]
+      },
+      "Other": {
+        "Quality Level": [
+          "Mil-Spec",
+          "Commercial"
+        ],
+        "Type": [
+          "Centrifugal",
+          "Dual-In-Line Package",
+          "Limit",
+          "Liquid Level",
+          "Microwave",
+          "Pressure",
+          "Reed",
+          "Thermal"
+        ],
+        "Load Type": [
+          "Inductive",
+          "Lamp",
+          "Resistive"
+        ]
+      },
+      "Rocker or Slide": {
+        "Quality Level": [
+          "Mil-Spec",
+          "Commercial"
+        ],
+        "Load Type": [
+          "Inductive",
+          "Lamp",
+          "Resistive"
+        ]
+      },
+      "Rotary": {
+        "Quality Level": [
+          "Mil-Spec",
+          "Commercial"
+        ],
+        "Load Type": [
+          "Inductive",
+          "Lamp",
+          "Resistive"
+        ]
+      },
+      "Thumbwheel": {
+        "Quality Level": [
+          "Mil-Spec",
+          "Commercial"
+        ],
+        "Load Type": [
+          "Inductive",
+          "Lamp",
+          "Resistive"
+        ]
+      },
+      "Toggle or Pushbutton": {
+        "Quality Level": [
+          "Mil-Spec",
+          "Commercial"
+        ],
+        "Contact Form": [
+          "SPST",
+          "DPST",
+          "SPDT",
+          "3PST",
+          "4PST",
+          "DPDT",
+          "3PDT",
+          "4PDT",
+          "6PDT"
+        ],
+        "Load Type": [
+          "Inductive",
+          "Lamp",
+          "Resistive"
+        ]
+      }
+    }
+  }
+}

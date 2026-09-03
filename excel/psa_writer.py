@@ -5,8 +5,8 @@
 # - 정의행 셀 색이 범례의 '관련자료(Datasheet) 등 제시 및 분석결과값 적용' 스와치 색(=L5 색)과
 #   같은 파라미터에만 분석값을 채워요. 그 외(Relex 자동계산/설계자 검토/Default)는 앱이 안 건드려요.
 # - 데이터시트 대상 파라미터인데 값을 확인 못했으면(공백) 노란색으로 표시해요.
-
-from copy import copy
+# - 값을 채운 칸엔 색을 안 칠해요(2026-08-27부터) - 정의행과 같은 색을 칠하면 글자와 배경이 겹쳐
+#   안 보인다는 피드백이 있었어요(예: Quality Level 칸 색과 "B-1" 글자 구분이 안 됨).
 
 from openpyxl.styles import PatternFill
 
@@ -103,7 +103,9 @@ def write_part(ws, category, subcategory, part_number, part_name, field_values, 
         pcell = ws.cell(row=at, column=c)
         if value is not None and str(value).strip() != "":
             pcell.value = value
-            pcell.fill = copy(def_cell.fill)  # 데이터시트색 유지(열 정렬용)
+            # 채운 값 칸엔 색을 안 칠해요 - 정의행과 같은 색을 칠했더니 글자색/배경색이 겹쳐서
+            # 값이 잘 안 보인다는 문제가 있었어요(사용자 피드백, 예: Quality Level 칸 색과 "B-1"
+            # 글자가 구분이 안 됨). 값이 있다는 건 그 자체로 눈에 띄니 굳이 안 칠해도 됨.
         else:
             pcell.fill = YELLOW_FILL          # 확인 못함 -> 공백 + 노란색
     return at
