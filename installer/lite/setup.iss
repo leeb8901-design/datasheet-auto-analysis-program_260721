@@ -40,12 +40,15 @@ Name: "desktopicon"; Description: "바탕화면에 바로가기 만들기"; Grou
 Source: "app\*"; DestDir: "{app}"; Flags: recursesubdirs createallsubdirs ignoreversion
 ; 최초 실행 때 Python이 없으면 쓰는 내장 설치기 (설치 성공 후 자동 삭제됨)
 Source: "assets\python-3.14.6-amd64.exe"; DestDir: "{app}\_setup"; Flags: ignoreversion
-; Mouser API 키를 설치파일에 그대로 담아서, 설치하자마자 바로 쓸 수 있게 함(2026-09-09 갱신 -
-; API 키 저장 방식이 .env에서 User_API/ 폴더(파일 하나당 API 하나)로 바뀌어서 그에 맞춤. 본인만
-; 쓰는 개인용 배포라 API 키를 설치파일에 포함해도 된다고 확인함 - 다른 사람에게 이 Setup.exe를
-; 그대로 넘기면 그 사람도 이 키를 쓸 수 있게 되니 공유 금지). utils/config.py가 찾는 자리
-; ({app}\User_API\)에 바로 설치해서 첫 실행부터 정상 동작함.
+; Mouser API 키 번들링은 기본적으로 꺼져 있음(안전한 기본값, 2026-09-09 변경) - 공개
+; 저장소(GitHub 등)에 올려도 되는 "키 없는" 빌드가 기본이 되도록. 개인용으로 내 실제 키를
+; 담은 빌드가 필요할 때만 컴파일 시 "ISCC /DBUNDLE_API_KEY setup.iss"처럼 이 심볼을 정의해서
+; 켬(installer/lite/README.md 참고) - 그러면 user_api_bundle\User_API\* 안의 실제 키 파일이
+; {app}\User_API\에 그대로 설치돼 첫 실행부터 바로 동작함. 이렇게 만든 결과물은 절대 남에게
+; 공유 금지(내 API 키가 그대로 들어있음) - 플래그를 안 켠(기본) 빌드만 남에게 공유/공개 가능.
+#ifdef BUNDLE_API_KEY
 Source: "user_api_bundle\User_API\*"; DestDir: "{app}\User_API"; Flags: recursesubdirs createallsubdirs ignoreversion
+#endif
 
 [Icons]
 Name: "{group}\{#AppName}"; Filename: "{app}\{#ExeLauncher}"; WorkingDir: "{app}"; IconFilename: "{sys}\shell32.dll"; IconIndex: 220

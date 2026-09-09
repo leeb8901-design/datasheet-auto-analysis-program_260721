@@ -20,13 +20,14 @@ IP 차단으로 이어졌던 사고(원본 `CLAUDE.md` 결정 로그 참고)를 
   `AppId` 별도 발급(원본과 동시 설치 가능하게), `DefaultDirName`=`DatasheetDownloaderLite`,
   `OutputBaseFilename`=`데이터시트다운로더Lite_설치`. **Mouser API 키 저장 방식은 원본과
   동일**(`{app}\User_API\` 폴더, 파일 하나당 API 하나 - `utils/config.USER_API_DIR`,
-  2026-09-09부터 `.env` 방식 폐지). **`User_API` 폴더 자체를 설치파일 안에 담아서 그 자리에
-  바로 깔아줌**(`[Files]`의 `user_api_bundle\User_API\*` 항목) - launch.ps1이 숨김 프로세스로
-  도는데 API 키 입력창(VB InputBox)이 그 숨김 상태에서 사용자에게 안 보이는 문제가 있어서(추정),
-  일단 이 방법으로 우회함. **본인만 쓰는 개인용 배포일 때만 이 방식을 쓸 것** - 만든 Setup.exe
-  안에 실제 Mouser API 키가 그대로 박혀 있어서, 다른 사람에게 그 파일을 주면 내 키를 그대로
-  넘겨주는 셈이 됨. 불특정 다수에게 배포할 땐 `user_api_bundle/User_API/`를 비워두거나 [Files]에서
-  이 줄을 빼고, 원래 방식대로(launch.ps1이 처음 실행 때 `set_api_key.ps1`로 입력받는 방식) 둘 것.
+  2026-09-09부터 `.env` 방식 폐지).
+
+  **API 키 번들링은 기본적으로 꺼져 있음(2026-09-09부터 안전한 기본값으로 변경)** - GitHub 등
+  공개된 곳에 올려도 되는 "키 없는" 빌드가 기본 결과물이 되도록. `[Files]`의 `user_api_bundle\
+  User_API\*` 항목이 `#ifdef BUNDLE_API_KEY` ... `#endif`로 감싸져 있어서, 컴파일할 때
+  `BUNDLE_API_KEY`를 정의해줘야만(`ISCC /DBUNDLE_API_KEY setup.iss`) 그 자리에 실제 키가
+  들어감. **그냥 `ISCC setup.iss`만 실행하면(플래그 없이) 키 없는 버전이 나옴** - 이게 남에게
+  공유하거나 GitHub 같은 공개 저장소에 올려도 되는 버전. 아래 두 절차 참고.
 
 ## 개인용으로 빌드하기 (내 API 키를 설치파일에 담기)
 1. 이 폴더 옆(빌드 작업 폴더)에 `user_api_bundle\User_API\` 폴더를 만들고, 그 안에 텍스트 파일을
@@ -36,8 +37,20 @@ IP 차단으로 이어졌던 사고(원본 `CLAUDE.md` 결정 로그 참고)를 
    ```
    (원본 프로젝트 루트의 `User_API/*.txt` 파일을 그대로 복사해도 됨.)
 2. 빌드 작업 폴더의 `user_api_bundle/User_API/*.txt`도 함께 준비되도록 아래 절차에 포함시킬 것.
-3. **주의**: 이렇게 만든 `Setup.exe`는 절대 다른 사람과 공유하지 말 것(내 API 키가 그대로
-   들어있음). 불특정 다수에게 배포할 파일은 `user_api_bundle` 없이 따로 빌드할 것.
+3. 컴파일할 때 **반드시 `/DBUNDLE_API_KEY`를 붙일 것** (안 붙이면 키 없는 버전이 나옴 - 아래
+   "빌드 절차" 참고).
+4. **주의**: 이렇게 만든 `Setup.exe`는 절대 다른 사람과 공유하거나 공개 저장소에 올리지 말 것
+   (내 API 키가 그대로 들어있음).
+
+## 공개용(키 없음)으로 빌드하기 — GitHub 등에 올려도 되는 버전
+1. `user_api_bundle` 폴더는 아예 없어도 되고, 있어도 상관없음(`/DBUNDLE_API_KEY`를 안 주면 그
+   내용이 통째로 무시되므로).
+2. 아래 "빌드 절차"에서 **플래그 없이** 컴파일:
+   ```bash
+   "%LocalAppData%\Programs\Inno Setup 6\ISCC.exe" setup.iss
+   ```
+3. 결과물에 `User_API\` 폴더가 아예 없음 → 첫 실행 시 `set_api_key.ps1`이 자동으로 API 키
+   입력창을 띄움(원래 방식). 이 결과물은 GitHub Release 등 공개된 곳에 올려도 안전함.
 
 ## 빌드 절차 (원본 `../빌드방법.md`의 3~5단계와 동일한 틀)
 1. 빌드 작업 폴더를 만들고:
@@ -60,7 +73,11 @@ IP 차단으로 이어졌던 사고(원본 `CLAUDE.md` 결정 로그 참고)를 
    ```bash
    "%LocalAppData%\Programs\Inno Setup 6\ISCC.exe" setup.iss
    ```
-   → `C:\Users\Root\Desktop\클로드\00. 배포용\데이터시트다운로더Lite_설치.exe` 생성.
+   → 키 없는(공개용) `데이터시트다운로더Lite_설치.exe` 생성. **개인용(키 포함) 버전이
+   필요하면** `/DBUNDLE_API_KEY`를 붙이고, 다른 사람과 겹치지 않게 `/F"다른파일명"`으로
+   출력 파일명도 따로 줄 것(예: `ISCC /DBUNDLE_API_KEY /F"데이터시트다운로더Lite_설치_개인용"
+   setup.iss`) - 안 그러면 방금 만든 공개용 파일을 덮어씀.
+   → `C:\Users\Root\Desktop\클로드\00. 배포용\`에 생성됨.
 
 ## 참고
 - 버전을 올릴 땐 이 폴더의 `setup.iss`와 원본 `../setup.iss`의 `AppVersion`을 각각 따로 관리할 것
