@@ -47,14 +47,14 @@ if (-not (Test-Path $venvPython) -or -not (Test-Path $setupDone)) {
     }
 }
 
-# ---------------- ② Mouser API 키(.env) 없으면 입력 ----------------
-# .env는 프로그램 폴더(여기, $Dir)가 아니라 %AppData%\DatasheetDownloader 에 둬요(2026-09-04
-# 수정 - set_api_key.ps1/utils/config.py와 같은 이유: 프로그램 폴더가 재설치/이동돼도 API 키가
-# 안 사라지게 하려고 프로그램 설치 위치와 분리함). 예전 자리($Dir\.env)에 이미 있으면 그것도
-# 유효한 걸로 봐요(구버전 설치에서 업그레이드한 경우 - utils/config.py가 그 경우 새 자리로
-# 알아서 옮겨줌).
-$userEnvPath = Join-Path $env:APPDATA "DatasheetDownloader\.env"
-if (-not (Test-Path $userEnvPath) -and -not (Test-Path (Join-Path $Dir ".env"))) {
+# ---------------- ② Mouser API 키 없으면 입력 ----------------
+# API 키는 이제 .env가 아니라 프로그램 폴더 바로 밑 User_API\ 폴더(파일 하나당 API 하나,
+# utils/config.py의 USER_API_DIR)에 둬요(2026-09-09 수정 - .env 방식 폐지). 그 폴더에 파일이
+# 하나라도 있으면 이미 키가 있는 걸로 보고 입력창을 건너뜁니다(내용까지 검증하진 않음 - 기존
+# .env 존재 확인 방식과 같은 수준).
+$userApiDir = Join-Path $Dir "User_API"
+$hasApiKeyFile = (Test-Path $userApiDir) -and (Get-ChildItem -LiteralPath $userApiDir -File -ErrorAction SilentlyContinue | Select-Object -First 1)
+if (-not $hasApiKeyFile) {
     & powershell.exe -NoProfile -ExecutionPolicy Bypass -File (Join-Path $Dir "set_api_key.ps1")
 }
 

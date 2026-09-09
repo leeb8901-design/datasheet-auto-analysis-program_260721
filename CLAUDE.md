@@ -760,6 +760,147 @@ python tools/build_reference.py
   모듈이 전부 정상 임포트됨을 확인(제거된 웹 검색 함수를 참조하는 곳이 없음을 코드 검색으로도
   재확인). Inno Setup으로 컴파일 성공, `00. 배포용\데이터시트다운로더Lite_설치.exe` 생성 완료.
 
+### 2026-09-04 — Mouser API 키 저장 방식을 `.env`에서 `User_API/` 폴더 방식으로 교체
+- 상황: `.env` 기반 저장 방식(같은 날 앞서 도입)으로도 실제 배포 환경에서 "Invalid unique
+  identifier" 오류가 계속 재현됐고, 원인을 다각도로 조사했지만(재시도 로직, 콘솔 진행바 등
+  시도) 명확히 못 찾음. 사용자가 이 문제와 별개로, API 키 관리 자체를 더 단순하고 눈에 보이는
+  방식으로 바꾸기로 결정함 - **이번 결정으로 재시도 로직/콘솔 진행바 코드는 되돌림**(원래
+  GUI 진행창 방식으로 복귀, `installer/progress.ps1`/`installer/launch.ps1`/
+  `datasheet/search.py` 재시도 로직 전부 제거).
+- 결정: `.env` 한 파일에 여러 KEY=VALUE를 몰아넣는 대신, **`User_API/` 폴더 안에 API 하나당
+  파일 하나**를 두는 방식으로 바꾼다. 파일 내용은 여전히 `KEY=VALUE` 한 줄(예:
+  `MOUSER_API_KEY=실제키값`)이고, 파일 이름은 사람이 알아보기 위한 이름표일 뿐(예:
+  `JY_MOUSER_API_KEY.txt`) 프로그램은 파일 "내용"의 KEY로 어떤 API인지 찾는다. 이 폴더를
+  GUI로 확인/수정할 수 있는 새 창("API 키 관리" 버튼)도 만든다.
+- 반영: `utils/config.py` — `.env`/`python-dotenv` 관련 코드(USER_CONFIG_DIR/USER_ENV_PATH/
+  LEGACY_ENV_PATH/ENV_SEARCH_PATHS/load_dotenv/마이그레이션 로직) 전부 제거. `USER_API_DIR =
+  APP_DIR / "User_API"`, `read_user_api_files()`(폴더 안 모든 파일을 매번 새로 읽어 KEY=VALUE로
+  파싱), `get_api_key(name)`/`get_mouser_api_key()` 추가. `datasheet/search.py`의
+  `MouserClient.__init__`이 이제 캐시된 상수 대신 `get_mouser_api_key()`를 **매번 새로** 호출함
+  — "API 키 관리" 창에서 값을 고친 직후 프로그램 재시작 없이 바로 반영되게 하려는 의도.
+  `diagnostics/self_check.py`도 새 방식으로 갱신. 새 파일 `ui/api_manager_dialog.py`
+  (`ApiManagerDialog`) — `User_API/` 폴더의 파일 목록을 보여주고, 선택한 파일의 내용을
+  보거나 고치고, 새 파일 추가/삭제도 가능. `ui/main_window.py`에 "API 키 관리" 버튼 추가
+  (`_open_api_manager`). `requirements.txt`에서 이제 안 쓰는 `python-dotenv` 제거.
+  `.gitignore`에 `User_API/` 추가(실제 키가 담기므로 `.env`와 똑같이 커밋 절대 금지).
+  검증: 실제 `User_API/JY_MOUSER_API_KEY.txt`(내용 `MOUSER_API_KEY=...`)로 `get_mouser_api_key()`
+  → `MouserClient` → 실제 Mouser API 라이브 호출까지 성공 확인. `ApiManagerDialog`를 화면 없이
+  (QApplication만 띄워서) 목록표시/추가/저장/삭제 전부 로직 테스트 통과. `diagnostics.self_check.
+  check_connectivity()`도 새 방식으로 정상 통과 확인.
+  **미반영(다음에 필요하면 정리)**: `installer/set_api_key.ps1`/`installer/launch.ps1`의 API 키
+  입력 단계, `초기설정.ps1`은 여전히 `.env` 기준으로 남아있음 — 지금은 배포판(installer) 작업이
+  보류 상태라 안 건드림. 나중에 배포판을 다시 진행하면 이 스크립트들도 `User_API/` 방식으로
+  맞춰야 함.
+
+### 2026-09-05 — 데이터시트 다운로드 크롤링에 HTTP 202(Accepted) 비동기 폴링 추가
+- 상황: 실제 로그로 확인된 오류 `[실패] (웹 검색 오류: DuckDuckGo 검색 실패: HTTP 202)` -
+  DuckDuckGo 검색 결과 페이지 요청(`datasheet/downloader.py`의 `_fetch_ddg_html`)이 바로 200을
+  안 주고 202 Accepted(+ `Location`=상태 확인 URL, `Retry-After`=대기시간)를 돌려줘서, 검색
+  자체가 `RuntimeError`로 실패하고 있었음. **처음엔 이 문제를 PDF 문서 다운로드 함수
+  (`_download_once`)에서 발생하는 걸로 잘못 짐작하고 그쪽에 먼저 202 처리를 넣었는데, 사용자가
+  실제 오류 로그를 보여주면서 진짜 발생 지점은 `_fetch_ddg_html`(DDG 검색 페이지 요청)이라고
+  정정해줌** - `_download_once`쪽 202 처리는 유지하되(웹 후보 URL/Mouser 직링크를 열 때도 같은
+  상황이 생길 수 있어 무해한 선제적 보강으로 남겨둠), `_fetch_ddg_html`에도 별도로 같은 처리를
+  추가함. 지금까지는 202를 그냥 "성공 아님"으로만 보고 즉시 예외를 던졌지, `Location` URL을
+  실제로 폴링하지는 않았음.
+- 결정: 202를 받으면, 브라우저(StealthyFetcher)로 다시 열지 않고 **`requests`로 `Location`
+  URL을 `Retry-After` 시간만큼 대기하며 최대 10회 GET으로 확인**한다(이미 브라우저가 최초
+  요청에서 봇 검증을 통과한 뒤라 폴링은 가벼운 GET으로 충분하다고 판단). 폴링 요청에는 실제
+  최신 Chrome과 비슷한 헤더(User-Agent/Accept/Accept-Language/Referer)를 붙인다 - 단,
+  `real_chrome=True`로 뜨는 StealthyFetcher 쪽(진짜 Chrome)에는 이 헤더를 안 건드린다(JS가
+  보고하는 값과 HTTP 헤더가 어긋나면 오히려 더 수상해 보일 수 있어서). 200이 되면 그 본문을
+  기존 PDF 검증/저장 로직에 그대로 태우고, 4xx/5xx를 만나면 더 기다리지 않고 바로 실패
+  처리(429/5xx/연결오류만 재시도 가치 있다고 봄), 10회를 넘기면 타임아웃으로 실패 처리한다.
+- 반영: `datasheet/downloader.py` — `BROWSER_LIKE_HEADERS`, `ASYNC_POLL_MAX_ATTEMPTS`(10)/
+  `ASYNC_POLL_DEFAULT_DELAY`(2.5초)/`ASYNC_POLL_MAX_DELAY`(30초, `Retry-After`가 비정상적으로
+  커도 이 이상 안 기다리는 안전장치), `_header_get()`(대소문자 무시 헤더 조회),
+  `_parse_retry_after()`(초 단위 숫자·HTTP 날짜 형식 둘 다 지원), `_poll_async_202()` 신설.
+  `_register_document_response_capture()`가 이제 응답 헤더도 같이 캡처함(`captured["headers"]`).
+  `_download_once()`에 202 분기 추가 - 성공하면 `status`/`content`를 200/폴링 결과로 바꿔치기해서
+  이후의 PDF 검증·저장 로직을 그대로 재사용(반환 형식 `(오류 또는 None, 재시도 가능 여부)`은
+  안 바꿈). **`_fetch_ddg_html()`에도 같은 202 분기 추가**(실제 오류 발생 지점) - scrapling의
+  `Response` 객체가 route 가로채기 없이도 `.headers`를 그대로 노출해줘서 `_download_once`보다
+  간단하게 바로 확인 가능, 폴링 성공 시 그 본문을 디코딩해 원래 함수와 똑같이 문자열로 반환.
+  검증: `_header_get`/`_parse_retry_after`/`_poll_async_202`를 `requests.get`을 가짜로
+  바꿔치기해서 단위 테스트(202→202→200 성공, 202→404 즉시 실패, 202만 10회 반복 시 타임아웃
+  각각 확인) + `_download_once`/`_fetch_ddg_html` 둘 다 202+상대경로 Location 헤더로 실제
+  호출해서(전자는 파일 저장까지, 후자는 문자열 반환까지) 정상 동작 확인. Location 헤더 없이
+  202만 오는 경우·정상 200 회귀도 각각 확인.
+
+### 2026-09-05 — Mouser 다운로드 성공률을 높이는 4가지 보완
+- 상황: Mouser API로 데이터시트를 못 받는 경우를 줄이고 싶다고 요청받음(사용자가 구체적인
+  4가지 방안을 직접 제시함).
+- 결정 및 반영:
+  1. **검색어 정규화 재시도** — `datasheet/search.py`의 `MouserClient.search_part()`가 원본
+     품번으로 정확히 일치하는 결과가 없으면, 특수문자(하이픈/슬래시/공백 등)를 뺀 순수
+     영숫자 형태로 한 번 더 API를 호출한다. 매칭 비교 자체도 항상 정규화된 형태로 하도록
+     통일함(`_pick_exact_match`) - 구두점 표기 차이만으로 같은 부품을 놓치는 경우를 원본
+     검색 단계에서도 같이 줄여줌. `_normalize_part_number()`/`_search_once()` 신설.
+  2. **ProductDetailUrl 폴백 파싱** — Mouser API의 `DataSheetUrl`이 비어있으면,
+     `search_part()`가 이제 `product_detail_url`(ProductDetailUrl)도 결과에 같이 돌려주고,
+     `datasheet/downloader.py`의 `download_datasheet_for_part()`가 그 상세페이지 HTML을
+     받아 BeautifulSoup으로 `href`에 ".pdf"가 들어간 첫 링크를 찾아 대신 시도한다
+     (`_fetch_datasheet_url_from_product_page()`). **실측 결과 한계 발견**: 처음엔 requests로
+     열었는데 Mouser 자체 봇 차단에 걸려("Access to this page has been denied", HTTP 200이지만
+     차단 페이지) 매번 실패함 - 그래서 다른 봇 차단 사이트와 같은 방식(StealthyFetcher, 실제
+     브라우저)으로 바꿨지만, **그래도 실제 STM32F107VCT6로 재현했을 때 Akamai류 챌린지
+     페이지(len=2622, `sec-if-cpt-container`) 또는 그냥 403으로 막혀서 결국 못 뚫음** - Mouser의
+     제품 상세 "웹페이지"는 API와 별개로 자동화 접속 자체를 강하게 막고 있는 것으로 보임. 코드
+     자체는 안전하게 실패 처리하고 다음 단계(웹 검색 등)로 넘어가지만, **Mouser 상세페이지에
+     대해서는 사실상 항상 실패할 가능성이 높음** - 다른(덜 막힌) 사이트가 ProductDetailUrl로
+     오는 경우에만 도움이 될 수 있음. 더 뚫으려는 시도(프록시/비헤드리스 등)는 Mouser의 명백한
+     차단 의도를 우회하는 것이라 하지 않았음.
+  3. **브라우저 User-Agent/Referer 헤더** — Mouser 관련 URL(DataSheetUrl 직접이든,
+     ProductDetailUrl에서 찾은 링크든)은 이제 무거운 브라우저(StealthyFetcher)부터 띄우지
+     않고, `requests`로 실제 Chrome과 같은 User-Agent + Referer("https://www.mouser.com/")를
+     붙여 가볍고 빠르게 먼저 시도한다(`_fetch_pdf_direct()`, `MOUSER_PDF_HEADERS`). 이 가벼운
+     시도가 실패하면(403/PDF 아닌 응답 등) 기존 브라우저 기반 `download_pdf()`로 자동
+     폴백한다(`_download_via_mouser_url()`) - 지금까지의 성공률은 그대로 유지하면서 "더 빠른
+     첫 시도"만 추가한 구조. **웹(DuckDuckGo) 검색 후보(③ 단계)는 그대로 브라우저로만 연다** -
+     그쪽은 실제로 강한 봇 차단이 있는 사이트가 섞여 있어(analog.com 등) 가벼운 요청이 오히려
+     더 잘 막힘.
+  4. **Rate Limit 방지 딜레이** — Mouser API를 실제로 호출하기 직전에 0.5~1.0초 무작위
+     대기를 추가함(`RATE_LIMIT_DELAY_RANGE`). 이미 파일이 있어서 API를 아예 안 부르는
+     품번(①단계)까지 괜히 늦추지 않도록, 호출 직전에만 넣음 - 3개씩 동시 처리하는
+     구조(`MAX_CONCURRENT_DOWNLOADS`, `ui/main_window.py`)라 완벽한 전역 속도 제한은 아니지만,
+     각 스레드의 요청 간격을 흩어놓는 효과는 있음.
+- 검증: `search_part()`의 원본 성공/정규화 재시도 성공/특수문자 없으면 재시도 안 함/
+  `product_detail_url` 필드 포함 4가지 케이스, `_fetch_pdf_direct`(성공+헤더 확인, PDF 아닌
+  응답 판정), `_fetch_datasheet_url_from_product_page`(href 추출), `_download_via_mouser_url`
+  (가벼운 실패 → 브라우저 폴백)을 각각 단위 테스트(mock). `download_datasheet_for_part()`
+  전체를 ProductDetailUrl 폴백 경로로 실제 호출해 파일 저장까지 확인 + 기존 DataSheetUrl 직접
+  성공/가벼운 다운로드 실패 후 브라우저 폴백 성공/Mouser 검색 자체 실패 시 웹검색 단계로 정상
+  전환, 3가지 회귀 케이스도 확인(mock). **실제 계정으로도 확인**: `STM32F107VCT6`(실제로
+  `DataSheetUrl`이 비어있고 `ProductDetailUrl`만 있는 부품)로 라이브 테스트해서, 코드가
+  예외 없이 안전하게 동작하고 다음 단계로 넘어가는 것까지 확인 - 다만 위 2번 항목의 한계
+  (Mouser 상세페이지 자체 차단)로 실제 PDF 링크 추출 자체는 이 부품에서 성공하지 못함(그래서
+  이 부품은 결국 ③ 웹 검색 단계로 넘어감, 회귀 아님 - 폴백 체인이 설계대로 동작하는 것).
+
+### 2026-09-09 — Lite 배포판을 최신 코드로 재동기화 + 설치파일 재빌드
+- 상황: `00. 배포용`에 다시 패키징해달라고 요청받음. 확인해보니 `installer/lite/` 관련 파일
+  전부가 2026-09-04 시점 스냅샷에 멈춰 있었음 - 그 뒤로 원본에 생긴 큰 변경(202 폴링, Mouser
+  성공률 개선 4종, API 키 `.env`→`User_API/` 전환, PDF 잠금 확인 안전장치, 콘솔 진행바
+  되돌림 등)이 하나도 반영 안 돼 있었음. 특히 `installer/lite/setup.iss`가 여전히 옛 `.env`
+  방식으로 키를 번들링하고 있어서, 이대로 빌드하면 새 `User_API/` 방식을 읽는 앱이 번들된 키를
+  못 찾는 문제가 생길 뻔했음.
+- 결정: 재빌드 전에 `installer/lite/` 전체를 원본과 다시 맞춘다 - `downloader.py`는 최신 원본에서
+  DDG 전용 코드만 다시 제거해서 재생성(§9 아래 README 참고 목록대로), `setup.iss`는 `.env` 번들
+  대신 `User_API/` 폴더 번들로 교체, `launch.ps1`/`set_api_key.ps1`(원본·Lite 공용)도 `.env`
+  대신 `User_API/` 확인·생성으로 교체.
+- 반영: `installer/lite/downloader.py` 전체 재작성(원본 2026-09-09 시점과 DDG 부분만 다르게
+  동기화). `installer/lite/requirements.txt` — `python-dotenv` 제거, `beautifulsoup4`는
+  ProductDetailUrl 폴백에 계속 쓰이므로 유지. `installer/lite/setup.iss`/`installer/setup.iss`
+  (원본도 같이) — `.env` 관련 `[Files]`/`[UninstallDelete]` 항목 제거, Lite 쪽은
+  `user_api_bundle\User_API\*` → `{app}\User_API\`로 번들링(개인용 빌드 전용, 공유 금지 - 4번
+  항목과 같은 이유). `installer/launch.ps1`/`installer/set_api_key.ps1`(공용) — API 키 확인/
+  생성 위치를 `%AppData%\...\.env`에서 `{app}\User_API\`(파일 존재 여부만 확인)로 교체.
+  `installer/lite/README.md` 갱신(새 번들링 방법 + 공유 함수 목록 최신화). 검증: 스테이징
+  앱에서 전체 모듈 import 확인, Lite `downloader.py`로 실제 부품(T495C107K010ATE100) 다운로드
+  성공까지 라이브 확인, Inno Setup 컴파일 성공, 임시 폴더에 실제로 조용히 설치해서
+  `User_API\JY_MOUSER_API_KEY.txt`가 정확한 자리에 원본과 동일한 내용으로 깔리는 것·
+  `api_manager_dialog.py` 포함·DDG 코드 없음·202 폴링 코드 있음까지 확인 후 제거.
+  `AppVersion`을 1.0.0 → 1.1.0으로 올림. 결과물: `00. 배포용\데이터시트다운로더Lite_설치.exe`.
+
 ---
 
 ## 8. 반드시 지킬 것 (실제로 문제가 발생했던 부분)
@@ -772,10 +913,9 @@ python tools/build_reference.py
   — 안 그러면 프로그램이 옛 규칙으로 계속 판정함.
 - Thermal Resistance/Quality Level 등 참고표 자동 판정값은 **추정이 아니라 명시값 기반**이 원칙 —
   근거를 못 찾으면 채우지 말고 비워서 사람이 확인하게 할 것 (4번 표 참고).
-- `.env`(`MOUSER_API_KEY`)는 절대 커밋 금지.
-- `.env` 실제 위치는 `%AppData%\DatasheetDownloader\.env`(프로그램 설치 폴더와 분리된 자리,
-  2026-09-04부터 - 아래 결정 로그 참고). 이 경로를 바꾸면 `utils/config.py`/
-  `installer/set_api_key.ps1`/`installer/launch.ps1` 셋 다 같이 고칠 것.
+- API 키는 `User_API/` 폴더(프로그램 폴더 바로 밑, `utils/config.USER_API_DIR`)에 파일 하나당
+  하나씩 둔다(2026-09-04부터, `.env` 방식 폐지 - 아래 결정 로그 참고). 이 폴더는 절대 커밋
+  금지(`.gitignore`에 이미 등록됨). "API 키 관리" 창(`ui/api_manager_dialog.py`)으로 확인/수정.
 
 ---
 

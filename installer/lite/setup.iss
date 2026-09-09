@@ -6,7 +6,7 @@
 ; 최초 실행 시 run_app.bat이 Python/가상환경/패키지/브라우저를 자동 준비하고 API 키를 입력받아요.
 
 #define AppName "데이터시트 다운로더 Lite"
-#define AppVersion "1.0.0"
+#define AppVersion "1.1.0"
 #define AppPublisher "leeb8901"
 #define ExeLauncher "start.vbs"
 
@@ -40,13 +40,12 @@ Name: "desktopicon"; Description: "바탕화면에 바로가기 만들기"; Grou
 Source: "app\*"; DestDir: "{app}"; Flags: recursesubdirs createallsubdirs ignoreversion
 ; 최초 실행 때 Python이 없으면 쓰는 내장 설치기 (설치 성공 후 자동 삭제됨)
 Source: "assets\python-3.14.6-amd64.exe"; DestDir: "{app}\_setup"; Flags: ignoreversion
-; Mouser API 키(.env)를 설치파일에 그대로 담아서, 설치하자마자 바로 쓸 수 있게 함(2026-09-04 -
-; 본인만 쓰는 개인용 배포라 API 키를 설치파일에 포함해도 된다고 확인함 - 다른 사람에게 이
-; Setup.exe를 그대로 넘기면 그 사람도 이 키를 쓸 수 있게 되니 공유 금지). utils/config.py가
-; 1순위로 찾는 자리(%AppData%\DatasheetDownloader\.env)에 바로 설치해서, launch.ps1의 "키
-; 입력 창"이 아예 안 뜨고 첫 실행부터 정상 동작함. onlyifdoesntexist: 이미 그 자리에 .env가
-; 있으면(원본 프로그램을 먼저 설치해서 이미 키를 넣어둔 경우 등) 안 덮어씀.
-Source: "env_bundle\.env"; DestDir: "{userappdata}\DatasheetDownloader"; Flags: onlyifdoesntexist uninsneveruninstall
+; Mouser API 키를 설치파일에 그대로 담아서, 설치하자마자 바로 쓸 수 있게 함(2026-09-09 갱신 -
+; API 키 저장 방식이 .env에서 User_API/ 폴더(파일 하나당 API 하나)로 바뀌어서 그에 맞춤. 본인만
+; 쓰는 개인용 배포라 API 키를 설치파일에 포함해도 된다고 확인함 - 다른 사람에게 이 Setup.exe를
+; 그대로 넘기면 그 사람도 이 키를 쓸 수 있게 되니 공유 금지). utils/config.py가 찾는 자리
+; ({app}\User_API\)에 바로 설치해서 첫 실행부터 정상 동작함.
+Source: "user_api_bundle\User_API\*"; DestDir: "{app}\User_API"; Flags: recursesubdirs createallsubdirs ignoreversion
 
 [Icons]
 Name: "{group}\{#AppName}"; Filename: "{app}\{#ExeLauncher}"; WorkingDir: "{app}"; IconFilename: "{sys}\shell32.dll"; IconIndex: 220
@@ -57,11 +56,11 @@ Name: "{autodesktop}\{#AppName}"; Filename: "{app}\{#ExeLauncher}"; WorkingDir: 
 Filename: "{app}\{#ExeLauncher}"; Description: "지금 실행 (최초 준비가 자동으로 진행됩니다)"; WorkingDir: "{app}"; Flags: shellexec postinstall skipifsilent
 
 [UninstallDelete]
-; 프로그램이 만든 런타임 산출물까지 정리 (Mouser API 키가 담긴 %AppData%\DatasheetDownloader\.env는
-; 프로그램 설치 폴더 밖에 있어서 여기서 안 지워짐 - 재설치해도 키를 다시 입력할 필요 없게 의도적으로 둠).
+; 프로그램이 만든 런타임 산출물까지 정리 (API 키가 든 User_API\ 는 일부러 안 지움 - {app} 전체가
+; 지워지는 표준 제거 과정에서 같이 없어지긴 하지만, 재설치 흐름에서 실수로 먼저 지워지지
+; 않도록 여기 목록엔 굳이 안 넣음)
 Type: filesandordirs; Name: "{app}\.venv"
 Type: filesandordirs; Name: "{app}\logs"
 Type: filesandordirs; Name: "{app}\Download_ datasheets"
 Type: filesandordirs; Name: "{app}\_setup"
 Type: files; Name: "{app}\.setup_done"
-Type: files; Name: "{app}\.env"

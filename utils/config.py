@@ -1,9 +1,6 @@
 # 프로그램 전체에서 같이 쓰는 설정값(경로, 열쇠 카드, 힌트 단어 등)을 모아둔 파일이에요.
 
-import os
 from pathlib import Path
-
-from dotenv import load_dotenv
 
 # 이 파일(utils/config.py)의 부모의 부모 폴더가 곧 프로그램 폴더예요.
 APP_DIR = Path(__file__).resolve().parent.parent
@@ -26,42 +23,67 @@ MAPPING_TEMPLATE_PATH = APP_DIR / "Windchill_217F_Mapping_Template - 복사본.x
 # 쓰는 흐름이에요. 프로그램은 이 파일을 읽기만 하고(복사만) 절대 수정하지 않아요.
 IMPORT_TEMPLATE_PATH = APP_DIR / "vba" / "Import_User.xlsx"
 
-# .env 파일(MOUSER_API_KEY 등)을 찾는 순서예요. 예전엔 APP_DIR(프로그램이 설치된 폴더) 안에서만
-# 찾았는데, 설치파일(Setup.exe)로 배포한 뒤 프로그램 폴더를 옮기거나 다른 위치에 다시 설치하면
-# 그 안에 있던 .env가 새 위치로 안 따라와서 Mouser API 키를 매번 다시 입력해야 하는 문제가
-# 있었어요(사용자 확정, 2026-09-04 - "설치파일로 배포했을 때만" 재현됨: installer/set_api_key.ps1
-# 이 예전엔 프로그램 폴더 안에 .env를 만들었는데, 그 폴더가 재설치/이동으로 바뀌면 예전 .env는
-# 새 프로그램과 물리적으로 분리돼 버림).
-#
-# 그래서 프로그램 설치 위치와 완전히 분리된, OS 표준 사용자별 설정 폴더(%APPDATA%, 로밍 - 앱을
-# 어디에 설치하든/재설치하든 안 바뀌는 사람별 고정 자리)를 1순위로 보고, 예전 방식(APP_DIR/.env,
-# 이 저장소를 직접 열어 개발할 때 편하게 쓰던 자리)은 2순위로 남겨둬요.
-USER_CONFIG_DIR = Path(os.environ.get("APPDATA", str(Path.home() / "AppData" / "Roaming"))) / "DatasheetDownloader"
-USER_ENV_PATH = USER_CONFIG_DIR / ".env"
-LEGACY_ENV_PATH = APP_DIR / ".env"
-ENV_SEARCH_PATHS = [USER_ENV_PATH, LEGACY_ENV_PATH]  # diagnostics/self_check.py가 안내 메시지에 씀
+# API 키 관리 (2026-09-04부터 — .env 대신 "메모장" 파일 방식으로 교체)
+# ------------------------------------------------------------------------------------------
+# 예전엔 .env 파일 하나에 KEY=VALUE를 몰아넣었는데, 이제는 API마다 텍스트 파일 하나씩으로
+# 나눠서 관리해요. User_API/ 폴더 안에 파일을 하나 두면(예: JY_MOUSER_API_KEY.txt, 내용은
+# "MOUSER_API_KEY=실제키값") 그게 그대로 하나의 API 항목이 돼요. 파일명은 사람이 보기 위한
+# 이름표일 뿐이고, 프로그램이 실제로 쓰는 건 파일 "내용"의 KEY=VALUE예요 — 그래서 파일명은
+# 자유롭게 지어도 되고(예: "회사키_MOUSER_API_KEY.txt"), 내용의 KEY(예: MOUSER_API_KEY)만
+# 맞으면 프로그램이 알아서 찾아요. GUI(ui/api_manager_dialog.py, "API 키 관리" 버튼)로
+# 파일 목록 확인/내용 수정/추가/삭제를 할 수 있어요.
+USER_API_DIR = APP_DIR / "User_API"
 
-_env_path_used = next((p for p in ENV_SEARCH_PATHS if p.exists()), None)
-load_dotenv(dotenv_path=_env_path_used or USER_ENV_PATH)
 
-# .env가 예전 자리(프로그램 폴더 안)에만 있으면, 새 표준 위치로 한 부 복사해둬요(이미 있으면
-# 안 건드림) - 그래야 다음에 프로그램 폴더를 옮기거나 재설치해도 API 키가 안 사라져요.
-if _env_path_used == LEGACY_ENV_PATH and not USER_ENV_PATH.exists():
-    try:
-        USER_CONFIG_DIR.mkdir(parents=True, exist_ok=True)
-        USER_ENV_PATH.write_text(LEGACY_ENV_PATH.read_text(encoding="utf-8"), encoding="utf-8")
-    except OSError:
-        pass  # 마이그레이션이 안 돼도 프로그램 동작엔 지장 없어요(다음 실행 때 다시 시도됨)
+def _parse_key_value_lines(text: str) -> dict[str, str]:
+    """"KEY=VALUE" 줄들을 딕셔너리로 바꿔요. 빈 줄/#으로 시작하는 줄은 무시해요."""
+    result: dict[str, str] = {}
+    for line in text.splitlines():
+        line = line.strip()
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        key, _, value = line.partition("=")
+        result[key.strip()] = value.strip()
+    return result
 
-MOUSER_API_KEY = os.environ.get("MOUSER_API_KEY")
+
+def read_user_api_files() -> dict[str, dict]:
+    """User_API/ 폴더 안의 파일들을 전부 읽어요. 매번 새로 읽어서, GUI에서 방금 고친 값이
+    프로그램 재시작 없이 바로 반영돼요. {파일명: {"path": Path, "content": 원문, "values": {KEY: VALUE}}}
+    """
+    entries: dict[str, dict] = {}
+    if not USER_API_DIR.is_dir():
+        return entries
+    for path in sorted(USER_API_DIR.iterdir()):
+        if not path.is_file():
+            continue
+        try:
+            content = path.read_text(encoding="utf-8")
+        except OSError:
+            continue
+        entries[path.name] = {"path": path, "content": content, "values": _parse_key_value_lines(content)}
+    return entries
+
+
+def get_api_key(name: str) -> str | None:
+    """User_API/ 안의 모든 파일을 통틀어, KEY 이름이 name(대소문자 무시)과 일치하는 값을 찾아요."""
+    target = name.strip().lower()
+    for entry in read_user_api_files().values():
+        for key, value in entry["values"].items():
+            if key.strip().lower() == target and value:
+                return value
+    return None
+
+
+def get_mouser_api_key() -> str | None:
+    return get_api_key("MOUSER_API_KEY")
 
 # 입력지(사용자가 품번을 채워 넣은 원본)와 출력지(프로그램이 처리 결과를 써넣는 사본)를 분리해요.
 # 입력지는 절대 수정하지 않아요. "출력지 저장" 버튼을 눌러야 그 시점에 저장 위치를 물어보는데,
-# 이 폴더/이름을 그 저장 대화상자에 기본으로 채워줘요. 폴더는 "입력지 양식"(IMPORT_TEMPLATE_PATH)
-# 파일이 있는 곳과 항상 같게 유지해요(2026-09-03 사용자 확정 - 하드코딩된 별도 경로 대신
-# IMPORT_TEMPLATE_PATH.parent를 그대로 가져다 써서, 나중에 입력지 양식 위치가 바뀌어도 둘이
-# 저절로 같이 따라가게 함). 이름은 "Export_Root"로 고정(2026-09-02 사용자 확정).
-EXPORT_DEFAULT_DIR = IMPORT_TEMPLATE_PATH.parent
+# 이 이름을 그 저장 대화상자에 기본 파일명으로 채워줘요. 폴더는 더 이상 여기서 지정하지 않고
+# "입력지 양식" 버튼과 똑같이 파일명만 넘겨서 Qt가 마지막으로 연 폴더를 기본으로 보여주게 함
+# (2026-09-05 사용자 확정 - 두 저장 대화상자의 기본 위치가 항상 같게 동작해야 함). 이름은
+# "Export_Root"로 고정(2026-09-02 사용자 확정).
 OUTPUT_DEFAULT_NAME = "Export_Root"
 
 # 엑셀을 불러올 때 우선적으로 찾는 시트 이름이에요.

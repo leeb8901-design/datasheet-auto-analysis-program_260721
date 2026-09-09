@@ -47,10 +47,11 @@ Name: "{autodesktop}\{#AppName}"; Filename: "{app}\{#ExeLauncher}"; WorkingDir: 
 Filename: "{app}\{#ExeLauncher}"; Description: "지금 실행 (최초 준비가 자동으로 진행됩니다)"; WorkingDir: "{app}"; Flags: shellexec postinstall skipifsilent
 
 [UninstallDelete]
-; 프로그램이 만든 런타임 산출물까지 정리
+; 프로그램이 만든 런타임 산출물까지 정리 (API 키가 든 User_API\ 는 일부러 안 지움 - {app} 전체가
+; 지워지는 표준 제거 과정에서 같이 없어지긴 하지만, 재설치 흐름에서 실수로 먼저 지워지지
+; 않도록 여기 목록엔 굳이 안 넣음)
 Type: filesandordirs; Name: "{app}\.venv"
 Type: filesandordirs; Name: "{app}\logs"
 Type: filesandordirs; Name: "{app}\Download_ datasheets"
 Type: filesandordirs; Name: "{app}\_setup"
 Type: files; Name: "{app}\.setup_done"
-Type: files; Name: "{app}\.env"

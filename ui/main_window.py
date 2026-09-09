@@ -44,6 +44,7 @@ from datasheet.downloader import (
     dest_path_for_part,
     download_datasheet_for_part,
     get_download_dir,
+    is_pdf_locked,
     move_to_classified,
     resolve_existing_pdf,
     set_download_dir,
@@ -52,6 +53,7 @@ from datasheet.search import MouserClient
 from excel.excel_reader import find_input_columns, get_sheet_names, read_part_list_sheet
 from excel.excel_writer import ExcelResultWriter
 from ui.analysis_dialog import AnalysisReviewDialog
+from ui.api_manager_dialog import ApiManagerDialog
 from ui.dialogs import SheetColumnDialog
 from utils.config import (
     ANALYSIS_DONE,
@@ -64,7 +66,6 @@ from utils.config import (
     COL_ERROR_MESSAGE,
     COL_SAVE_PATH,
     COL_UNRESOLVED_FIELDS,
-    EXPORT_DEFAULT_DIR,
     IMPORT_TEMPLATE_PATH,
     OUTPUT_DEFAULT_NAME,
     PART_LIST_SHEET_NAME,
@@ -419,6 +420,11 @@ class MainWindow(QMainWindow):
         import_template_btn = QPushButton("입력지 양식")
         import_template_btn.clicked.connect(self._export_import_template)
 
+        # Mouser API 키 등, 프로그램이 쓰는 API 키를 확인/수정하는 창(2026-09-04 도입).
+        api_manager_btn = QPushButton("API 키 관리")
+        api_manager_btn.setToolTip("Mouser API 키 등 User_API 폴더의 API 키 파일을 확인하고 수정해요.")
+        api_manager_btn.clicked.connect(self._open_api_manager)
+
         row1.addWidget(pick_excel_btn)
         row1.addWidget(self.excel_label, 1)
         row1.addWidget(QLabel("Sheet:"))
@@ -426,6 +432,7 @@ class MainWindow(QMainWindow):
         row1.addWidget(QLabel("열저항:"))
         row1.addWidget(self.thermal_combo)
         row1.addWidget(import_template_btn)
+        row1.addWidget(api_manager_btn)
 
         row2 = QHBoxLayout()
         self.output_label = QLabel("아직 저장하지 않음")
@@ -959,8 +966,34 @@ class MainWindow(QMainWindow):
                 missing.append((part, dest_path_for_part(part)))
         return missing
 
+    def _locked_pdf_rows(self) -> list[tuple[str, Path]]:
+        # 지금 다른 프로그램(PDF 뷰어 등)에서 열려 있어서 잠긴 PDF가 있는 품번들을 찾아요
+        # (2026-09-04 도입). '신뢰도 분석'이 분류 폴더로 파일을 옮기고 그 위에 주석을 써야 하는데,
+        # 파일이 열려 있으면 이 과정이 실패하거나 조용히 일부만 반영될 수 있어서 미리 확인해요.
+        locked = []
+        for row in self.rows:
+            part = row["part_number"]
+            path = resolve_existing_pdf(part)
+            if path is not None and is_pdf_locked(path):
+                locked.append((part, path))
+        return locked
+
     def _start_analysis(self):
         if not self.rows:
+            return
+
+        # 분석 대상 PDF가 지금 다른 프로그램(PDF 뷰어 등)에서 열려 있으면 안전장치로 아예 시작을
+        # 막아요(2026-09-04 도입) - 열린 채로 진행하면 분류 폴더로 옮기는 과정이 실패하거나 PDF
+        # 주석이 조용히 안 붙을 수 있어서, 먼저 닫고 다시 눌러달라고 안내해요.
+        locked = self._locked_pdf_rows()
+        if locked:
+            lines = [
+                "다음 품번의 데이터시트 PDF가 지금 다른 프로그램(PDF 뷰어 등)에서 열려 있어서",
+                "'신뢰도 분석'을 시작할 수 없습니다. 먼저 해당 파일을 닫고 다시 눌러주세요:",
+                "",
+            ]
+            lines += [f"· {part}  ->  {path.name}" for part, path in locked]
+            QMessageBox.warning(self, "PDF가 열려 있음", "\n".join(lines))
             return
 
         # 데이터시트가 없는 품번이 있어도 막지 않아요 - 안내 문구만 보여주고, 있는 품번은 그대로
@@ -1064,7 +1097,10 @@ class MainWindow(QMainWindow):
             return
 
         input_path = Path(self.input_path)
-        default_path = str(EXPORT_DEFAULT_DIR / f"{OUTPUT_DEFAULT_NAME}{input_path.suffix}")
+        # 폴더는 지정하지 않고 파일명만 넘겨요 - "입력지 양식" 버튼(_export_import_template)과
+        # 똑같이 Qt가 마지막으로 연 폴더를 기본으로 보여주게 하기 위해서예요(2026-09-05 사용자
+        # 확정 - 두 저장 대화상자의 기본 위치가 항상 같아야 함).
+        default_path = f"{OUTPUT_DEFAULT_NAME}{input_path.suffix}"
         save_path, _ = QFileDialog.getSaveFileName(
             self, "출력지 저장", default_path, "Excel 파일 (*.xlsx *.xlsm)"
         )
@@ -1160,6 +1196,13 @@ class MainWindow(QMainWindow):
         self._log(f"입력지 양식을 만들었습니다: {save_path}")
         QMessageBox.information(self, "완료", f"입력지 양식을 만들었습니다.\n{save_path}")
 
+    def _open_api_manager(self):
+        # "API 키 관리" 버튼: User_API/ 폴더의 API 키 파일들을 확인/수정하는 창을 띄워요
+        # (2026-09-04 도입). 이 창에서 저장하면 다음 Mouser 호출부터 바로 새 값이 쓰여요
+        # (datasheet/search.py의 MouserClient가 매번 새로 읽으므로, 프로그램 재시작 불필요).
+        dialog = ApiManagerDialog(self)
+        dialog.exec()
+
     # ---------------- PDF 열기 ----------------
     def _selected_row(self) -> int | None:
         items = self.table.selectedItems()
@@ -1168,11 +1211,18 @@ class MainWindow(QMainWindow):
         return items[0].row()
 
     def _pdf_path_for_row(self, i: int) -> Path:
+        # 실제 디스크 상태(resolve_existing_pdf)를 항상 먼저 확인해요 - 방금 다운로드했든, 이미
+        # 분석돼 분류 폴더로 옮겨졌든 상관없이 "지금 진짜 있는 자리"를 보여주기 위해서예요
+        # (2026-09-04 수정 - 예전엔 메모리에 캐시해둔 save_paths를 먼저 봐서, 갱신이 안 됐으면
+        # 실제로 없는/옛날 경로를 보여줄 수 있었음).
+        part = self.rows[i]["part_number"]
+        existing = resolve_existing_pdf(part)
+        if existing:
+            return existing
         saved = self.save_paths[i] if i < len(self.save_paths) else ""
         if saved:
             return Path(saved)
-        part = self.rows[i]["part_number"]
-        return resolve_existing_pdf(part) or dest_path_for_part(part)
+        return dest_path_for_part(part)
 
     def _open_pdf_for_row(self, i: int):
         # "데이터시트 파일명" 칸의 "열기" 버튼이 행 번호를 직접 넘겨서 호출해요 - 표에서 행을

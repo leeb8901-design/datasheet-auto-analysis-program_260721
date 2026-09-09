@@ -25,7 +25,7 @@ from excel.mapping_template_builder import (
     MAPPING_SHEET_NAME,
     expected_hex_for,
 )
-from utils.config import DOWNLOAD_DIR, ENV_SEARCH_PATHS, MOUSER_API_KEY
+from utils.config import DOWNLOAD_DIR, USER_API_DIR, get_mouser_api_key
 
 
 @dataclass
@@ -93,14 +93,14 @@ def check_workbook_integrity(path: Path, sample_rows: int = 30) -> list[Issue]:
 def check_connectivity(download_dir: Path | None = None) -> list[Issue]:
     issues: list[Issue] = []
 
-    if not MOUSER_API_KEY:
-        checked = " / ".join(str(p) for p in ENV_SEARCH_PATHS)
-        issues.append(Issue("오류", f"MOUSER_API_KEY가 .env에 설정되어 있지 않습니다. (확인한 위치: {checked})"))
+    mouser_api_key = get_mouser_api_key()
+    if not mouser_api_key:
+        issues.append(Issue("오류", f"MOUSER_API_KEY를 찾을 수 없습니다. (확인한 위치: {USER_API_DIR})"))
     else:
         try:
             resp = requests.post(
                 "https://api.mouser.com/api/v1/search/keyword",
-                params={"apiKey": MOUSER_API_KEY},
+                params={"apiKey": mouser_api_key},
                 json={"SearchByKeywordRequest": {"keyword": "TEST", "records": 1}},
                 timeout=8,
             )

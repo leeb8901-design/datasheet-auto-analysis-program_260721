@@ -1,5 +1,6 @@
 # 비밀 값 (API 키) — 절대 커밋하지 않음
 .env
+User_API/
 
 # 파이썬
 __pycache__/

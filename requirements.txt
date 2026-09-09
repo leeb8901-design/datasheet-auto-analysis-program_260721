@@ -1,5 +1,4 @@
 requests
-python-dotenv
 openpyxl
 beautifulsoup4
 PySide6
