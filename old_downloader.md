@@ -115,7 +115,8 @@ Windows에서 번들 Chromium이 side-by-side 오류로 실행 안 되는 문제
 | `excel/mapping_colors.py` | **레거시 (폐기됐지만 파일 존속)** | 옛 4색 규칙(흰/회/보라/분홍) 상수. `diagnostics/self_check.py`가 아직 참조해서 못 지움 |
 | `excel/mapping_template_builder.py` | **레거시** | 옛 "매핑맵" 시트(154개 서브카테고리 × 127컬럼) 생성 로직. `diagnostics/self_check.py`만 참조 |
 | `excel/mapping_writer.py` | **레거시 — 사실상 죽은 코드** | 옛 매핑맵에 부품 값 쓰기(`MappingMapWriter`). **어디서도 import 안 됨** (grep 결과 self_check조차 안 씀) — HANDOFF 문서엔 "self_check가 참조 중"이라 적혀 있지만 실제로 `mapping_writer.py` 자체를 참조하는 곳은 없음, `mapping_template_builder`/`mapping_colors`만 참조됨. **삭제 후보 1순위.** |
-| (삭제됨) `excel/output_builder.py`, `datasheet/annotator.py` | 파일 자체가 저장소에서 삭제됨(git 이력에는 있음) | 예전엔 별도 "출력지"(매핑맵 워크북) + PDF 스티키노트 주석을 만들었으나 2026-07-31 개편으로 폐지 |
+| (삭제됨) `excel/output_builder.py` | 파일 자체가 저장소에서 삭제됨(git 이력에는 있음) | 예전엔 별도 "출력지"(매핑맵 워크북)를 만들었으나 2026-07-31 개편으로 폐지 |
+| `datasheet/annotator.py` | **[2026-09 갱신] 이 문서(2026-08-18) 작성 당시엔 삭제된 상태였으나, 2026-09-03에 완전히 새 구현으로 재도입됨** | 스티키노트 방식이 아니라 하이라이트+메모 방식, `ai/pdf_parser.py`의 `evidence`(근거문구)를 이용. CLAUDE.md 5-1번/소프트웨어_설계문서.md 3.6절 참고 |
 
 **같은 "헤더 행 자동 감지" 로직이 `excel_reader._detect... (find_header_row)`와
 `excel_writer._detect_header_row`에 거의 동일하게 두 번 구현되어 있음** — 미묘하게 다름
@@ -169,7 +170,7 @@ CLAUDE.md 자체가 최신화되지 않은 문서라는 뜻.
 |---|---|---|
 | 색상 규칙 | 흰/회/보라/분홍 4색이 핵심 원칙 | **PSA 방식으로 대체됨.** 이제는 정의행 색이 "Datasheet 스와치 색과 같은가"만 이진 판정(`psa_writer.color_key`). 4색 코드는 `self_check`에만 남음 |
 | 출력지 | 배치마다 새 엑셀(부품리스트+매핑맵) 생성 | **폐지.** 입력지=산출물, 같은 파일에 직접 씀 |
-| PDF 주석 | `datasheet/annotator.py`가 스티키노트 삽입 | **파일 삭제됨.** 기능 자체가 없음 |
+| PDF 주석 | `datasheet/annotator.py`가 스티키노트 삽입 | **[2026-09 갱신] 이 문서 작성(2026-08-18) 당시엔 파일 삭제 상태였으나, 2026-09-03에 하이라이트+메모 방식으로 재도입됨(근거문구 있는 값만 표시)** |
 | 서브카테고리 수 | 154개(CLAUDE.md), `subcat_params.json` | **97개**(현재 `data/subcat_params.json`, PSA 시트 기준으로 재생성됨) |
 | `data/params124.json`, `mapping_map_snapshot.json` 등 | CLAUDE.md 4번이 "반드시 재사용" 지시 | **`data/` 폴더에 실물 없음** |
 
@@ -228,9 +229,13 @@ CLAUDE.md 자체가 최신화되지 않은 문서라는 뜻.
 
 ## 7. 실행 환경
 
-- `pip install -r requirements.txt`(`requests`, `python-dotenv`, `openpyxl`, `beautifulsoup4`,
-  `PySide6`, `pdfplumber`, `pymupdf`, `scrapling[fetchers]`)
-- `.env`에 `MOUSER_API_KEY` 필요(git 미포함)
+- `pip install -r requirements.txt`(`requests`, `openpyxl`, `beautifulsoup4`, `PySide6`,
+  `pdfplumber`, `pymupdf`, `scrapling[fetchers]`) — **[2026-09 갱신]** `python-dotenv`는 아래 API 키
+  방식 교체로 더 이상 의존성에 없음.
+- **[2026-09 갱신]** API 키는 이 문서(2026-08-18) 작성 당시엔 `.env` 파일 방식이었으나,
+  2026-09-04부터 `User_API/` 폴더(파일 하나 = API 하나, 예: `User_API/JY_MOUSER_API_KEY.txt`)
+  방식으로 교체됨(`utils/config.py`의 `get_mouser_api_key()`/`read_user_api_files()`, GUI의
+  "API 키 관리" 창). 폴더 자체는 여전히 git 미포함.
 - 다운로드는 시스템에 설치된 **실제 Google Chrome** 사용(`SCRAPLING_REAL_CHROME=0`으로 번들
   브라우저 강제 가능)
 - `data/*.json` 재생성: `python tools/build_reference.py`(입력 엑셀 수정 후 매번)
