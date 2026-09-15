@@ -223,10 +223,13 @@ Integrated Circuit/Logic으로 잘못 분류시킨 사고가 실제로 있었음
 `datasheet/annotator.py`(2026-07-31에 삭제됨)와는 다른 새 방식으로, 사용자가 직접 만든 예시
 (`IS31FL3296-UTLS4-TR_예시안.pdf`)의 형식을 그대로 따릅니다.
 
-- **형식**: PyMuPDF(`fitz`)의 **하이라이트 주석**(`add_highlight_annot`) + 팝업 메모. 메모 내용은
-  `파라미터 : 값` 줄바꿈 나열.
+- **형식**: **하이라이트 주석** + 팝업 메모. 메모 내용은 `파라미터 : 값` 줄바꿈 나열.
+  **(2026-09-15부터)** 문구 위치는 `pdfplumber`(`page.search()`)로 찾고, 실제 주석 삽입은
+  `pypdf`(`pypdf.annotations.Highlight`)로 함 — 예전엔 PyMuPDF(`fitz`)의 `add_highlight_annot`
+  하나로 다 했지만, pymupdf가 AGPL-3.0/Artifex 상용 라이선스 듀얼이라 무료 배포와 충돌할 수 있어
+  교체함(보안점검_2026-09-11.md 참고). 동작(찾는 방식/멱등 처리/표시 규칙)은 그대로 유지.
 - **위치 원칙(2026-08-27 확정)**: **판정에 실제로 쓰인 정확한 근거 문구**에만 붙임 — 섹션 제목 같은
-  대략적인 위치가 아니라, `page.search_for()`로 그 값을 결정한 진짜 문구를 찾아 붙임. 예:
+  대략적인 위치가 아니라, `page.search()`로 그 값을 결정한 진짜 문구를 찾아 붙임. 예:
   Quality Level → `-40°C ~ +125°C`(동작온도 범위 그 문구 자체), Category/Subcategory=Linear →
   `LED DRIVER`(classifier.py가 "driver" 키워드로 매칭한 그 문구), Package Type → Ordering
   Information의 품번 행.

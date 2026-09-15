@@ -12,7 +12,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 import openpyxl
-import pymupdf as fitz  # "import fitz"는 옛 이름이라 매번 경고가 떠서 새 이름으로 불러옴
+import pdfplumber
 import requests
 
 from ai.field_extractor import FIELD_SYNONYMS
@@ -173,12 +173,9 @@ def check_output_file(xlsx_path: Path, pdf_paths: list[Path]) -> list[Issue]:
 
     for pdf_path in pdf_paths:
         try:
-            doc = fitz.open(pdf_path)
-            try:
-                if doc.page_count == 0:
+            with pdfplumber.open(pdf_path) as doc:
+                if len(doc.pages) == 0:
                     issues.append(Issue("오류", f"{pdf_path.name}: 페이지가 0개입니다."))
-            finally:
-                doc.close()
         except Exception as e:
             issues.append(Issue("오류", f"{pdf_path.name}을 다시 열 수 없습니다: {e}"))
 

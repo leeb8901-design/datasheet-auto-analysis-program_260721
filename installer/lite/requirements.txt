@@ -3,5 +3,5 @@ openpyxl
 beautifulsoup4
 PySide6
 pdfplumber
-pymupdf
+pypdf
 scrapling[fetchers]
