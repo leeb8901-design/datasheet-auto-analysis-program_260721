@@ -6,7 +6,7 @@
 ; 최초 실행 시 run_app.bat이 Python/가상환경/패키지/브라우저를 자동 준비하고 API 키를 입력받아요.
 
 #define AppName "데이터시트 다운로더 Lite"
-#define AppVersion "1.1.0"
+#define AppVersion "1.2.0"
 #define AppPublisher "leeb8901"
 #define ExeLauncher "start.vbs"
 
