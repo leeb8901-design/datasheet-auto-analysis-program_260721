@@ -40,6 +40,10 @@ Source: "assets\python-3.14.6-amd64.exe"; DestDir: "{app}\_setup"; Flags: ignore
 
 [Icons]
 Name: "{group}\{#AppName}"; Filename: "{app}\{#ExeLauncher}"; WorkingDir: "{app}"; IconFilename: "{sys}\shell32.dll"; IconIndex: 220
+; PySide6(LGPL) 등 재배포 오픈소스 라이선스 고지 - 사용자가 실제로 볼 수 있게 시작메뉴에 노출
+; (2026-09-15 추가, 보안점검_2026-09-11.md §6). 메모장으로 직접 열어서 파일 연결 설정과 무관하게
+; 항상 뜨도록 함.
+Name: "{group}\오픈소스 라이선스"; Filename: "{win}\notepad.exe"; Parameters: """{app}\THIRD-PARTY-NOTICES.md"""
 Name: "{group}\{#AppName} 제거"; Filename: "{uninstallexe}"
 Name: "{autodesktop}\{#AppName}"; Filename: "{app}\{#ExeLauncher}"; WorkingDir: "{app}"; IconFilename: "{sys}\shell32.dll"; IconIndex: 220; Tasks: desktopicon
 
