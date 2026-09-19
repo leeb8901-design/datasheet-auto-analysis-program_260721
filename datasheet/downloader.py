@@ -406,12 +406,19 @@ def _download_via_api_source_url(url: str, dest: Path, headers: dict) -> str | N
     브라우저 기반 download_pdf로 재시도해요(2026-09-19 도입, _download_via_mouser_url을 DigiKey와
     같이 쓸 수 있게 일반화함 - 두 유통사 모두 "이미 공식 API로 확인된 링크라 가벼운 요청부터
     시도해도 될 가능성이 높다"는 같은 전제라 로직 차이가 없음). 성공하면 None, 끝까지 실패하면
-    마지막 실패 사유를 돌려줘요."""
+    마지막 실패 사유를 돌려줘요.
+
+    브라우저 폴백은 max_retries=1(기본값 3 대신)로 넘겨요(2026-09-19, 실전 다운로드 로그로 발견 -
+    samsungsem.com/pulseelectronics.com/st.com처럼 연결 자체가 타임아웃되는 호스트에 대해 기본
+    3회(총 4번 시도)까지 재시도하다가 품번 하나에 최대 2분 넘게 날린 사례가 있었음. 여기는
+    URL이 하나뿐이라(DDG 후보 여러 개를 도는 _try_candidates와 다름) 재시도해도 대부분 똑같이
+    실패하므로, _try_candidates와 같은 "오래 못 붙잡고 있는다" 철학에 맞춰 재시도를 1회로
+    줄임 - 최악 시나리오가 ~130초에서 ~60초로 줄어듦(아주 드문 순간적 오류 복구력은 조금 희생)."""
     light_error = _fetch_pdf_direct(url, dest, headers)
     if light_error is None:
         return None
     logger.log(f"  [디버그] 가벼운 다운로드 실패({light_error}) - 브라우저로 재시도합니다: {url}")
-    return download_pdf(url, dest)
+    return download_pdf(url, dest, max_retries=1)
 
 
 def _register_document_response_capture(captured: dict):

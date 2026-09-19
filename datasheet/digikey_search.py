@@ -143,9 +143,22 @@ class DigiKeyClient:
         return {
             "manufacturer_part_number": best.get("ManufacturerProductNumber"),
             "manufacturer": manufacturer,
-            "datasheet_url": best.get("DatasheetUrl") or None,
+            "datasheet_url": _normalize_datasheet_url(best.get("DatasheetUrl")),
             "description": (best.get("Description") or {}).get("ProductDescription"),
             "digikey_part_number": best.get("ProductVariations", [{}])[0].get("DigiKeyProductNumber")
             if best.get("ProductVariations")
             else None,
         }
+
+
+def _normalize_datasheet_url(url: str | None) -> str | None:
+    """DigiKey가 가끔 DatasheetUrl을 프로토콜 없이 '//mm.digikey.com/...' 형태(프로토콜 상대
+    URL)로 줄 때가 있어요(2026-09-19 실전 다운로드 로그로 확인 - MT41K128M16JT-125:K/AO3400A/
+    MCR12DSNT4G 3건). requests가 이걸 그대로 받으면 "Invalid URL: No scheme supplied"로 즉시
+    실패하는데, 이 실패가 "일시적 오류"로 분류돼 브라우저 재시도(지수 백오프 최대 3회)까지
+    타서, 절대 성공 못 할 요청에 매번 수십~백여 초를 날리는 사고가 있었음. 브라우저는 '//...'를
+    상대 URL로 인식해서 이 문제를 안 겪을 수도 있지만, requests는 무조건 실패하므로 여기서
+    미리 'https:'를 붙여 근본 원인을 없애요."""
+    if url and url.startswith("//"):
+        return "https:" + url
+    return url or None
