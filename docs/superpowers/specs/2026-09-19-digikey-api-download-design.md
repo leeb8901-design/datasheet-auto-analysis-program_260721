@@ -31,8 +31,9 @@ API라 안정적이고, 검색 결과에 데이터시트 URL이 직접 포함되
     `Content-Type: application/json`, `Accept: application/json`
     (`X-DIGIKEY-Locale-Site`/`-Language`/`-Currency`는 선택이나, US/en/USD로 명시해 결과를 안정시킴)
   - 바디: `{"Keywords": "<품번>", "Limit": 10, "Offset": 0}`
-  - 응답: `Products[]` 배열, 각 항목에 `ManufacturerProductNumber`, `Manufacturer.Value`,
-    `DatasheetUrl`, `ProductUrl` 필드 포함
+  - 응답: `Products[]` 배열, 각 항목에 `ManufacturerProductNumber`, `Manufacturer.Name`
+    (구현 중 실제 라이브 호출로 확인 — 사전 조사 문서엔 `Manufacturer.Value`로 나왔었으나 실제
+    응답은 `{"Id":.., "Name":..}`), `DatasheetUrl`, `ProductUrl` 필드 포함
   - 출처: [DigiKey KeywordSearch 문서](https://developer.digikey.com/products/product-information-v4/productsearch/keywordsearch),
     실 사용 예제([briankhuu.com](https://briankhuu.com/blog/2024/09/17/playing-around-with-digikey-api/))
 - 이 프로젝트에서 쓰는 앱은 **Production 승인 완료**(사용자 확인) → `sandbox-api.digikey.com`이 아니라

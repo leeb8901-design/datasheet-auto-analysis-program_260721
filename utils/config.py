@@ -78,6 +78,18 @@ def get_api_key(name: str) -> str | None:
 def get_mouser_api_key() -> str | None:
     return get_api_key("MOUSER_API_KEY")
 
+
+# DigiKey Product Information API v4(2026-09-19 도입) - OAuth2 client_credentials 방식이라
+# Mouser처럼 키 하나가 아니라 Client ID/Secret 한 쌍이 필요해요. User_API/ 안에 파일 하나에
+# "DIGIKEY_CLIENT_ID=..."/"DIGIKEY_CLIENT_SECRET=..." 두 줄로 같이 넣어도 되고, 파일을 나눠도
+# 돼요 - read_user_api_files()가 폴더 전체를 훑어 KEY로 찾으므로 파일 개수는 상관없어요.
+def get_digikey_client_id() -> str | None:
+    return get_api_key("DIGIKEY_CLIENT_ID")
+
+
+def get_digikey_client_secret() -> str | None:
+    return get_api_key("DIGIKEY_CLIENT_SECRET")
+
 # 입력지(사용자가 품번을 채워 넣은 원본)와 출력지(프로그램이 처리 결과를 써넣는 사본)를 분리해요.
 # 입력지는 절대 수정하지 않아요. "출력지 저장" 버튼을 눌러야 그 시점에 저장 위치를 물어보는데,
 # 이 이름을 그 저장 대화상자에 기본 파일명으로 채워줘요. 폴더는 더 이상 여기서 지정하지 않고
@@ -129,6 +141,7 @@ STATUS_PENDING = "대기"
 STATUS_SKIPPED_EXISTING = "이미 있음"
 STATUS_DOWNLOADING = "다운로드 중"
 STATUS_SUCCESS_MOUSER = "성공 (Mouser)"
+STATUS_SUCCESS_DIGIKEY = "성공 (DigiKey)"  # Mouser 실패 후 DigiKey API로 받은 경우(2026-09-19 도입).
 STATUS_SUCCESS_WEB = "성공 (웹)"
 STATUS_SUCCESS_VBA = "성공 (VBA)"  # 엑셀의 VBA 도우미 매크로가 직접 받아온 경우 (datasheet_helper.bas 참고).
 # 자동 다운로드가 실패한 뒤, 사용자가 데이터시트를 직접 받아 Download_ datasheets 폴더에 넣고

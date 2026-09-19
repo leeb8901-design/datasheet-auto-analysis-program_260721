@@ -39,6 +39,7 @@ from PySide6.QtWidgets import (
 from ai.analysis_state import PartAnalysis
 from ai.pdf_parser import analyze_pdf
 from datasheet.annotator import annotate_pdf
+from datasheet.digikey_search import DigiKeyClient
 from datasheet.downloader import (
     DownloadResult,
     dest_path_for_part,
@@ -72,6 +73,7 @@ from utils.config import (
     STATUS_FAILED,
     STATUS_PENDING,
     STATUS_SKIPPED_EXISTING,
+    STATUS_SUCCESS_DIGIKEY,
     STATUS_SUCCESS_MANUAL,
     STATUS_SUCCESS_MOUSER,
     STATUS_SUCCESS_WEB,
@@ -95,7 +97,13 @@ COL_UNRESOLVED = 8
 COL_REVIEW_BUTTON = 9
 # 입력지에서 온 값이라 창에서 엑셀처럼 바로 고칠 수 있는 컬럼들이에요 (품번/제조사).
 EDITABLE_INPUT_COLUMNS = (COL_PART_NUMBER, COL_MANUFACTURER)
-SUCCESS_STATUSES = (STATUS_SUCCESS_MOUSER, STATUS_SUCCESS_WEB, STATUS_SKIPPED_EXISTING, STATUS_SUCCESS_MANUAL)
+SUCCESS_STATUSES = (
+    STATUS_SUCCESS_MOUSER,
+    STATUS_SUCCESS_DIGIKEY,
+    STATUS_SUCCESS_WEB,
+    STATUS_SKIPPED_EXISTING,
+    STATUS_SUCCESS_MANUAL,
+)
 
 # "데이터시트 파일명" 칸 내용 좌우에 추가로 주는 여백이에요(2026-09-03 사용자 요청: "양 옆으로
 # 5pt 늘려줘"). Qt의 컬럼 폭은 픽셀 단위라 5pt를 픽셀 5px로 봤어요(그래서 양쪽 합쳐 10px) -
@@ -171,6 +179,15 @@ class DownloadWorker(QObject):
             self.finished.emit([])
             return
 
+        # DigiKey는 Mouser와 달리 필수가 아니에요(2026-09-19 도입, Mouser 실패 후 DDG 웹검색
+        # 전에 끼워 넣는 보조 경로) - 키가 아직 없는 사용자도 프로그램이 그대로 동작해야 하니,
+        # 여기서 못 만들어도 배치를 막지 않고 로그만 남긴 뒤 digikey_client=None으로 계속 진행해요.
+        try:
+            digikey_client = DigiKeyClient()
+        except ValueError as e:
+            digikey_client = None
+            self.log_message.emit(f"  [알림] DigiKey API는 이번 다운로드에서 건너뜁니다: {e}")
+
         total = len(self.rows)
         success = 0
         fail = 0
@@ -178,7 +195,9 @@ class DownloadWorker(QObject):
         failed_rows: list[tuple[str, str]] = []
 
         with ThreadPoolExecutor(max_workers=MAX_CONCURRENT_DOWNLOADS) as executor:
-            futures = [executor.submit(self._process_row, i, row, client) for i, row in enumerate(self.rows)]
+            futures = [
+                executor.submit(self._process_row, i, row, client, digikey_client) for i, row in enumerate(self.rows)
+            ]
             # as_completed는 끝나는 순서대로 돌려줘요 - 동시 처리라 행 순서(1,2,3...)와 다를 수 있지만,
             # row_updated가 행 번호(i)를 같이 넘기니 화면 갱신은 문제없어요.
             for future in as_completed(futures):
@@ -197,7 +216,9 @@ class DownloadWorker(QObject):
         self.log_message.emit(f"=== 다운로드 완료: 성공 {success}건 / 실패 {fail}건 ===")
         self.finished.emit(failed_rows)
 
-    def _process_row(self, i: int, row: dict, client: MouserClient) -> tuple[int, dict]:
+    def _process_row(
+        self, i: int, row: dict, client: MouserClient, digikey_client: DigiKeyClient | None
+    ) -> tuple[int, dict]:
         # 품번 하나를 처리해요. ThreadPoolExecutor가 이 메서드를 여러 스레드에서 동시에 호출해요.
         total = len(self.rows)
         part = row["part_number"]
@@ -205,7 +226,7 @@ class DownloadWorker(QObject):
         self.log_message.emit(f"[{i + 1}/{total}] {part} 다운로드 중...")
 
         try:
-            result = download_datasheet_for_part(part, manufacturer_hint, client)
+            result = download_datasheet_for_part(part, manufacturer_hint, client, digikey_client)
         except Exception as e:
             result = DownloadResult(STATUS_FAILED, None, str(e), manufacturer_hint)
 

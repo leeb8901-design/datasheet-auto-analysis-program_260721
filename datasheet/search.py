@@ -12,10 +12,13 @@ MOUSER_SEARCH_URL = "https://api.mouser.com/api/v1/search/keyword"
 # 특수문자(하이픈/슬래시/공백 등)만 제거하고 영문·숫자만 남겨요(2026-09-05 도입, 다운로드 실패율
 # 낮추기 요청) - Mouser 카탈로그의 실제 표기가 우리 입력지의 품번과 구두점만 다른 경우(예:
 # "ABC-123" vs "ABC123")가 있어서, 원본으로 못 찾으면 이 순수 영숫자 형태로 한 번 더 찾아봐요.
+# 이름 앞에 밑줄이 없어요(공개 함수) - datasheet/digikey_search.py도 같은 정규화 규칙을 그대로
+# 재사용해요(2026-09-19 도입, DigiKey API 추가) - 유통사가 달라도 "품번 표기 구두점 차이" 문제는
+# 똑같아서 로직을 하나만 두고 같이 써요.
 _NON_ALNUM_RE = re.compile(r"[^A-Za-z0-9]+")
 
 
-def _normalize_part_number(part_number: str) -> str:
+def normalize_part_number(part_number: str) -> str:
     return _NON_ALNUM_RE.sub("", part_number)
 
 
@@ -62,7 +65,7 @@ class MouserClient:
         # 부품을 놓치지 않기 위해서예요(대소문자도 무시).
         exact = [
             p for p in parts
-            if _normalize_part_number((p.get("ManufacturerPartNumber") or "")).lower() == target_norm
+            if normalize_part_number((p.get("ManufacturerPartNumber") or "")).lower() == target_norm
         ]
         if not exact:
             return None
@@ -85,13 +88,13 @@ class MouserClient:
         원본 품번으로 정확히 일치하는 결과가 없으면, 특수문자(하이픈/슬래시/공백 등)를 뺀 순수
         영숫자 형태로 한 번 더 검색해요(2026-09-05 도입, 다운로드 실패율을 낮추기 위한 재시도).
         """
-        target_norm = _normalize_part_number(part_number).lower()
+        target_norm = normalize_part_number(part_number).lower()
 
         parts = self._search_once(part_number)
         best = self._pick_exact_match(parts, target_norm, manufacturer_hint)
 
         if best is None:
-            normalized = _normalize_part_number(part_number)
+            normalized = normalize_part_number(part_number)
             if normalized and normalized.lower() != part_number.strip().lower():
                 parts = self._search_once(normalized)
                 best = self._pick_exact_match(parts, target_norm, manufacturer_hint)
