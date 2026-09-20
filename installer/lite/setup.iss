@@ -1,12 +1,13 @@
 ; 데이터시트 다운로더 Lite 설치 스크립트 (Inno Setup)
 ; 원본(데이터시트 다운로더)과 다른 점: 데이터시트 자동 다운로드 중 "웹(DuckDuckGo) 검색" 단계가
 ; 빠져 있음(2026-09-04) - 불특정 다수에게 배포할 때 자동 웹 검색이 IP 차단으로 이어졌던 사고를
-; 재현하지 않기 위해서. Mouser 공식 API만 쓰고, 그걸로 못 찾으면 참고 링크만 안내함(자동 접속 없음).
+; 재현하지 않기 위해서. Mouser/DigiKey 공식 API만 쓰고(2026-09-20부터 DigiKey API 추가), 그걸로
+; 못 찾으면 참고 링크만 안내함(자동 접속 없음).
 ; 하나의 Setup.exe로: 코드/데이터 복사 -> 바로가기 생성.
 ; 최초 실행 시 run_app.bat이 Python/가상환경/패키지/브라우저를 자동 준비하고 API 키를 입력받아요.
 
 #define AppName "데이터시트 다운로더 Lite"
-#define AppVersion "1.2.0"
+#define AppVersion "1.3.0"
 #define AppPublisher "leeb8901"
 #define ExeLauncher "start.vbs"
 

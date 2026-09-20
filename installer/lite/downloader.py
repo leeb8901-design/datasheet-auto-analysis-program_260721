@@ -1,16 +1,19 @@
 # 데이터시트를 실제로 찾아서 다운로드하는 파일이에요.
-# [Lite 배포판] 순서: ① 이미 있으면 스킵 -> ② Mouser 검색+다운로드 -> ③ 실패하면 Mouser +
+# [Lite 배포판] 순서: ① 이미 있으면 스킵 -> ② Mouser 검색+다운로드 -> ②-2 실패하면 DigiKey API
+# 검색+다운로드(2026-09-20 도입, digikey_client가 있을 때만) -> ③ 그래도 실패하면 Mouser +
 # DigiKey + 일반 구글 검색 참고 링크 3개를 남김(자동 다운로드/접속은 안 함 - 사람이 직접 눌러서
 # 찾음).
 #
 # 이 파일은 원래(개발용) 버전에 있던 "③ 웹(DuckDuckGo) 검색으로 보완" 단계를 통째로 뺀 버전이에요
-# (2026-09-04 도입, 2026-09-09 최신 코드로 재동기화 - Mouser 성공률 개선/202 폴링 등은 그대로
-# 유지). DuckDuckGo를 자동으로 두드리다가 실제로 IP가 차단된 사고가 있었어서(원본 CLAUDE.md 결정
-# 로그 참고), 불특정 다수에게 배포하는 이 버전에서는 그 위험을 아예 없애기로 함 - Mouser 공식
-# API만 쓰고, 그걸로 못 찾으면 자동으로 다른 곳을 뒤지지 않고 사람이 직접 찾아보도록 참고 링크만
-# 안내해요.
+# (2026-09-04 도입, 2026-09-20 최신 코드로 재동기화 - DigiKey API 추가/Mouser 성공률 개선/202
+# 폴링 등은 그대로 유지). DuckDuckGo를 자동으로 두드리다가 실제로 IP가 차단된 사고가 있었어서
+# (원본 CLAUDE.md 결정 로그 참고), 불특정 다수에게 배포하는 이 버전에서는 그 위험을 아예 없애기로
+# 함 - Mouser/DigiKey 공식 API만 쓰고, 둘 다 못 찾으면 자동으로 다른 곳을 뒤지지 않고 사람이
+# 직접 찾아보도록 참고 링크만 안내해요. DigiKey 검색(`datasheet/digikey_search.DigiKeyClient`)
+# 자체는 원본과 동일한 파일을 그대로 씀(정식 API 호출이라 DDG와 달리 봇 차단/IP 차단 위험이 없어서
+# Lite에서도 제외할 이유가 없음) - 이 파일에서 빠진 건 DDG 웹 스크래핑 단계뿐이에요.
 #
-# ** 원본 datasheet/downloader.py를 고칠 때(DDG 관련이 아닌 공통 로직 - Mouser 다운로드,
+# ** 원본 datasheet/downloader.py를 고칠 때(DDG 관련이 아닌 공통 로직 - Mouser/DigiKey 다운로드,
 # 202 폴링, 재시도, 참고 링크 만들기 등)는 이 파일에도 같은 수정을 반영해줄 것 **
 # (installer/lite/README.md 참고 - 공유 함수 목록도 거기 있음).
 
@@ -27,11 +30,13 @@ import requests
 from bs4 import BeautifulSoup
 from scrapling import StealthyFetcher
 
+from datasheet.digikey_search import DigiKeyClient
 from datasheet.search import MouserClient
 from utils.config import DOWNLOAD_DIR as _DEFAULT_DOWNLOAD_DIR
 from utils.config import (
     STATUS_FAILED,
     STATUS_SKIPPED_EXISTING,
+    STATUS_SUCCESS_DIGIKEY,
     STATUS_SUCCESS_MOUSER,
 )
 from utils.logger import logger
@@ -279,11 +284,18 @@ MOUSER_PDF_HEADERS = {
     "Referer": "https://www.mouser.com/",
 }
 
+# DigiKey도 Mouser와 같은 이유(자체 CDN이라 강한 봇 차단이 없을 가능성이 높음)로 가벼운 요청부터
+# 시도해요(2026-09-20 도입, 원본 datasheet/downloader.py와 동일).
+DIGIKEY_PDF_HEADERS = {
+    "User-Agent": MOUSER_PDF_HEADERS["User-Agent"],
+    "Referer": "https://www.digikey.com/",
+}
 
-def _fetch_pdf_direct(url: str, dest_path: Path, timeout: int = 20) -> str | None:
+
+def _fetch_pdf_direct(url: str, dest_path: Path, headers: dict, timeout: int = 20) -> str | None:
     """브라우저 없이 requests로 바로 받아봐요. 성공하면 None, 실패하면 사유 문자열을 돌려줘요."""
     try:
-        resp = requests.get(url, headers=MOUSER_PDF_HEADERS, timeout=timeout)
+        resp = requests.get(url, headers=headers, timeout=timeout)
     except requests.RequestException as e:
         return f"요청 실패: {e}"
 
@@ -327,15 +339,21 @@ def _fetch_datasheet_url_from_product_page(product_detail_url: str, timeout_ms: 
     return None
 
 
-def _download_via_mouser_url(url: str, dest: Path) -> str | None:
-    """Mouser 관련 URL(직접 DataSheetUrl이든, 제품 상세페이지에서 찾은 링크든) 하나를 받아봐요.
-    가벼운 requests 시도를 먼저 하고, 실패하면 기존 브라우저 기반 download_pdf로 재시도해요.
-    성공하면 None, 끝까지 실패하면 마지막 실패 사유를 돌려줘요."""
-    light_error = _fetch_pdf_direct(url, dest)
+def _download_via_api_source_url(url: str, dest: Path, headers: dict) -> str | None:
+    """정식 유통사 API(Mouser/DigiKey)가 준 URL 하나를 받아봐요 - 직접 데이터시트 링크든, 제품
+    상세페이지에서 찾은 링크든 상관없어요. 가벼운 requests 시도를 먼저 하고, 실패하면 기존
+    브라우저 기반 download_pdf로 재시도해요(2026-09-20 도입, 원본과 동일 - _download_via_mouser_url을
+    DigiKey와 같이 쓸 수 있게 일반화함). 성공하면 None, 끝까지 실패하면 마지막 실패 사유를
+    돌려줘요.
+
+    브라우저 폴백은 max_retries=1(기본값 3 대신)로 넘겨요(원본 2026-09-19 성능 수정과 동일 -
+    연결 자체가 안 되는 죽은 호스트에 기본 3회까지 재시도하다 품번 하나에 최대 2분 넘게 날린
+    사례가 있었음)."""
+    light_error = _fetch_pdf_direct(url, dest, headers)
     if light_error is None:
         return None
     logger.log(f"  [디버그] 가벼운 다운로드 실패({light_error}) - 브라우저로 재시도합니다: {url}")
-    return download_pdf(url, dest)
+    return download_pdf(url, dest, max_retries=1)
 
 
 def _register_document_response_capture(captured: dict):
@@ -539,11 +557,18 @@ RATE_LIMIT_DELAY_RANGE = (0.5, 1.0)
 
 
 def download_datasheet_for_part(
-    part_number: str, manufacturer_hint: str | None, mouser_client: MouserClient
+    part_number: str,
+    manufacturer_hint: str | None,
+    mouser_client: MouserClient,
+    digikey_client: DigiKeyClient | None = None,
 ) -> DownloadResult:
-    """부품 하나에 대해 ① 이미 있는지 확인 -> ② Mouser 순서로 데이터시트를 받아온다. [Lite 배포판]
-    Mouser로 못 찾으면(자동 웹 검색 없이) 참고 링크 3개(Mouser/DigiKey/구글 검색)만 남겨서 사람이
-    직접 찾도록 안내한다."""
+    """부품 하나에 대해 ① 이미 있는지 확인 -> ② Mouser -> ②-2 DigiKey 순서로 데이터시트를
+    받아온다(2026-09-20 도입, 원본과 동일한 시그니처 - ui/main_window.py가 두 버전 모두 같은
+    방식으로 호출함). [Lite 배포판] 둘 다 못 찾으면(자동 웹 검색 없이) 참고 링크 3개
+    (Mouser/DigiKey/구글 검색)만 남겨서 사람이 직접 찾도록 안내한다.
+
+    digikey_client: DigiKey API 키를 안 넣어둔 사용자는 None - 이 단계를 그냥 건너뛰고 바로
+    ③ 참고 링크로 간다(Mouser와 달리 필수 아님, 원본과 동일)."""
     manufacturer = manufacturer_hint
     dest = dest_path_for_part(part_number)
 
@@ -574,12 +599,29 @@ def download_datasheet_for_part(
                 logger.log(f"  [디버그] {part_number}: 제품 상세페이지에서 데이터시트 링크를 찾음 -> {datasheet_url}")
 
         if datasheet_url:
-            fail_reason = _download_via_mouser_url(datasheet_url, dest)
+            fail_reason = _download_via_api_source_url(datasheet_url, dest, MOUSER_PDF_HEADERS)
             if fail_reason is None:
                 return DownloadResult(STATUS_SUCCESS_MOUSER, dest.name, None, manufacturer)
 
-    # ③ Mouser로 못 찾음 (자동 웹 검색 없이 참고 링크만 남김) - Lite 배포판은 여기서 끝
-    reason = mouser_error or "Mouser에서 찾지 못함"
+    # ②-2 DigiKey 검색으로 보완(원본과 동일) - Mouser에 없거나 Mouser가 데이터시트 링크를 안 줬을
+    # 때만 시도해요.
+    if digikey_client is not None:
+        try:
+            dk_result = digikey_client.search_part(part_number, manufacturer_hint=manufacturer)
+        except Exception as e:
+            logger.log(f"  [디버그] {part_number}: DigiKey 검색 오류(건너뜀): {e}")
+            dk_result = None
+
+        if dk_result and dk_result.get("manufacturer"):
+            manufacturer = dk_result["manufacturer"]
+
+        if dk_result and dk_result.get("datasheet_url"):
+            fail_reason = _download_via_api_source_url(dk_result["datasheet_url"], dest, DIGIKEY_PDF_HEADERS)
+            if fail_reason is None:
+                return DownloadResult(STATUS_SUCCESS_DIGIKEY, dest.name, None, manufacturer)
+
+    # ③ Mouser/DigiKey 둘 다 못 찾음 (자동 웹 검색 없이 참고 링크만 남김) - Lite 배포판은 여기서 끝
+    reason = mouser_error or "Mouser/DigiKey에서 찾지 못함"
     return DownloadResult(
         STATUS_FAILED, None, reason, manufacturer, _reference_url_with_distributor_fallback(part_number, manufacturer)
     )
