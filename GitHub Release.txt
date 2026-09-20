@@ -1,0 +1,9 @@
+GitHub Release: https://github.com/leeb8901-design/datasheet-auto-analysis-program_260721/releases/tag/lite-v1.3.0
+직접 다운로드 링크: https://github.com/leeb8901-design/datasheet-auto-analysis-program_260721/releases/download/lite-v1.3.0/DatasheetDownloaderLite_Setup.exe
+curl로 실제 다운로드까지 확인했습니다(HTTP 200, 정상 크기 32,736,839 bytes, SHA256 해시 일치) — 웹 버전 Claude Code를 포함해 인터넷 되는 곳 어디서든 이 링크로 받을 수 있습니다.
+저장소 히스토리를 무겁게 하지 않도록 커밋이 아니라 GitHub Release 첨부파일로 올렸습니다.
+SHA256: 6245370387CBC5EEB22ED260A04CE358F9C4F5FB17A6E4CC35C4C82D11246B24
+
+v1.3.0 변경사항: 개발판에 추가된 DigiKey Product Information API v4 다운로드 경로를 Lite에도
+반영(Mouser 실패 시 DigiKey API로 보완, DDG 웹 스크래핑은 이번에도 제외). 이전 릴리스:
+lite-v1.2.0(보안/저작권 점검 반영), lite-v1.1.0(최초 공개 릴리스).
