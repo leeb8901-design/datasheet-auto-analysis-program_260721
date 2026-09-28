@@ -80,6 +80,12 @@ from utils.config import (
 )
 from utils.logger import logger
 
+# v1.0/v2.0 배포 구분(2026-09-28 확정): 이 배포판(v1.0)은 다운로드 기능만 제공하고, 신뢰도 분석
+# 기능은 v2.0에서 정식으로 낸다. 분석 로직(ai/*.py, excel/psa_writer.py 등)은 전혀 건드리지 않고
+# 그대로 두되, "신뢰도 분석" 버튼만 화면에서 항상 비활성화해서 못 누르게 한다 - 이 플래그 하나만
+# True로 바꾸면 기존 로직 그대로 v2.0에서 다시 켤 수 있다.
+ANALYSIS_FEATURE_ENABLED = False
+
 # 표에 보여줄 컬럼들 (요구사항의 "가운데 표" 컬럼 예시와 맞췄어요)
 # "PDF 열기"는 2026-09-03에 "데이터시트 파일명" 바로 옆에 새로 추가된 컬럼이에요 - 파일명 칸은
 # 이제 파일명 텍스트만 보여주고, 여는 동작(성공 시 "열기" 버튼 / 실패했지만 참고 링크가 있으면
@@ -473,6 +479,8 @@ class MainWindow(QMainWindow):
         self.analysis_btn = QPushButton("신뢰도 분석")
         self.analysis_btn.clicked.connect(self._start_analysis)
         self.analysis_btn.setEnabled(False)
+        if not ANALYSIS_FEATURE_ENABLED:
+            self.analysis_btn.setToolTip("신뢰도 분석은 v2.0에서 제공됩니다.")
 
         # Download_ datasheets 폴더 상태를 다시 확인해서 화면(다운로드 상태)을 맞춰요
         # (2026-09-03 도입, 09-03 두 번째 요청으로 양방향 확인으로 확장):
@@ -643,7 +651,7 @@ class MainWindow(QMainWindow):
         has_rows = len(rows) > 0
         self.download_btn.setEnabled(has_rows)
         self.refresh_btn.setEnabled(has_rows)
-        self.analysis_btn.setEnabled(has_rows)
+        self.analysis_btn.setEnabled(ANALYSIS_FEATURE_ENABLED and has_rows)
         self.save_output_btn.setEnabled(has_rows)
         self._log(f"엑셀에서 {len(rows)}개 품번을 불러왔습니다.")
 
@@ -896,7 +904,7 @@ class MainWindow(QMainWindow):
     def _on_download_finished(self, failed_rows: list[tuple[str, str]]):
         self.download_btn.setEnabled(True)
         self.refresh_btn.setEnabled(True)
-        self.analysis_btn.setEnabled(True)
+        self.analysis_btn.setEnabled(ANALYSIS_FEATURE_ENABLED)
         self._set_input_editable(True)
         self.current_label.setText("다운로드 완료")
 
@@ -1080,7 +1088,7 @@ class MainWindow(QMainWindow):
     def _on_analysis_finished(self):
         self.download_btn.setEnabled(True)
         self.refresh_btn.setEnabled(True)
-        self.analysis_btn.setEnabled(True)
+        self.analysis_btn.setEnabled(ANALYSIS_FEATURE_ENABLED)
         self._set_input_editable(True)
         self.current_label.setText("분석 완료")
         QMessageBox.information(self, "완료", "신뢰도 분석이 끝났습니다.\n표의 '검토' 버튼으로 결과를 확인하세요.")
