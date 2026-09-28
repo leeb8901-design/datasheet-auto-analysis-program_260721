@@ -1,23 +1,24 @@
 # 데이터시트를 실제로 찾아서 다운로드하는 파일이에요.
 # 순서: ① 이미 있으면 스킵 -> ② Mouser 검색+다운로드 -> ②-2 실패하면 DigiKey API 검색+다운로드
-# (2026-09-19 도입, digikey_client가 있을 때만) -> ③ 그래도 실패하면 웹(DuckDuckGo) 검색+다운로드
-# -> ④ 그래도 못 찾으면 Mouser + DigiKey + 일반 구글 검색, 참고 링크 3개를 전부 남김(자동
-# 다운로드/접속은 안 함, 2026-09-03 도입 - DDG를 자동으로 두드리다 IP가 차단된 적이 있어서, 구글
-# 검색결과를 긁는 것도 시도해봤지만 구글이 실제 링크를 암호화해 숨겨놔서 포기하고 이 방식으로 바꿈.
-# 링크를 하나만 주면 그 사이트에 없는 품번일 때 막히니, 세 곳 다 줌).
-# ※ ④의 "DigiKey"는 API가 아니라 사람이 직접 눌러볼 검색결과 페이지 링크일 뿐이에요(_digikey_search_url,
-# 훨씬 아래) - ②-2의 실제 DigiKey API 검색과 헷갈리지 마세요.
+# (2026-09-19 도입, digikey_client가 있을 때만) -> ③ 그래도 못 찾으면 Mouser + DigiKey + 일반
+# 구글 검색, 참고 링크 3개를 전부 남김(자동 다운로드/접속은 안 함 - 사람이 직접 눌러서 찾음).
+# ※ ③의 "DigiKey"는 API가 아니라 사람이 직접 눌러볼 검색결과 페이지 링크일 뿐이에요
+# (_digikey_search_url, 아래) - ②-2의 실제 DigiKey API 검색과 헷갈리지 마세요.
+#
+# [2026-09-28 삭제] 예전엔 ③에 "웹(DuckDuckGo) 검색+다운로드" 단계가 있었으나(자동 스크래핑으로
+# 제조사 사이트 등에서 직접 PDF를 찾아 받는 방식), IP 차단 위험 때문에 완전히 제외하기로 결정하고
+# 관련 코드를 전부 삭제했다(search_datasheet_urls/find_datasheet/_try_candidates/DDG 캡차·차단
+# 상태 추적 등). 자세한 경위는 소프트웨어_설계문서.md §3.2와 HANDOFF_2026-09-28.md 참고. 이
+# 삭제 전까지 installer/lite/downloader.py에만 있던 "웹 검색 없는" 버전이 이제 원본과 동일해졌다.
 
 import os
 import random
-import re
-import threading
 import time
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from email.utils import parsedate_to_datetime
 from pathlib import Path
-from urllib.parse import parse_qs, unquote, urlencode, urljoin, urlparse
+from urllib.parse import urlencode, urljoin
 
 import requests
 from bs4 import BeautifulSoup
@@ -31,7 +32,6 @@ from utils.config import (
     STATUS_SKIPPED_EXISTING,
     STATUS_SUCCESS_DIGIKEY,
     STATUS_SUCCESS_MOUSER,
-    STATUS_SUCCESS_WEB,
 )
 from utils.logger import logger
 
@@ -50,66 +50,7 @@ def get_download_dir() -> Path:
 
 # ---- 검색/다운로드 요청에 공통으로 쓰는 설정 ----
 HEADERS = {"Accept-Language": "ko-KR,ko;q=0.9,en;q=0.8"}
-# 2026-09-03: 실제로 DuckDuckGo가 이 프로그램이 쓰는 IP를 막은 사고가 있었음(사용자가 일반
-# 브라우저로 duckduckgo.com에 직접 접속해도 안 됨을 확인 - ping은 되는데 TCP 연결만 막힘,
-# 즉 DDG 쪽에서 이 IP를 막은 것으로 보임). 자동화 요청이 ①짧은 간격으로 ②여러 스레드가 동시에
-# 나가던 게 봇으로 보였을 가능성이 커서, 대기시간을 늘리고(아래) 동시 요청도 막았어요(밑의
-# _ddg_request_lock 참고).
-MIN_DELAY_SECONDS = 3.0  # 검색 사이 최소 대기시간 (너무 빠르면 로봇으로 의심받아요)
-MAX_DELAY_SECONDS = 7.0
-RETRY_DELAY_SECONDS = (6.0, 10.0)  # 캡차에 걸렸을 때 재시도 전 대기시간
 DOWNLOAD_RETRY_DELAY = 2.0  # 다운로드 실패 시 재시도 전 대기시간
-
-# DDG 요청은 항상 한 번에 하나만 나가게 잠가요 - 동시에 여러 스레드가 같은 사이트를 두드리는 것
-# 자체가 강한 봇 신호라서, MAX_CONCURRENT_DOWNLOADS(main_window.py)로 여러 품번을 동시에 처리
-# 중이어도 DDG 검색 단계만큼은 줄을 서게 해요(Mouser API 호출은 이 잠금과 무관하게 그대로 동시에
-# 진행돼요 - 정식 API라 문제 없음).
-_ddg_request_lock = threading.Lock()
-
-# 연결 자체가 안 되면(첫 번째든 몇 번째든) "지금은(아마 IP 차단으로) DDG를 못 쓴다"고 보고,
-# 한동안 재시도 없이 바로 건너뛰어요 - 이미 막힌 상태에서 계속 두드리는 것도 봇처럼 보이고,
-# 사용자 입장에서도 실패할 게 뻔한 20~45초짜리 타임아웃을 배치 전체에서 계속 기다릴 이유가
-# 없어요. 임계값을 1로 낮춤(2026-09-03 사용자 확정 - 원래 3번 연속 실패해야 건너뛰었는데,
-# 처음 한 번만 실패해도 이후 품목은 바로 건너뛰고 참고 링크로 대체하도록 바꿈. DDG가 막혔을 때는
-# 재시도해도 대부분 계속 막혀 있어서, 3번 다 기다려볼 이유가 없다고 판단함).
-_ddg_state_lock = threading.Lock()
-_ddg_consecutive_failures = 0
-_ddg_blocked_until = 0.0  # time.time() 기준 - 이 시각 전까지는 DDG 요청 자체를 안 보내요.
-_DDG_FAILURE_THRESHOLD = 1
-_DDG_COOLDOWN_SECONDS = 600  # 10분
-
-
-def _ddg_is_blocked() -> bool:
-    with _ddg_state_lock:
-        return time.time() < _ddg_blocked_until
-
-
-def _ddg_report_result(ok: bool):
-    global _ddg_consecutive_failures, _ddg_blocked_until
-    with _ddg_state_lock:
-        if ok:
-            _ddg_consecutive_failures = 0
-            return
-        _ddg_consecutive_failures += 1
-        if _ddg_consecutive_failures >= _DDG_FAILURE_THRESHOLD and time.time() >= _ddg_blocked_until:
-            _ddg_blocked_until = time.time() + _DDG_COOLDOWN_SECONDS
-            logger.log(
-                f"  [알림] DuckDuckGo 연결이 {_ddg_consecutive_failures}번 연속 실패해서, "
-                f"앞으로 {_DDG_COOLDOWN_SECONDS // 60}분 동안 DDG를 건너뛰고 구글 검색 링크로 대신 안내합니다."
-            )
-
-# 유통사(부품 파는 가게) 사이트 — 대부분 데이터시트 출처로 원하지 않아서 아예 걸러요.
-DISTRIBUTOR_DOMAINS = [
-    "lcsc.com", "alibaba.com", "aliexpress.com",
-    "octopart.com", "findchips.com", "arrow.com", "avnet.com", "rs-online.com",
-    "element14.com", "amazon.com", "ebay.com", "tme.com", "newark.com",
-]
-
-# Mouser/DigiKey는 예외예요 - 위 목록처럼 아예 걸러내지 않고, 후보로는 남겨두되 우선순위만
-# "공식 제조사 도메인" 다음으로 매겨요. 이 두 사이트는 대체로 Akamai류 봇 차단이 없어서 빠르고,
-# 제조사가 올린 PDF를 그대로 미러링해두는 경우가 많아 속도/성공률 면에서 유리해요. 목록 순서가
-# 그대로 우선순위 순서예요(mouser가 digikey보다 먼저).
-PREFERRED_DISTRIBUTOR_DOMAINS = ["mouser.com", "digikey.com"]
 
 # Akamai류 봇 차단으로 이미 여러 번 확인된 도메인들 - 완전히 빼진 않지만(나중에 풀릴 수도 있으니),
 # 우선순위를 가장 뒤로 미루고 시도 시간도 짧게 잘라요(BLOCKED_DOMAIN_TIMEOUT_MS).
@@ -120,13 +61,6 @@ BLOCKED_DOMAIN_TIMEOUT_MS = 20_000
 def _is_known_blocked(url: str) -> bool:
     u = url.lower()
     return any(d in u for d in KNOWN_BLOCKED_DOMAINS)
-
-# 회사 이름에 흔히 붙는 단어들 — 도메인 매칭 힌트로는 안 써요.
-GENERIC_MFR_WORDS = {
-    "devices", "instruments", "electronics", "electronic", "semiconductor", "semiconductors",
-    "technology", "technologies", "corporation", "corp", "inc", "co", "ltd", "group",
-    "microelectronics", "systems", "international", "company",
-}
 
 
 @dataclass
@@ -411,9 +345,8 @@ def _download_via_api_source_url(url: str, dest: Path, headers: dict) -> str | N
     브라우저 폴백은 max_retries=1(기본값 3 대신)로 넘겨요(2026-09-19, 실전 다운로드 로그로 발견 -
     samsungsem.com/pulseelectronics.com/st.com처럼 연결 자체가 타임아웃되는 호스트에 대해 기본
     3회(총 4번 시도)까지 재시도하다가 품번 하나에 최대 2분 넘게 날린 사례가 있었음. 여기는
-    URL이 하나뿐이라(DDG 후보 여러 개를 도는 _try_candidates와 다름) 재시도해도 대부분 똑같이
-    실패하므로, _try_candidates와 같은 "오래 못 붙잡고 있는다" 철학에 맞춰 재시도를 1회로
-    줄임 - 최악 시나리오가 ~130초에서 ~60초로 줄어듦(아주 드문 순간적 오류 복구력은 조금 희생)."""
+    시도할 URL이 이거 하나뿐이라, "오래 못 붙잡고 있는다" 철학에 맞춰 재시도를 1회로 줄임 -
+    최악 시나리오가 ~130초에서 ~60초로 줄어듦(아주 드문 순간적 오류 복구력은 조금 희생)."""
     light_error = _fetch_pdf_direct(url, dest, headers)
     if light_error is None:
         return None
@@ -575,54 +508,12 @@ def download_pdf(url: str, dest_path: Path, max_retries: int = 3) -> str | None:
     return last_error
 
 
-# 웹 검색 후보는 여러 개를 브라우저로 열어봐야 할 수 있어서(URL이 .pdf로 안 끝나도 실제로는 PDF인
-# 경우가 있음), 브라우저 실행 자체가 느린 걸 감안해 후보 하나당 재시도 없이 딱 한 번만 열어보고,
-# 최대 이 개수까지만 시도해요. 같은 URL을 반복 재시도하는 것보다 다른 후보로 넘어가는 게 시간
-# 대비 성공 가능성이 더 높아요. (실측 결과 후보 하나 확인하는 데 3~4초 정도라, search_datasheet_urls가
-# 찾아주는 만큼(최대 max_results=10, 유통사 제외하면 보통 7개 안팎) 다 시도해도 30초 안팎이에요.)
-MAX_CANDIDATES_TO_TRY = 7
-
-
-def _try_candidates(urls: list[str], dest_path: Path) -> tuple[bool, list[str]]:
-    """우선순위 순서로 후보 URL을 앞에서부터 최대 MAX_CANDIDATES_TO_TRY개까지 한 번씩 열어봐요.
-    성공하면 (True, 그때까지 시도한 URL들), 다 실패하면 (False, 시도한 URL 전부)를 돌려줘요."""
-    to_try = urls[:MAX_CANDIDATES_TO_TRY]
-    tried = []
-    for i, url in enumerate(to_try, start=1):
-        timeout_ms = BLOCKED_DOMAIN_TIMEOUT_MS if _is_known_blocked(url) else FETCH_TIMEOUT_MS
-        logger.log(f"  [웹 후보 {i}/{len(to_try)}] {url}")
-        tried.append(url)
-        error, _ = _download_once(url, dest_path, timeout_ms=timeout_ms)
-        if error is None:
-            return True, tried
-        logger.log(f"    -> 실패: {error}")
-    return False, tried
-
-
-# 자동 다운로드는 다 실패해도, 사람이 직접 열어볼 참고 링크는 하나 남겨야 해요. 제조사 제품 소개
-# 페이지나 부품 판매 사이트보다, "클릭하면 바로 다운로드" UI를 갖춘 데이터시트 전문 사이트가
-# 사람에게 훨씬 쓸모 있어서 이런 곳을 우선으로 골라요.
-KNOWN_DATASHEET_AGGREGATORS = ["alldatasheet.com", "datasheets.com"]
-
-
-def _pick_reference_url(tried_urls: list[str]) -> str | None:
-    if not tried_urls:
-        return None
-    for url in tried_urls:
-        if any(domain in url.lower() for domain in KNOWN_DATASHEET_AGGREGATORS):
-            return url
-    return tried_urls[-1]  # 아는 사이트가 없으면 그냥 마지막으로 시도한 링크를 남겨요.
-
-
 def _general_search_url(part_number: str, manufacturer: str | None) -> str:
-    """Mouser 자체 검색(_distributor_search_url)까지도 부족하게 느껴질 때, 사람이 좀 더 폭넓게
-    찾아볼 수 있게 주는 일반 구글 검색 링크예요(2026-09-03 도입 - "실패한 항목엔 항상 눌러볼
-    게 있어야 한다"). 특정 데이터시트가 아니라 검색결과 페이지라, 실제로 찾는 건 사람 몫이에요.
-
-    구글로 만들어요(같은 날 DuckDuckGo에서 구글로 교체) - DuckDuckGo가 지금 이 IP에서 안 됨을
-    이미 확인한 뒤라, DDG 링크를 또 줘봤자 사용자 브라우저에서도 안 열릴 가능성이 높아서예요.
-    이 함수는 URL만 만들 뿐 절대 구글에 접속하지 않아요(스크래핑 없음) - 순수하게 "사람이 실제
-    브라우저로 직접 눌러서 찾는" 용도예요."""
+    """Mouser/DigiKey 자체 검색(_mouser_search_url/_digikey_search_url)까지도 부족하게 느껴질
+    때, 사람이 좀 더 폭넓게 찾아볼 수 있게 주는 일반 구글 검색 링크예요(2026-09-03 도입 -
+    "실패한 항목엔 항상 눌러볼 게 있어야 한다"). 특정 데이터시트가 아니라 검색결과 페이지라,
+    실제로 찾는 건 사람 몫이에요. 이 함수는 URL만 만들 뿐 절대 구글에 접속하지 않아요(스크래핑
+    없음) - 순수하게 "사람이 실제 브라우저로 직접 눌러서 찾는" 용도예요."""
     query = f"{manufacturer} {part_number} datasheet" if manufacturer else f"{part_number} datasheet"
     return "https://www.google.com/search?" + urlencode({"q": query})
 
@@ -644,7 +535,7 @@ def _general_search_url(part_number: str, manufacturer: str | None) -> str:
 # 링크**를 만들어요. 오히려 더 안전하고(구글/DDG 차단 위험 자체가 없음 - 두 사이트 모두 자동
 # 접속은 절대 안 하고 URL만 만듦), 품번이 정확히 일치하면 Mouser/DigiKey 검색이 그 자리에서
 # 바로 제품 페이지로 넘어가는 경우도 많아서 한 단계 더 직접적이에요. Mouser를 먼저 시도하는 건
-# PREFERRED_DISTRIBUTOR_DOMAINS와 같은 우선순위(Mouser가 DigiKey보다 먼저)를 따른 거예요.
+# 이 두 유통사 API를 시도하는 순서(②가 ②-2보다 먼저)와 같은 우선순위예요.
 def _mouser_search_url(part_number: str) -> str:
     """Mouser 자체 검색 결과 페이지 링크를 만들어요. 실제로 접속해서 확인하지는 않아요(사람이
     직접 눌러서 봄) - 그래서 이 부품을 Mouser가 취급하는지는 사람이 눌러봐야 알 수 있어요."""
@@ -675,170 +566,6 @@ def _reference_url_with_distributor_fallback(part_number: str, manufacturer: str
     ])
 
 
-# ---- DuckDuckGo 웹 검색 (Mouser에 없을 때 제조사 공식 사이트를 찾아봐요) ----
-
-
-def _extract_real_url(href):
-    if href.startswith("//"):
-        href = "https:" + href
-    qs = parse_qs(urlparse(href).query)
-    if "uddg" in qs:
-        return unquote(qs["uddg"][0])
-    return href
-
-
-def _is_distributor(url):
-    u = url.lower()
-    return any(d in u for d in DISTRIBUTOR_DOMAINS)
-
-
-def _manufacturer_tokens(manufacturer):
-    if not manufacturer:
-        return [], None
-    words = re.findall(r"[a-zA-Z]+", manufacturer.lower())
-    tokens = [w for w in words if len(w) >= 3 and w not in GENERIC_MFR_WORDS]
-
-    # "Texas Instruments" -> ti.com처럼, 회사 이름 단어들이 흔한 단어라 다 걸러지거나 도메인이
-    # 약어인 경우가 있어요. 단어 앞글자를 모은 약어를 따로 돌려줘서(tokens와 섞지 않음) 이런
-    # 도메인도 "공식"으로 인식하게 해요 - 약어는 짧아서(2~3글자) 아무 도메인에나 우연히 들어있을
-    # 수 있으니(예: "ad"가 "adatasheet.com"에도 들어있음), _looks_official에서 tokens와는 다르게
-    # "도메인 첫 부분과 정확히 같을 때"만 인정해요.
-    acronym = None
-    if len(words) >= 2:
-        candidate = "".join(w[0] for w in words)
-        if len(candidate) >= 2:
-            acronym = candidate
-
-    return tokens, acronym
-
-
-def _domain_main_label(url):
-    # "https://www.ti.com/lit/..." -> "ti" (www. 떼고 첫 번째 점 앞부분만)
-    netloc = urlparse(url).netloc.lower()
-    if netloc.startswith("www."):
-        netloc = netloc[4:]
-    return netloc.split(".")[0] if netloc else ""
-
-
-def _looks_official(url, tokens, acronym=None):
-    netloc = urlparse(url).netloc.lower()
-    if tokens and any(t in netloc for t in tokens):
-        return True
-    if acronym and _domain_main_label(url) == acronym:
-        return True
-    return False
-
-
-def _is_captcha_page(html_text):
-    return "anomaly-modal" in html_text or "anomaly_modal" in html_text
-
-
-def _fetch_ddg_html(query):
-    url = "https://html.duckduckgo.com/html/?" + urlencode({"q": query})
-    resp = StealthyFetcher.fetch(url, headless=True, real_chrome=USE_REAL_CHROME, timeout=20_000, extra_headers=HEADERS)
-
-    if resp.status == 202:
-        # 실제로 관찰된 오류(2026-09-05): DuckDuckGo(또는 그 앞의 봇 방어)가 검색 결과 페이지
-        # 자체를 바로 안 주고 202 Accepted로 미루는 경우가 있음 - PDF 다운로드(_download_once)와
-        # 똑같은 방식으로 Location을 폴링해요. scrapling의 Response는 route 가로채기 없이도
-        # .headers를 그대로 노출해줘서, 여기서는 _download_once보다 더 간단하게 바로 확인 가능.
-        location = _header_get(resp.headers, "Location")
-        if not location:
-            raise RuntimeError("DuckDuckGo 검색 실패: HTTP 202 (Location 헤더 없음, 폴링 불가)")
-        location = urljoin(url, location)  # 상대경로일 수 있어서 절대경로로 만들어요.
-        retry_after = _header_get(resp.headers, "Retry-After")
-        logger.log(f"  [202] DuckDuckGo 검색 -> Accepted, {location}에서 결과를 기다립니다.")
-        content, final_status, poll_error = _poll_async_202(location, retry_after, referer=url)
-        if final_status == 200 and content is not None:
-            return content.decode("utf-8", errors="replace")
-        raise RuntimeError(poll_error or f"DuckDuckGo 검색 실패: 202 폴링 후에도 HTTP {final_status}")
-
-    if resp.status != 200:
-        raise RuntimeError(f"DuckDuckGo 검색 실패: HTTP {resp.status}")
-    return resp.body.decode("utf-8", errors="replace")
-
-
-def search_datasheet_urls(part_number, manufacturer=None, max_results=10):
-    if _ddg_is_blocked():
-        logger.log("  [디버그] DuckDuckGo가 최근 연속 실패해서 이번 품번은 건너뜁니다(쿨다운 중).")
-        return []
-
-    query = f"{manufacturer} {part_number} datasheet pdf" if manufacturer else f"{part_number} datasheet pdf"
-
-    with _ddg_request_lock:  # 동시에 여러 스레드가 DDG를 두드리지 않도록, 요청은 한 번에 하나만.
-        time.sleep(random.uniform(MIN_DELAY_SECONDS, MAX_DELAY_SECONDS))
-        try:
-            html_text = _fetch_ddg_html(query)
-        except Exception:
-            _ddg_report_result(False)
-            raise
-        _ddg_report_result(True)
-
-        if _is_captcha_page(html_text):
-            time.sleep(random.uniform(*RETRY_DELAY_SECONDS))
-            html_text = _fetch_ddg_html(query)
-            if _is_captcha_page(html_text):
-                return []  # 계속 캡차면 억지로 뚫으려 하지 않고 포기해요.
-
-    soup = BeautifulSoup(html_text, "html.parser")
-    result_links = soup.select("a.result__a")
-    urls = []
-    for a in result_links:
-        href = a.get("href")
-        if not href:
-            continue
-        real_url = _extract_real_url(href)
-        if not _is_distributor(real_url):
-            urls.append(real_url)
-        if len(urls) >= max_results:
-            break
-
-    # 디버그용: DuckDuckGo가 검색 결과를 몇 개 줬고, 그중 유통사를 뺀 링크가 뭐였는지 남겨요.
-    logger.log(f"  [디버그] DDG 검색 '{query}' -> 결과 {len(result_links)}개, 유통사 제외 후 {urls}")
-    return urls
-
-
-def find_datasheet(part_number, manufacturer=None, max_results=10):
-    urls = search_datasheet_urls(part_number, manufacturer, max_results=max_results)
-    if not urls:
-        return None
-
-    tokens, acronym = _manufacturer_tokens(manufacturer)
-
-    def priority(u):
-        # 낮을수록 먼저 시도해요:
-        #   0) 공식 제조사 도메인 + .pdf 확장자
-        #   1) 공식 제조사 도메인 (확장자 무관 - 예: ti.com/lit/gpn/... 같은 리다이렉트도 실제로
-        #      열어보면 PDF인 경우가 많아서, 문자열만 보고 걸러내지 않고 우선순위만 매겨요)
-        #   2) Mouser 직링크(.pdf), 3) DigiKey 직링크(.pdf) - 실제로 겪어보니 DDG가 이 두 사이트에서
-        #      찾아주는 링크는 거의 항상 ProductDetail류 "상품 소개 페이지"였고, 그건 봇 차단(403)이
-        #      analog.com만큼이나 확실했어요. 그래서 진짜 .pdf 직링크일 때만 우선순위를 올리고,
-        #      상품 페이지는 그냥 5)로 취급해요 - 앞자리를 괜히 낭비하지 않게.
-        #   4) 그 외 .pdf 확장자, 5) 나머지(상품 소개 페이지, 애그리게이터 등)
-        #   6) 이미 차단이 확인된 도메인(KNOWN_BLOCKED_DOMAINS) - 맨 마지막. 완전히 빼지는 않되,
-        #      _try_candidates가 이 등급은 20초로 시간을 짧게 잘라요.
-        # 실제 PDF인지 최종 판단은 언제나 _download_once가 응답 바이트를 보고 해요.
-        u_lower = u.lower()
-        if _is_known_blocked(u_lower):
-            return 6
-        official = _looks_official(u, tokens, acronym)
-        is_pdf = u_lower.endswith(".pdf")
-        if official and is_pdf:
-            return 0
-        if official:
-            return 1
-        if "mouser.com" in u_lower and is_pdf:
-            return 2
-        if "digikey.com" in u_lower and is_pdf:
-            return 3
-        if is_pdf:
-            return 4
-        return 5
-
-    candidates = sorted(urls, key=priority)
-    return {"candidates": candidates}
-
-
 # ---- 전체 흐름을 하나로 묶는 함수 (main.py/워커가 이 함수 하나만 부르면 돼요) ----
 
 
@@ -855,12 +582,13 @@ def download_datasheet_for_part(
     mouser_client: MouserClient,
     digikey_client: DigiKeyClient | None = None,
 ) -> DownloadResult:
-    """부품 하나에 대해 ① 이미 있는지 확인 -> ② Mouser -> ②-2 DigiKey -> ③ 웹 검색 순서로
-    데이터시트를 받아온다.
+    """부품 하나에 대해 ① 이미 있는지 확인 -> ② Mouser -> ②-2 DigiKey 순서로 데이터시트를
+    받아온다. 둘 다 못 찾으면(자동 웹 검색 없이, 2026-09-28부터) 참고 링크 3개(Mouser/DigiKey/
+    구글 검색)만 남겨서 사람이 직접 찾도록 안내한다.
 
     digikey_client: DigiKey Product Information API v4 클라이언트(2026-09-19 도입). Mouser가
     실패했을 때(품번을 못 찾았거나 DataSheetUrl이 없을 때)만 시도하는 보조 경로라, None이면
-    (DigiKey API 키를 아직 안 넣어둔 사용자 등) 이 단계는 그냥 건너뛰고 바로 ③ 웹 검색으로
+    (DigiKey API 키를 아직 안 넣어둔 사용자 등) 이 단계는 그냥 건너뛰고 바로 참고 링크로
     간다 - Mouser와 달리 필수가 아님(docs/superpowers/specs/2026-09-19-digikey-api-download-design.md 참고).
     """
     manufacturer = manufacturer_hint
@@ -915,39 +643,9 @@ def download_datasheet_for_part(
             if fail_reason is None:
                 return DownloadResult(STATUS_SUCCESS_DIGIKEY, dest.name, None, manufacturer)
 
-    # ③ 웹(DuckDuckGo) 검색으로 보완
-    try:
-        web_result = find_datasheet(part_number, manufacturer)
-    except Exception as e:
-        # 검색 자체가 오류로 실패해도(네트워크 문제 등) 후보 링크가 하나도 없으니, Mouser 자체
-        # 검색 링크를 참고 링크로 남겨요(사용자 확정, 2026-09-03 - 아래 "찾지 못함" 케이스와 동일).
-        return DownloadResult(
-            STATUS_FAILED,
-            None,
-            f"웹 검색 오류: {e}",
-            manufacturer,
-            _reference_url_with_distributor_fallback(part_number, manufacturer),
-        )
-
-    if web_result and web_result.get("candidates"):
-        succeeded, tried_urls = _try_candidates(web_result["candidates"], dest)
-        if succeeded:
-            return DownloadResult(STATUS_SUCCESS_WEB, dest.name, None, manufacturer)
-        return DownloadResult(
-            STATUS_FAILED,
-            None,
-            "웹에서 찾은 후보 링크가 모두 실패함",
-            manufacturer,
-            _pick_reference_url(tried_urls),
-        )
-
-    # 후보 링크를 단 하나도 못 찾은 경우(DuckDuckGo 검색 결과 자체가 0개 등) - "찾지 못함"이라고만
-    # 하고 끝내면 사용자가 누를 게 아무것도 없어서, Mouser 자체 검색 링크를 대신 참고 링크로
-    # 남겨요(사용자 확정, 2026-09-03 - T495C107K010ATE100 사례에서 이 경로가 링크 없이 끝나는 걸
-    # 확인함).
-    reason = mouser_error or "Mouser/웹 모두에서 찾지 못함"
-    if _ddg_is_blocked():
-        reason += " (DuckDuckGo 연결 불안정으로 이번엔 건너뜀 - Mouser 검색 링크로 대신 안내)"
+    # ③ Mouser/DigiKey 둘 다 못 찾음 (자동 웹 검색 없이 참고 링크만 남김 - 2026-09-28부터, IP
+    # 차단 위험 때문에 DuckDuckGo 웹 검색 단계를 완전히 제외하기로 결정함)
+    reason = mouser_error or "Mouser/DigiKey에서 찾지 못함"
     return DownloadResult(
         STATUS_FAILED, None, reason, manufacturer, _reference_url_with_distributor_fallback(part_number, manufacturer)
     )

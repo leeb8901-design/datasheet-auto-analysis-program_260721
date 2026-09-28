@@ -755,6 +755,8 @@ class MainWindow(QMainWindow):
     def _link_label(url: str) -> str:
         # 참고 링크가 여러 개일 때(2026-09-03), 각 링크가 어느 사이트인지 도메인으로 구분해서
         # 보여줘요. 모르는 도메인이면 그냥 "링크"라고만 표시해요.
+        # (2026-09-28: DDG 웹 검색 기능 자체를 제거하면서 "duckduckgo." 분기도 함께 지웠어요 -
+        # 이제 참고 링크는 Mouser/DigiKey/구글 검색 셋뿐이라 DDG 링크가 나올 일이 없어요.)
         netloc = urlparse(url).netloc.lower()
         if "mouser." in netloc:
             return "Mouser"
@@ -762,8 +764,6 @@ class MainWindow(QMainWindow):
             return "DigiKey"
         if "google." in netloc:
             return "구글 검색"
-        if "duckduckgo." in netloc:
-            return "DDG 검색"
         return "링크"
 
     def _set_datasheet_cell(self, i: int, download_status: str, filename: str, reference_url: str):

@@ -142,6 +142,10 @@ STATUS_SKIPPED_EXISTING = "이미 있음"
 STATUS_DOWNLOADING = "다운로드 중"
 STATUS_SUCCESS_MOUSER = "성공 (Mouser)"
 STATUS_SUCCESS_DIGIKEY = "성공 (DigiKey)"  # Mouser 실패 후 DigiKey API로 받은 경우(2026-09-19 도입).
+# [2026-09-28부터 레거시] 예전엔 DuckDuckGo 웹 검색으로 받은 경우 이 상태를 썼으나, 그 기능
+# 자체가 삭제됐다(IP 차단 위험 때문 - 소프트웨어_설계문서.md §3.2 참고). 이제 새로 만들어지는
+# 값은 없고, 예전에 이 상태로 저장된 출력 엑셀/로그를 다시 열었을 때 깨지지 않도록 상수와
+# SUCCESS_STATUSES(ui/main_window.py) 등록만 남겨둔다.
 STATUS_SUCCESS_WEB = "성공 (웹)"
 STATUS_SUCCESS_VBA = "성공 (VBA)"  # 엑셀의 VBA 도우미 매크로가 직접 받아온 경우 (datasheet_helper.bas 참고).
 # 자동 다운로드가 실패한 뒤, 사용자가 데이터시트를 직접 받아 Download_ datasheets 폴더에 넣고
