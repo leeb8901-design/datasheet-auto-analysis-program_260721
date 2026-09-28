@@ -37,6 +37,16 @@ Name: "desktopicon"; Description: "바탕화면에 바로가기 만들기"; Grou
 Source: "app\*"; DestDir: "{app}"; Flags: recursesubdirs createallsubdirs ignoreversion
 ; 최초 실행 때 Python이 없으면 쓰는 내장 설치기 (설치 성공 후 자동 삭제됨)
 Source: "assets\python-3.14.6-amd64.exe"; DestDir: "{app}\_setup"; Flags: ignoreversion
+; API 키 번들링은 기본적으로 꺼져 있음(안전한 기본값) - 공개 저장소(GitHub 등)에 올려도 되는
+; "키 없는" 빌드가 기본이 되도록. 개인/사내용으로 실제 키를 담은 빌드가 필요할 때만 컴파일 시
+; "ISCC /DBUNDLE_API_KEY setup.iss"처럼 이 심볼을 정의해서 켬 - 그러면 user_api_bundle\User_API\*
+; 안의 실제 키 파일이 {app}\User_API\에 그대로 설치돼 첫 실행부터 바로 동작함. 이렇게 만든
+; 결과물은 절대 남에게 공유/공개 저장소 업로드 금지(API 키가 그대로 들어있음) - 플래그를 안 켠
+; (기본) 빌드만 공유 가능. (2026-09-28, installer/lite/setup.iss에 있던 기능을 원본으로 통합함 -
+; Lite 배포판 폐지 경위는 HANDOFF_2026-09-28.md 참고.)
+#ifdef BUNDLE_API_KEY
+Source: "user_api_bundle\User_API\*"; DestDir: "{app}\User_API"; Flags: recursesubdirs createallsubdirs ignoreversion
+#endif
 
 [Icons]
 Name: "{group}\{#AppName}"; Filename: "{app}\{#ExeLauncher}"; WorkingDir: "{app}"; IconFilename: "{sys}\shell32.dll"; IconIndex: 220

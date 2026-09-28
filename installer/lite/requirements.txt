@@ -1,7 +1,0 @@
-requests
-openpyxl
-beautifulsoup4
-PySide6
-pdfplumber
-pypdf
-scrapling[fetchers]
